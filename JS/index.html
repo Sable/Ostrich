@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Ostrich JavaScript Benchmark</title>
+		<style type="text/css">
+			html, body {
+				margin: 0; padding: 0;
+			}
+			body {
+				color: #EAEAEA;
+				background-color: #333333;
+				font-size: 14px;
+				font: sans-serif;
+			}
+		</style>
+		<script type="text/javascript" src="run.js"></script>
+		<script type="text/javascript" src="NavierStokes.js"></script>
+		<script type="text/javascript">
+			var completed = 0;
+
+			function AddResult(name, result) {
+				console.log(name + ': ' + result);
+				var box = document.getElementById("result");
+				box.innerHTML = box.innerHTML + "<br />" + name + ': ' + result;
+			}
+
+			function AddError(name, error) {
+				if (error == "TypedArrayUnsupported") {
+					AddResult(name, '<b>Unsupported<\/b>');
+				} else if (error == "PerformanceNowUnsupported") {
+					AddResult(name, '<b>Timer error<\/b>');
+				} else {
+					AddResult(name, '<b>Error</b>');
+				}
+				success = false;
+			}
+
+			function AddScore(score) {
+				var status = document.getElementById("result");
+				var benchmarks = BenchmarkSuite.benchmarks;
+				for(var i = 0; i < benchmarks.length; i++) {
+					status.innerHTML = status.innerHTML + "<br />" + benchmarks[i].name + " : " + score;
+				}
+			}
+
+			function Run() {
+				// append the progress bar elements..
+				document.getElementById("result").innerHTML="Started running...";
+				BenchmarkSuite.Run({
+					NotifyError : AddError,
+					NotifyResult : AddResult,
+					NotifyScore : AddScore
+				});
+			}
+		</script>
+</head>
+<body>
+	<button onClick="Run();">Run Ostrich Benchmarks</button>
+	<div class="container">
+		<div id="result">
+		</div>
+	</div>
+</body>
+</html>
