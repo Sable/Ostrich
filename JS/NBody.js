@@ -34,27 +34,30 @@
    http://benchmarksgame.alioth.debian.org/
    contributed by Isaac Gouy */
 
-BenchmarkSuite.AddBenchmark(new Benchmark('NBody', runNBody)); 
+BenchmarkSuite.AddBenchmark(new Benchmark('NBody', runNBody, checkNBody));
+
+var bodies = null;
+var initialEnergy;
 
 function runNBody() {
     var n = 500000;
-    var bodies = new NBodySystem( Array( 
-       Sun(),Jupiter(),Saturn(),Uranus(),Neptune() 
+    bodies = new NBodySystem( Array( 
+       Sun(),Jupiter(),Saturn(),Uranus(),Neptune()
     ));
 
-    var initialEnergy = bodies.energy().toFixed(9);
+    initialEnergy = bodies.energy().toFixed(9);
     for (var i=0; i<n; i++){ bodies.advance(0.01); }
-    checkNBody(initialEnergy, bodies.energy().toFixed(9));
 }
 
-function checkNBody(initialEnergy, finalEnergy) {
+function checkNBody() {
+    var finalEnergy = bodies.energy().toFixed(9);
     var correctInitialEnergy = -0.169075164;
     var correctFinalEnergy = -0.169096567;
 
-    if (Math.abs(Math.abs(correctInitialEnergy) - Math.abs(initialEnergy)) > 1.0e-8)
+    if (Math.abs(Math.abs(correctInitialEnergy) - Math.abs(initialEnergy)) > 1.0e-9)
         throw new Error("Invalid initial energy value");
         
-    if (Math.abs(Math.abs(correctFinalEnergy) - Math.abs(finalEnergy)) > 1.0e-8)
+    if (Math.abs(Math.abs(correctFinalEnergy) - Math.abs(finalEnergy)) > 1.0e-9)
         throw new Error("Invalid final energy value");
 }
 

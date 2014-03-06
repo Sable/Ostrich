@@ -47,8 +47,6 @@ function checkResult() {
 		this.result+=~~((dens[i]*10));
 	}
 
-	console.log(nsFrameCounter + " : " + this.result);
-
 	if (this.result!=77) {
 		throw(new Error("checksum failed"));
 	}

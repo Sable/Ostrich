@@ -25,8 +25,8 @@ function BenchmarkResult(benchmark, time) {
 
 var config = {
 	doWarmup: true,
-	warmupTime: 5,
-	minTime: 50
+	warmupTime: 2,
+	minTime: 5
 };
 
 // Suites of benchmarks

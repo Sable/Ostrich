@@ -13,6 +13,9 @@
 				font-size: 14px;
 				font: sans-serif;
 			}
+			#error {
+				color: #E93F16;
+			}
 		</style>
 		<script type="text/javascript" src="run.js"></script>
 		<script type="text/javascript" src="NavierStokes.js"></script>
@@ -20,47 +23,39 @@
 		<script type="text/javascript">
 			var completed = 0;
 
-			function AddResult(name, result) {
-				console.log(name + ': ' + result);
-				var box = document.getElementById("result");
-				box.innerHTML = box.innerHTML + "<br />" + name + ': ' + result;
-			}
-
 			function AddError(name, error) {
-				if (error == "TypedArrayUnsupported") {
-					AddResult(name, '<b>Unsupported<\/b>');
-				} else if (error == "PerformanceNowUnsupported") {
-					AddResult(name, '<b>Timer error<\/b>');
-				} else {
-					AddResult(name, '<b>Error</b>');
-				}
-				success = false;
+				console.log(name + ': ' + error);
+				error = '<b>Error: </b>' + error.message;
+				var box = document.getElementById("error");
+				box.innerHTML = box.innerHTML + "<br />" + "<b>Benchamrk: </b>" + name + ' - ' + error;
 			}
 
 			function AddScore(score) {
 				var status = document.getElementById("result");
 				var benchmarks = BenchmarkSuite.benchmarks;
 				for(var i = 0; i < benchmarks.length; i++) {
-					status.innerHTML = status.innerHTML + "<br />" + benchmarks[i].name + " : " + score;
+					status.innerHTML = status.innerHTML + "<br />" + benchmarks[i].name + " : " + score[i].toFixed(5);
 				}
 			}
 
 			function Run() {
 				// append the progress bar elements..
 				document.getElementById("result").innerHTML="Started running...";
+				document.getElementById("error").innerHTML="";
 				BenchmarkSuite.Run({
 					NotifyError : AddError,
-					NotifyResult : AddResult,
 					NotifyScore : AddScore
 				});
 			}
 		</script>
 </head>
 <body>
+	<h2>Ostrich Benchmark Suite</h2>
 	<button onClick="Run();">Run Ostrich Benchmarks</button>
+	<br />
 	<div class="container">
-		<div id="result">
-		</div>
+		<div id="result"></div>
+		<div id="error"></div>
 	</div>
 </body>
 </html>
