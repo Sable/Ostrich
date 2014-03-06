@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="sepia.js"></script>
+    <style>
+     canvas {
+       border: 1px solid #000;
+     }
+    </style>
+  </head>
+
+  <body>
+    <img id="image" src="thomas.jpg" />
+    <canvas id="canvas"></canvas>
+
+    <script type="text/javascript">
+     var WIDTH  = 2816;
+     var HEIGHT = 1880;
+     var iters = 10;
+     $(function() {
+       $("#image").attr({"width": WIDTH, "height": HEIGHT});
+       $("#canvas").attr({"width": WIDTH, "height": HEIGHT});
+
+       $("#image").click(function() {
+         var ctx = $("#canvas")[0].getContext("2d");
+         var img = $("#image")[0];
+
+         var totalTime = 0;
+         for (var i = 0; i < iters; ++i) {
+           ctx.drawImage(img, 0, 0, WIDTH, HEIGHT);
+           var imageData = ctx.getImageData(0, 0, WIDTH, HEIGHT);
+           var data = imageData.data;
+
+           var t1 = performance.now()
+           sepia(data, WIDTH, HEIGHT);
+           var t2 = performance.now();
+           totalTime += (t2 - t1);
+
+           ctx.clearRect(0, 0, WIDTH, HEIGHT);
+           ctx.putImageData(imageData, 0, 0);
+         }
+
+         console.log("Average time: " + (totalTime / iters / 1000) + " secs");
+       });
+     });
+    </script>
+  </body>
+</html>
