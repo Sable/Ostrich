@@ -1,6 +1,5 @@
-
 /**
- * Copyright 2012 the V8 project authors. All rights reserved.
+ * Copyright 2013 the V8 project authors. All rights reserved.
  * Copyright 2009 Oliver Hunt <http://nerget.com>
  *
  * Permission is hereby granted, free of charge, to any person
@@ -23,16 +22,36 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Update 10/21/2013: fixed loop variables at line 119
  */
 
-BenchmarkSuite.AddBenchmark(new Benchmark('NavierStokes', runNavierStokes, setupNavierStokes, tearDownNavierStokes, 16));
+BenchmarkSuite.AddBenchmark(new Benchmark('NavierStokes', runNavierStokes, checkResult, setupNavierStokes, tearDownNavierStokes, 16));
 
 var solver = null;
-var nsFrameCounter = 1;
+var nsFrameCounter = 0;
 
 function runNavierStokes() {
 	solver.update();
 	nsFrameCounter++;
+}
+
+function checkResult() {
+	if(nsFrameCounter!=15)
+		return;
+
+	var dens = solver.getDens();
+
+	this.result = 0;
+	for (var i=7000;i<7100;i++) {
+		this.result+=~~((dens[i]*10));
+	}
+
+	console.log(nsFrameCounter + " : " + this.result);
+
+	if (this.result!=77) {
+		throw(new Error("checksum failed"));
+	}
 }
 
 function setupNavierStokes() {
@@ -46,6 +65,9 @@ function setupNavierStokes() {
 
 function tearDownNavierStokes() {
 	solver = null;
+	nsFrameCounter = 0;
+	framesTillAddingPoints = 0;
+	framesBetweenAddingPoints = 5;
 }
 
 function addPoints(field) {
@@ -86,7 +108,7 @@ function FluidField(canvas) {
 				x[i + (height+1) *rowSize] = x[i + height * rowSize];
 			}
 
-			for (var j = 1; i <= height; i++) {
+			for (var j = 1; j <= height; j++) {
 				x[j * rowSize] = -x[1 + j * rowSize];
 				x[(width + 1) + j * rowSize] = -x[width + j * rowSize];
 			}
@@ -138,9 +160,8 @@ function FluidField(canvas) {
 					var nextRow = (j + 1) * rowSize;
 					var lastX = x[currentRow];
 					++currentRow;
-					for (var i=1; i<=width; i++) {
+					for (var i=1; i<=width; i++)
 						lastX = x[currentRow] = (x0[currentRow] + a*(lastX+x[++currentRow]+x[++lastRow]+x[++nextRow])) * invC;
-					}
 				}
 				set_bnd(b, x);
 			}
@@ -343,8 +364,7 @@ function FluidField(canvas) {
 	var rowSize;
 	var size;
 	var displayFunc;
-	function reset()
-	{
+	function reset() {
 		rowSize = width + 2;
 		size = (width+2)*(height+2);
 		dens = new Array(size);
@@ -360,7 +380,8 @@ function FluidField(canvas) {
 	this.getDens = function() {
 		return dens;
 	};
-	this.setResolution = function (hRes, wRes) {
+	this.setResolution = function (hRes, wRes)
+	{
 		var res = wRes * hRes;
 		if (res > 0 && res < 1000000 && (wRes != width || hRes != height)) {
 			width = wRes;

@@ -6,9 +6,10 @@
   * @destroy(optional): function that will be called after each benchmark run
   * @minIterations(optional): integer that depicts minimum number of iterations
   */
-function Benchmark(name, run, setup, destroy, minIterations) {
+function Benchmark(name, run, check, setup, destroy, minIterations) {
 	this.name = name;
 	this.run = run;
+	this.check = check ? check : function() { };
 	this.setup = setup ? setup : function() { };
 	this.destroy = destroy ? destroy : function() { };
 	this.minIterations = minIterations ? minIterations : 32;
@@ -76,37 +77,38 @@ BenchmarkSuite.Run = function(runner) {
 			return;
 		}
 		if(config.doWarmup) {
+			benchmarks[index].setup();
 			while(elapsed < config.warmupTime) {
 				try {
-					benchmarks[index].setup();
 					var t0 = performance.now();
 					benchmarks[index].run();
 					elapsed += (performance.now() - t0)/1000;
-					benchmarks[index].destroy();
 					i++;
 				} catch(e) {
 					BenchmarkSuite.NotifyError(e);
 				}
 			}
+			benchmarks[index].destroy();
 		}
 
 		elapsed = 0;
 		var result = [];
+		benchmarks[index].setup();
 		while(elapsed < config.minTime || i < benchmarks[index].minIterations) {
 			try {
-				benchmarks[index].setup();
 				var mt0 = performance.now();
 				benchmarks[index].run();
 				var mt1 = (performance.now() - mt0)/1000;
 				elapsed += mt1;
+				benchmarks[index].check();
 				result.push(mt1);
-				benchmarks[index].destroy();
 			} catch(e) {
 				BenchmarkSuite.NotifyError(e);
 				break;
 			}
 			i++;
 		}
+		benchmarks[index].destroy();
 		BenchmarkSuite.results.push(result);
 		index++;
 		window.setTimeout(start, 20);
