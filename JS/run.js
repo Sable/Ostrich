@@ -35,7 +35,6 @@ var BenchmarkSuite = {
 	version: "1.0",
 	benchmarks: [],
 	results: [],
-	scores: [],
 	AddBenchmark: function(benchmark) {
 		BenchmarkSuite.benchmarks.push(benchmark);
 	},
@@ -67,7 +66,6 @@ BenchmarkSuite.Run = function(runner) {
 	var benchmarks = BenchmarkSuite.benchmarks;
 	var length = benchmarks.length;
 	BenchmarkSuite.results = [];
-	BenchmarkSuite.scores = [];
 	var index = 0;
 
 	function start() {
@@ -117,11 +115,7 @@ BenchmarkSuite.Run = function(runner) {
 	function stop() {
 		// show final result
 		if (runner.NotifyScore) {
-			BenchmarkSuite.results.forEach(function (results) {
-				var score = BenchmarkSuite.GeometricMean(results);
-				BenchmarkSuite.scores.push(score);
-			});
-			runner.NotifyScore(BenchmarkSuite.scores);
+			runner.NotifyScore(BenchmarkSuite.results);
 		}
 	}
 	start();
@@ -134,6 +128,27 @@ BenchmarkSuite.GeometricMean = function(numbers) {
 		log += Math.log(numbers[i]);
 	}
 	return Math.pow(Math.E, log / numbers.length);
+};
+
+// Computes the Max of a set of numbers.
+BenchmarkSuite.Max = function(numbers) {
+	return Math.max.apply(null, numbers);
+};
+
+// Computes the Min of a set of numbers.
+BenchmarkSuite.Min = function(numbers) {
+	return Math.min.apply(null, numbers);
+};
+
+// Computes the Avg of a set of numbers.
+BenchmarkSuite.Avg = function(numbers) {
+	return (numbers.reduce(function(b,c) {return b+c;}) / numbers.length);
+};
+
+// Computes the Avg of a set of numbers.
+BenchmarkSuite.Std = function(avg, numbers) {
+	return Math.sqrt((numbers.map(function(a) { return Math.pow((avg - a) ,2); })
+		.reduce(function(b,c) {return b+c;})) / numbers.length);
 };
 
 // Converts a score value to a string with at least three significant

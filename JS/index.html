@@ -3,18 +3,17 @@
 	<head>
 		<meta charset="utf-8"/>
 		<title>Ostrich JavaScript Benchmark</title>
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
 		<style type="text/css">
-			html, body {
-				margin: 0; padding: 0;
-			}
 			body {
 				color: #EAEAEA;
 				background-color: #333333;
-				font-size: 14px;
-				font: sans-serif;
 			}
 			#error {
 				color: #E93F16;
+			}
+			.table th, .table td {
+				text-align: center;
 			}
 		</style>
 		<script type="text/javascript" src="run.js"></script>
@@ -33,9 +32,34 @@
 			function AddScore(score) {
 				var status = document.getElementById("result");
 				var benchmarks = BenchmarkSuite.benchmarks;
+
+				var html = "<br /><table class='table table-bordered'>" + 
+								"<tr><th align='center'>Benchmark Name</th>" +
+									"<th align='center'>Geometric Mean</th>" +
+									"<th align='center'>Average</th>" +
+									"<th align='center'>Standard Deviation</th>" +
+									"<th align='center'>Min</th>" +
+								"<th align='center'>Max</th></tr>";
+
 				for(var i = 0; i < benchmarks.length; i++) {
-					status.innerHTML = status.innerHTML + "<br />" + benchmarks[i].name + " : " + score[i].toFixed(5);
+					var results = BenchmarkSuite.results[i];
+
+					var mean = BenchmarkSuite.GeometricMean(results);
+					var min = BenchmarkSuite.Min(results);
+					var max = BenchmarkSuite.Max(results);
+					var avg = BenchmarkSuite.Avg(results);
+					var std = BenchmarkSuite.Std(avg, results);
+
+					html = html + "<tr><td align='center'>" + benchmarks[i].name + "</td>" +
+								"<td align='center'>" + mean.toFixed(5) + "</td>" +
+								"<td align='center'>" + avg.toFixed(5) + "</td>" +
+								"<td align='center'>" + std.toFixed(5) + "</td>" +
+								"<td align='center'>" + min.toFixed(5) + "</td>" +
+								"<td align='center'>" + max.toFixed(5) + "</td></tr>";
 				}
+
+				html = html + "</table>";
+				status.innerHTML = html;
 			}
 
 			function Run() {
@@ -51,7 +75,7 @@
 </head>
 <body>
 	<h2>Ostrich Benchmark Suite</h2>
-	<button onClick="Run();">Run Ostrich Benchmarks</button>
+	<button onClick="Run();" class="btn btn-default">Run Ostrich Benchmarks</button>
 	<br />
 	<div class="container">
 		<div id="result"></div>

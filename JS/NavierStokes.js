@@ -47,15 +47,15 @@ function checkResult() {
 		this.result+=~~((dens[i]*10));
 	}
 
-	if (this.result!=77) {
+	if (this.result!=2) {
 		throw(new Error("checksum failed"));
 	}
 }
 
 function setupNavierStokes() {
 	solver = new FluidField(null);
-	solver.setResolution(128, 128);
-	solver.setIterations(20);
+	solver.setResolution(256, 256);
+	solver.setIterations(99);
 	solver.setDisplayFunction(function(){});
 	solver.setUICallback(prepareFrame);
 	solver.reset();
