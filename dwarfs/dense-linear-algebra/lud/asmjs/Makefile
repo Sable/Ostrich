@@ -3,7 +3,7 @@
 #
 
 # DEBUG can be set to YES to include debugging info, or NO otherwise
-DEBUG          := NO  
+DEBUG          := YES  
 
 # PROFILE can be set to YES to include profiling info, or NO otherwise
 PROFILE        := NO
@@ -19,9 +19,10 @@ CC              := emcc
 CXX             := g++
 
 # ------------  compiler flags  ------------------------------------------------
-DEBUG_CFLAGS    := -Wall -O0 -g
-RELEASE_CFLAGS  := -Wall -O3 
+DEBUG_CFLAGS    := -Wall -O2 -g
+RELEASE_CFLAGS  := -Wall -O2 
 COMMON_CFLAGS   := 
+EMCC_MEMORY			:= 1000000000
 
 # ------------  compiler defs  ------------------------------------------------
 DEBUG_CDEFS    := -D_DEBUG_RESULT
@@ -91,7 +92,9 @@ OBJECTS         = $(addsuffix .o,$(BASENAMES))
 # ------------  make the executable (the default goal)  ------------------------
 $(EXECUTABLE):	$(OBJECTS)
 ifeq ($(strip $(CPP_SOURCES)),)
-	$(CC)  $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
+	$(CC)  $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)  
+	mv $(EXECUTABLE) $(EXECUTABLE).bc   
+	emcc $(EXECUTABLE).bc -o $(EXECUTABLE).js -s TOTAL_MEMORY=$(EMCC_MEMORY)
 else
 	$(CXX) $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
 endif
@@ -110,7 +113,7 @@ endif
 				$(CXX) -c $(ALL_CFLAGS) $< -o $@
 
 clean:
-	-rm --force $(EXECUTABLE) $(OBJECTS) *~
+	-rm --force $(EXECUTABLE)  $(EXECUTABLE).js.map $(EXECUTABLE).bc  $(EXECUTABLE).js $(OBJECTS) *~
 
 .PHONY: clean
 

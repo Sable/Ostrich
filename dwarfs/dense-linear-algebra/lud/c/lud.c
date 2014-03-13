@@ -58,9 +58,7 @@ main ( int argc, char *argv[] )
           break;
         case 's':
           matrix_dim = atoi(optarg);
-          fprintf(stderr, "Currently not supported, use -i instead\n");
-          fprintf(stderr, "Usage: %s [-v] [-s matrix_size|-i input_file]\n", argv[0]);
-          exit(EXIT_FAILURE);
+          break;
         case '?':
           fprintf(stderr, "invalid option\n");
           break;
@@ -87,7 +85,16 @@ main ( int argc, char *argv[] )
           fprintf(stderr, "error create matrix from file %s\n", input_file);
           exit(EXIT_FAILURE);
       }
-  } else {
+  } else if(matrix_dim>1) {
+      printf("Generating matrix of size %d x %d\n", matrix_dim, matrix_dim); 
+      ret = create_matrix_from_random(&m, matrix_dim); 
+      if(ret != RET_SUCCESS){
+        m = NULL; 
+        fprintf(stderr, "error could not generate random matrix of size %d x %d!\n", matrix_dim, matrix_dim); 
+        exit(EXIT_FAILURE); 
+      }
+  } 
+  else {
     printf("No input file specified!\n");
     exit(EXIT_FAILURE);
   } 
