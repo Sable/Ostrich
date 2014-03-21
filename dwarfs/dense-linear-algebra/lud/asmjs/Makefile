@@ -3,7 +3,7 @@
 #
 
 # DEBUG can be set to YES to include debugging info, or NO otherwise
-DEBUG          := YES  
+DEBUG          := NO  
 
 # PROFILE can be set to YES to include profiling info, or NO otherwise
 PROFILE        := NO
@@ -92,9 +92,9 @@ OBJECTS         = $(addsuffix .o,$(BASENAMES))
 # ------------  make the executable (the default goal)  ------------------------
 $(EXECUTABLE):	$(OBJECTS)
 ifeq ($(strip $(CPP_SOURCES)),)
-	$(CC)  $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)  
+	$(CC) $(ALL_CFLAGS) $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)  
 	mv $(EXECUTABLE) $(EXECUTABLE).bc   
-	emcc $(EXECUTABLE).bc -o $(EXECUTABLE).js -s TOTAL_MEMORY=$(EMCC_MEMORY)
+	emcc $(EXECUTABLE).bc $(ALL_CFLAGS) -o $(EXECUTABLE).js -s TOTAL_MEMORY=$(EMCC_MEMORY)
 else
 	$(CXX) $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
 endif

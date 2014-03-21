@@ -12,7 +12,7 @@ PROFILE        := NO
 EXECUTABLE      := spmv
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := csr_spmv.c ../common/common.c ../common/common_args_serial.c \
+SOURCES         := ../c/csr_spmv.c ../common/common.c ../common/common_args_serial.c \
  									 ../common/sparse_formats.c ../common/ziggurat.c 	
 
 # ------------  compiler  ------------------------------------------------------
@@ -93,9 +93,9 @@ OBJECTS         = $(addsuffix .o,$(BASENAMES))
 # ------------  make the executable (the default goal)  ------------------------
 $(EXECUTABLE):	$(OBJECTS)
 ifeq ($(strip $(CPP_SOURCES)),)
-	$(CC)  $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
+	$(CC)  $(ALL_CFLAGS) $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
 	mv $(EXECUTABLE) $(EXECUTABLE).bc
-	emcc $(EXECUTABLE).bc -o $(EXECUTABLE).js -s TOTAL_MEMORY=$(EMCC_MEMORY)
+	emcc $(EXECUTABLE).bc $(ALL_CFLAGS) -o $(EXECUTABLE).js -s TOTAL_MEMORY=$(EMCC_MEMORY)
 else
 	$(CXX) $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
 endif
