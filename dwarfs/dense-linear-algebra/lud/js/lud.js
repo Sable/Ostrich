@@ -37,16 +37,16 @@ function printMatrix(matrix, size){
 function ludRun(size){
   var matrix = new Float32Array(size*size); 
   randomMatrix(matrix, 0, 10000); 
-  console.log("Matrix of size: " + 1024); 
-  console.log("\n"); 
-  printMatrix(matrix,size); 
+  //console.log("Matrix of size: " + 1024); 
+  //console.log("\n"); 
+  //printMatrix(matrix,size); 
   var t1 = Date.now(); 
   lud(matrix, size); 
   var t2 = Date.now();
-  console.log("After LUD \n\n"); 
-  printMatrix(matrix, size); 
+  //console.log("After LUD \n\n"); 
+  //printMatrix(matrix, size); 
 
-  console.log("The lu decomposition took " + (t2-t1)/1000 + " seconds"); 
+  console.log("Time consumed(ms): " + (t2-t1).toFixed(6));
 }
 
 ludRun(1024);
