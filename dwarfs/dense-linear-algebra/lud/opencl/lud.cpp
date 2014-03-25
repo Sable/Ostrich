@@ -121,9 +121,11 @@ main ( int argc, char *argv[] )
 			break;
         case 's':
 			matrix_dim = atoi(optarg);
-			fprintf(stderr, "Currently not supported, use -i instead\n");
-			fprintf(stderr, "Usage: %s [-v] [-s matrix_size|-i input_file]\n", argv[0]);
-			exit(EXIT_FAILURE);
+			printf("Generate input matrix internally, size =%d\n", matrix_dim);
+			// fprintf(stderr, "Currently not supported, use -i instead\n");
+			// fprintf(stderr, "Usage: %s [-v] [-s matrix_size|-i input_file]\n", argv[0]);
+			// exit(EXIT_FAILURE);
+			break;
         case '?':
 			fprintf(stderr, "invalid option\n");
 			break;
@@ -150,14 +152,26 @@ main ( int argc, char *argv[] )
 			fprintf(stderr, "error create matrix from file %s\n", input_file);
 			exit(EXIT_FAILURE);
 		}
-	} else {
-		printf("No input file specified!\n");
-		exit(EXIT_FAILURE);
+	} 
+	
+	else if (matrix_dim) {
+	  printf("Creating matrix internally size=%d\n", matrix_dim);
+	  ret = create_matrix(&m, matrix_dim);
+	  if (ret != RET_SUCCESS) {
+	    m = NULL;
+	    fprintf(stderr, "error create matrix internally size=%d\n", matrix_dim);
+	    exit(EXIT_FAILURE);
+	  }
+	}
+
+	else {
+	  printf("No input file specified!\n");
+	  exit(EXIT_FAILURE);
 	}
 
 	if (do_verify){
 		printf("Before LUD\n");
-		print_matrix(m, matrix_dim);
+		// print_matrix(m, matrix_dim);
 		matrix_duplicate(m, &mm, matrix_dim);
 	}
 	
@@ -273,7 +287,7 @@ main ( int argc, char *argv[] )
 
 	if (do_verify){
 		printf("After LUD\n");
-		print_matrix(m, matrix_dim);
+		// print_matrix(m, matrix_dim);
 		printf(">>>Verify<<<<\n");
 		lud_verify(mm, m, matrix_dim); 
 		free(mm);
