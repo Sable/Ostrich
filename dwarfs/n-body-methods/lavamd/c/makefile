@@ -1,12 +1,4 @@
 SHELL := /bin/bash
-# Example
-# target: dependencies
-	# command 1
-	# command 2
-          # .
-          # .
-          # .
-	# command n
 
 EMCC = emcc -O2
 CCOMP = clang -O3
