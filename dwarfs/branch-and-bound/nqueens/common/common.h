@@ -43,7 +43,7 @@ create_matrix_from_file(float **mp, const char *filename, int *size_p);
 func_ret_t
 create_matrix_from_random(float **mp, int size);
 
-func_ret_t
+void
 lud_verify(float *m, float *lu, int size);
 
 void
