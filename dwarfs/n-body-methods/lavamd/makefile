@@ -4,7 +4,7 @@ CCOMP = gcc -O3
 EMCC = emcc -O2
 
 NB_BOXES = "6"
-JS_RUN_ARGUMENT = "'-boxes1d', '"$(NB_BOXES)"'"
+ASMJS_RUN_ARGUMENT = "'-boxes1d', '"$(NB_BOXES)"'"
 C_RUN_ARGUMENT = "-boxes1d "$(NB_BOXES)
 FILENAME = "lavamd"
 
@@ -52,7 +52,7 @@ build/asmjs/run.html: build/asmjs \
             build/asmjs/lavamd.js
 	cat ../../utils/asmjs/run_template.html > build/asmjs/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html 
-	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/asmjs/run.html 
+	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html 
             
 
 build/js:

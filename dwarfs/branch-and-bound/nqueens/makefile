@@ -4,7 +4,7 @@ CCOMP = gcc -O3
 EMCC = emcc -O2
 
 SIZE = "16"
-JS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
+ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
 C_RUN_ARGUMENT = "-s "$(SIZE)
 FILENAME = "nqueens"
 
@@ -42,7 +42,7 @@ build/asmjs/run.html: build/asmjs \
             build/asmjs/nqueens.js
 	cat ../../utils/asmjs/run_template.html > build/asmjs/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html 
-	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/asmjs/run.html 
+	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html 
             
 
 build/js:
