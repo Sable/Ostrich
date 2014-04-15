@@ -8,7 +8,7 @@ ASMJS_RUN_ARGUMENT = "'-boxes1d', '"$(NB_BOXES)"'"
 C_RUN_ARGUMENT = "-boxes1d "$(NB_BOXES)
 FILENAME = "lavamd"
 
-build: build/c/lavamd build/asmjs/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/opencl build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -28,8 +28,8 @@ build/c/lavamd:	build/c \
 			 c/util/timer/timer.c \
 			 -lm -o build/c/lavamd
 
-build/c/run.sh: build/c/lavamd
-	echo 'build/c/lavamd '$(C_RUN_ARGUMENT) > build/c/run.sh
+build/c/run.sh: build/c/lavamd build/c
+	echo 'build/c/lavamd '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
             
 build/asmjs:
 	mkdir -p build/asmjs

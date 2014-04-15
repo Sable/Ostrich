@@ -6,9 +6,10 @@ EMCC = emcc -O2
 SIZE = "16"
 ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
 C_RUN_ARGUMENT = "-s "$(SIZE)
+JS_RUN_ARGUMENT = "runNQueens("$(SIZE)")"
 FILENAME = "nqueens"
 
-build: build/c/nqueens build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -23,8 +24,8 @@ build/c/nqueens:	build/c \
 			 common/common.c \
 			 -lm -o build/c/nqueens
 
-build/c/run.sh: build/c/lavamd
-	echo 'build/c/nqueens '$(C_RUN_ARGUMENT) > build/c/run.sh
+build/c/run.sh: build/c/nqueens build/c
+	echo 'build/c/nqueens '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
             
 build/asmjs:
 	mkdir -p build/asmjs
@@ -47,6 +48,14 @@ build/asmjs/run.html: build/asmjs \
 
 build/js:
 	mkdir -p build/js
+
+build/js/nqueens.js:
+	cp js/nqueens.js build/js/
+
+build/js/run.html: build/js build/js/nqueens.js 
+	cat ../../utils/js/run_template.html > build/js/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html 
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html 
 
 build/opencl:
 	mkdir -p build/opencl
