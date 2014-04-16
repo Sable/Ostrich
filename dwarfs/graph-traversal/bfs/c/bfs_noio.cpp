@@ -2,10 +2,11 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <vector>
 
 #define MIN_NODES 20
-#define MAX_NODES UNSIGNED LONG_MAX
+#define MAX_NODES ULONG_MAX
 #define MIN_EDGES 2
 #define MAX_INIT_EDGES 4 // Nodes will have, on average, 2*MAX_INIT_EDGES edges
 #define MIN_WEIGHT 1
