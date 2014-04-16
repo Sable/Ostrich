@@ -83,5 +83,3 @@ function runCRC(numPages, pageSize){
   console.log("Total time was " + (t2-t1) + "ms  and the first element is " + 
       crcs[0]);
 }
-
-runCRC(1000,1000);

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <getopt.h>
 #include "common.h" 
 #include "crc_formats.h"
 #include "eth_crc32_lut.h"
@@ -97,7 +98,7 @@ int main(int argc, char** argv){
   unsigned int* crcs;
   stopwatch sw;
 
-	while((c = getopt (argc, argv, "i::h::sn::")) != -1)
+	while((c = getopt(argc, argv, "i::h::sn::")) != -1)
 	{
 		switch(c)
 		{
@@ -112,17 +113,25 @@ int main(int argc, char** argv){
 					file = argv[optind];
 				printf("Reading Input from '%s'\n",file);
 				break;
-      case 's':
-				if(optarg != NULL)
+          case 's':
+                printf("s optarg %u\n", (unsigned int)optarg);
+				if(optarg != NULL) {
 					page_size = atoi(optarg);
-				else
+                    printf("page_size (optarg) arg: %s value: %u\n", optarg, page_size);
+				} else {
 					page_size = atoi(argv[optind]);
+                    printf("page_size (optind) arg: %s value: %u\n", argv[optind], page_size);
+                }
 				break;
 			case 'n':
-				if(optarg != NULL)
+                printf("n optarg %u\n", (unsigned int)optarg);
+				if(optarg != NULL) {
 					num_pages = atoi(optarg);
-				else
+                    printf("num_pages (optarg) arg: %s value: %u\n", optarg, num_pages);
+                } else {
 					num_pages = atoi(argv[optind]);
+                    printf("num_pages (optind) arg: %s value: %u\n", argv[optind], num_pages);
+                }
 				break;
 			default:
 				fprintf(stderr, "Invalid argument: '%s'\n\n",optarg);
@@ -132,23 +141,30 @@ int main(int argc, char** argv){
 
 	num_words = page_size / 4;
   if(file != NULL)	h_num = read_crc(&num_pages,&page_size,file);
-  else h_num = rand_crc2(num_pages, page_size, 10000); 
+  else h_num = rand_crc2(num_pages, page_size); 
 
   crcs = malloc(sizeof(*crcs)*num_pages);
   stopwatch_start(&sw);
   for(i=0; i<num_pages; i++)
   {
     crcs[i] = crc32_8bytes(&h_num[i*num_words], page_size);
-    //crcs[i] = cpu_remainder;
-//    printf("The code for this page is %d\n", cpu_remainder); 
   }
 
   stopwatch_stop(&sw);
-/* 
+
+  printf("num_pages: %u\n", num_pages);
+  printf("num_words: %u\n", num_words);
+  printf("page_size: %u\n", page_size);
+  for(i=0; i<num_pages*num_words; ++i) {
+    printf("%u\n", h_num[i]);
+  }
+
+    //crcs[i] = cpu_remainder;
+//    printf("The code for this page is %d\n", cpu_remainder); 
   for(i=0; i<num_pages; i++)
   {
     printf("The code for this page is %d\n", crcs[i]); 
-  }*/
+  }
   printf("CPU Slice-by-8 CRC Time: %lf seconds\n", get_interval_by_sec(&sw));
 
 	free(h_num);

@@ -1,4 +1,5 @@
 #include "crc_formats.h"
+#include "common_rand.h"
 
 unsigned int* read_crc(unsigned int* num_pages,unsigned int* page_size,const char* file_path)
 {
@@ -48,7 +49,7 @@ void write_crc(const unsigned int** pages, const unsigned int num_pages, const u
 	fclose(fp);
 }
 
-unsigned int* rand_crc2(unsigned int num_pages,unsigned int page_size,const unsigned int seed)
+unsigned int* rand_crc2(unsigned int num_pages,unsigned int page_size)
 {
 	unsigned int i,j,num_words;
 	unsigned int* page;
@@ -57,9 +58,9 @@ unsigned int* rand_crc2(unsigned int num_pages,unsigned int page_size,const unsi
 	page = int_new_array(num_pages*num_words,"crc_formats.read_crc() - Heap Overflow! Cannot allocate space for page");
 	for(j=0; j<num_pages; j++)
 	{
-		for(i=0; i<num_words; i++){
-			page[j*num_words+i] = rand();
-    }
+		for(i=0; i<num_words; i++) {
+			page[j*num_words+i] = common_rand();
+        }
 	}
 	return page;
 }
