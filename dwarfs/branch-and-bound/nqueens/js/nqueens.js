@@ -245,8 +245,6 @@ function runNQueens(size){
   t2 = Date.now();
 
 
-  console.log("Size: " + size + " Time: " + (t2-t1) + "ms Solutions: " + 
+  console.log("Size: " + size + " Time: " + (t2-t1)/1000 + " s Solutions: " + 
       solutions + " Unique Solutions: " + us["solutions"]); 
 }
-
-runNQueens(17);
