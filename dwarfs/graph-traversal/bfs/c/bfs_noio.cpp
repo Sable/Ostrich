@@ -84,7 +84,6 @@ void BFSGraph( int argc, char** argv) {
 //if no thread changes this value then the loop stops
         stop=false;
 
-
         for(int tid = 0; tid < no_of_nodes; tid++ )
         {
             if (h_graph_mask[tid] == true){

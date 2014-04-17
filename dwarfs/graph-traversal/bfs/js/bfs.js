@@ -38,6 +38,7 @@ function distr(lo, hi) {
 
 function BFSGraph(no_of_nodes) {
     var inits = InitializeGraph(no_of_nodes);
+    console.log(inits);
     var h_graph_nodes = inits.h_graph_nodes;
     var h_graph_mask = inits.h_graph_mask;
     var h_updating_graph_mask = inits.h_updating_graph_mask;
@@ -51,12 +52,12 @@ function BFSGraph(no_of_nodes) {
     do {
         stop = false;
 
-        for (var tid = 0; i < no_of_nodes; ++tid) {
+        for(var tid = 0; tid < no_of_nodes; ++tid) {
             if (h_graph_mask[tid]) {
                 h_graph_mask[tid] = false;
-                for ( int i = h_graph_nodes[tid].starting
+                for ( var i = h_graph_nodes[tid].starting
                       ; i < (h_graph_nodes[tid].no_of_edges + h_graph_nodes[tid].starting)
-                      ; ++i ) {
+                      ; ++i) {
                     var id = h_graph_edges[i];
                     if (!h_graph_visited[id]) {
                         h_cost[id] = h_cost[tid] + 1;
@@ -75,7 +76,9 @@ function BFSGraph(no_of_nodes) {
             }
         }
         ++k;
-    } while (stop)
+    }
+    while(stop);
+
 
     for (var i = 0; i < no_of_nodes; ++i) {
         console.log(i + ") cost: " + h_cost[i]);
