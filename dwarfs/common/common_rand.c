@@ -28,6 +28,9 @@ Ported from V8 benchmark suite, original copyright:
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+#define MAXRND 0x7fffffff
+
 unsigned int _common_seed = 49734321;
 
 void common_srand(unsigned int seed) {
@@ -43,4 +46,8 @@ int common_rand() {
     _common_seed = ((_common_seed + 0xfd7046c5) + (_common_seed << 3))   & 0xffffffff;
     _common_seed = ((_common_seed ^ 0xb55a4f09) ^ (_common_seed >> 16)) & 0xffffffff;
     return _common_seed;
+}
+
+float common_randJS() {
+	return ((float) abs(common_rand()) / (float) MAXRND);
 }

@@ -26,7 +26,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Math.commonRandom = (function() {
-var seed = 49734321;
+    var seed = 49734321;
     return function() {
         // Robert Jenkins' 32 bit integer hash function.
         seed = ((seed + 0x7ed55d16) + (seed << 12))  & 0xffffffff;
@@ -38,3 +38,7 @@ var seed = 49734321;
         return seed;
     };
 })();
+
+Math.commonRandomJS = function () {
+    return Math.abs(Math.commonRandom() / 0x7fffffff);
+}
