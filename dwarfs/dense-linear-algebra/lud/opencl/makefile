@@ -1,7 +1,6 @@
-include ../../../common/make.config
+include make.config
 
-INC = -I$(OPENCL_INC) -I../common -I/home/sable/fkhan24/bin/intel_opencl_sdk_xe/opt/intel/opencl-1.2-3.2.1.16712/
-
+INC = -I$(OPENCL_INC) -I../common
 LIB = -L$(OPENCL_LIB)
 
 #C compiler
