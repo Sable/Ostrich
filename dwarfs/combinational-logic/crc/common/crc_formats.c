@@ -49,7 +49,7 @@ void write_crc(const unsigned int** pages, const unsigned int num_pages, const u
 	fclose(fp);
 }
 
-unsigned int* rand_crc2(unsigned int num_pages,unsigned int page_size)
+unsigned int* rand_crc(unsigned int num_pages,unsigned int page_size)
 {
 	unsigned int i,j,num_words;
 	unsigned int* page;
@@ -61,23 +61,6 @@ unsigned int* rand_crc2(unsigned int num_pages,unsigned int page_size)
 		for(i=0; i<num_words; i++) {
 			page[j*num_words+i] = common_rand();
         }
-	}
-	return page;
-}
-unsigned int** rand_crc(const unsigned int num_pages,const unsigned int page_size,const unsigned int seed)
-{
-	unsigned int i,j,num_words;
-	unsigned int** page;
-
-	srand(seed);
-	page = malloc(sizeof(void*)*num_pages);
-	check(page != NULL,"crc_formats.rand_crc() - Heap Overflow! Cannot allocate space for page*");
-	num_words = page_size / 4;
-	for(i=0; i<num_pages; i++)
-	{
-		page[i] = int_new_array(num_words,"crc_formats.rand_crc() - Heap Overflow! Cannot allocate space for pages");
-		for(j=0; j<num_words; j++)
-			page[i][j] = rand();
 	}
 	return page;
 }

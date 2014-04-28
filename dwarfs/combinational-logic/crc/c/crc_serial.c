@@ -6,24 +6,6 @@
 #include "crc_formats.h"
 #include "eth_crc32_lut.h"
 
-const uint32_t Polynomial = 0xEDB88320;
-// /////Bitwise version of CRC///////////////////////
-////////altered from the fastest version of crc32_bitwise() by Stephan Brumme////////
-// Copyright (c) 2013 Stephan Brumme. All rights reserved.
-// see http://create.stephan-brumme.com/disclaimer.html
-//
-unsigned int serialCRC(unsigned int* h_num, size_t size){
-	unsigned int j;
-	uint32_t crc = ~0x00;
-	unsigned char* current = (unsigned char*) h_num;
-	while (size--)
-	{
-		crc ^= *current++;
-		for (j = 0; j < 8; j++)
-			crc = (crc >> 1) ^ (-1*((int)(crc & 0x01)) & Polynomial);
-	}
-	return ~crc;
-}
 
 // /////Slice-by-8 version of CRC///////////////////////
 ////////altered from the version posted online by Stephan Brumme////////
@@ -54,51 +36,30 @@ uint32_t crc32_8bytes(const void* data, size_t length){
 	}
 	return ~crc;
 }
-/*
-int main(){
-  int num_pages = 100; 
-  int page_size = 1000; 
-  unsigned int num_words = page_size/4;
-  unsigned int *h_num = rand_crc2(num_pages, page_size, 1000000); 
-  uint32_t cpu_remainder; 
-  stopwatch sw; 
-  int i; 
-
-  stopwatch_start(&sw);
-  for(i=0; i<num_pages; i++)
-  {
-    cpu_remainder = crc32_8bytes(&h_num[i*num_words], page_size);
-    //printf("CPU - Slice-by-8 Computation: '%X'\n", cpu_remainder);
-  }
-  stopwatch_stop(&sw);
-  printf("CPU Slice-by-8 CRC Time: %lf\n", get_interval_by_sec(&sw));
-}
-*/
 
 void usage()
 {
-	printf("crc -i <input_file> [hvp] [-r <num_execs>] [-w <wg_size-1>][-w <wg_size-2>]...[-w <wg_size-m>] [-k <kernel_file-1>][-k <kernel_file-2>]...[-k <kernel_file-n>]\n");
+	printf("crc [-s <page_size>] [-n <num_pages>] [-r <num_execs>] \n");
 	printf("Common arguments:\n");
 	printf("Program-specific arguments:\n");
 	printf("\t-h | 'Print this help message'\n");
-	printf("\t-i | 'Input file name' [string]\n");
 	printf("\t-n: Random Generation: Create <num_pages> pages - Default is 1\n");
 	printf("\t-s: Random Generation: Set # of bytes with each page to <page_size> - Default is 1024\n");
+	printf("\t-r: Specify the number of times the benchmark should be run\n");
 	exit(0);
 }
 
 int main(int argc, char** argv){
-	FILE* fp=NULL;
-	void* tmp;
-	unsigned int *h_num,cpu_remainder;
-	unsigned int run_serial=0,seed=time(NULL),h,ii,i,j,k,l,m,num_pages=1,num_execs=1,num_kernels=0;
-	char* file=NULL,*optptr;
+	unsigned int *h_num;
+	unsigned int i,j,num_pages=1,num_execs=1;
 	int c;
-  unsigned int page_size=100, num_words;
-  unsigned int* crcs;
-  stopwatch sw;
+    unsigned int page_size=100, num_words;
+    unsigned int* crcs;
+    unsigned int final_crc, expected_crc;
+    double cumulative_time=0;
+    stopwatch sw;
 
-	while((c = getopt(argc, argv, "i::h::sn::")) != -1)
+	while((c = getopt(argc, argv, "h::s::n::r::")) != -1)
 	{
 		switch(c)
 		{
@@ -106,31 +67,25 @@ int main(int argc, char** argv){
 				usage();
 				exit(0);
 				break;
-			case 'i':
-				if(optarg != NULL)
-					file = optarg;
-				else
-					file = argv[optind];
-				printf("Reading Input from '%s'\n",file);
-				break;
-          case 's':
-                printf("s optarg %u\n", (unsigned int)optarg);
+            case 's':
 				if(optarg != NULL) {
 					page_size = atoi(optarg);
-                    printf("page_size (optarg) arg: %s value: %u\n", optarg, page_size);
 				} else {
 					page_size = atoi(argv[optind]);
-                    printf("page_size (optind) arg: %s value: %u\n", argv[optind], page_size);
                 }
 				break;
 			case 'n':
-                printf("n optarg %u\n", (unsigned int)optarg);
 				if(optarg != NULL) {
 					num_pages = atoi(optarg);
-                    printf("num_pages (optarg) arg: %s value: %u\n", optarg, num_pages);
                 } else {
 					num_pages = atoi(argv[optind]);
-                    printf("num_pages (optind) arg: %s value: %u\n", argv[optind], num_pages);
+                }
+				break;
+			case 'r':
+				if(optarg != NULL) {
+					num_execs = atoi(optarg);
+                } else {
+					num_execs = atoi(argv[optind]);
                 }
 				break;
 			default:
@@ -139,34 +94,41 @@ int main(int argc, char** argv){
 		}	
 	}
 
+    if ((page_size % 8) != 0) {
+        printf(
+            "Unsupported page size of '%u', please choose a page size that is a multiple of 4\n",
+            page_size
+        );
+        exit(1);
+    }
+
 	num_words = page_size / 4;
-  if(file != NULL)	h_num = read_crc(&num_pages,&page_size,file);
-  else h_num = rand_crc2(num_pages, page_size); 
+    h_num = rand_crc(num_pages, page_size); 
+    crcs = malloc(sizeof(*crcs)*num_pages);
 
-  crcs = malloc(sizeof(*crcs)*num_pages);
-  stopwatch_start(&sw);
-  for(i=0; i<num_pages; i++)
-  {
-    crcs[i] = crc32_8bytes(&h_num[i*num_words], page_size);
-  }
+    expected_crc = 2231263667;
+    stopwatch_start(&sw);
+    for (j=0; j<num_execs; j++) 
+    {
+        for(i=0; i<num_pages; i++)
+        {
+            crcs[i] = crc32_8bytes(&h_num[i*num_words], page_size);
+        }
 
-  stopwatch_stop(&sw);
+        // Self-checking crc results
+        final_crc = crc32_8bytes(crcs, sizeof(*crcs)*num_pages);     
+        if (final_crc != expected_crc)
+        {
+            printf("Invalid crc check, received '%u' while expecting '%u'\n", final_crc, expected_crc);
+            return 1;
+        } 
+    }
+    stopwatch_stop(&sw);
+    cumulative_time += get_interval_by_sec(&sw);
 
-  printf("num_pages: %u\n", num_pages);
-  printf("num_words: %u\n", num_words);
-  printf("page_size: %u\n", page_size);
-  for(i=0; i<num_pages*num_words; ++i) {
-    printf("%u\n", h_num[i]);
-  }
 
-    //crcs[i] = cpu_remainder;
-//    printf("The code for this page is %d\n", cpu_remainder); 
-  for(i=0; i<num_pages; i++)
-  {
-    printf("The code for this page is %d\n", crcs[i]); 
-  }
-  printf("CPU Slice-by-8 CRC Time: %lf seconds\n", get_interval_by_sec(&sw));
+    printf("CPU Slice-by-8 CRC Time: %lf seconds\n", cumulative_time);
 
-	free(h_num);
-	return 0;
+    free(h_num);
+    return 0;
 }

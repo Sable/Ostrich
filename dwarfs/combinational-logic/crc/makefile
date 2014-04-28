@@ -4,15 +4,13 @@ CCOMP = gcc -O3
 EMCC = emcc -O0
 
 # Should be a power of 2
-PAGE_SIZE = "16"
-NB_PAGES = "8"
-#PAGE_SIZE = "8388608"
-#NB_PAGES = "128"
+PAGE_SIZE = "65536"
+NB_PAGES = "128"
+NB_REPETITIONS = "150"
 
-#ASMJS_RUN_ARGUMENT = "'-n', '"$(NB_PAGES)"', '-s', '"$(PAGE_SIZE)"'"
-ASMJS_RUN_ARGUMENT = "'-s', '"$(PAGE_SIZE)"', '-n', '"$(NB_PAGES)"'"
-C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -s "$(PAGE_SIZE)
-JS_RUN_ARGUMENT = "runCRC("$(NB_PAGES)","$(PAGE_SIZE)")"
+ASMJS_RUN_ARGUMENT = "'-n', '"$(NB_PAGES)"', '-s', '"$(PAGE_SIZE)"', '-r', '"$(NB_REPETITIONS)"'"
+C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -s "$(PAGE_SIZE)" -r "$(NB_REPETITIONS)
+JS_RUN_ARGUMENT = "runCRC("$(NB_PAGES)","$(PAGE_SIZE)","$(NB_REPETITIONS)")"
 FILENAME = "crc"
 
 build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
