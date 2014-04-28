@@ -28,7 +28,7 @@ Ported from V8 benchmark suite, original copyright:
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
+#include <stdlib.h>
 #define MAXRND 0x7fffffff
 
 unsigned int _common_seed = 49734321;
