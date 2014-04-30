@@ -5,12 +5,16 @@
 #include <limits.h>
 #include <vector>
 
-#define MIN_NODES 20
-#define MAX_NODES ULONG_MAX
-#define MIN_EDGES 2
+#include "../common/common_rand.h"
+#include "../common/common.h"
+
+
+#define MIN_NODES      20
+#define MAX_NODES      ULONG_MAX
+#define MIN_EDGES      2
 #define MAX_INIT_EDGES 4 // Nodes will have, on average, 2*MAX_INIT_EDGES edges
-#define MIN_WEIGHT 1
-#define MAX_WEIGHT 10
+#define MIN_WEIGHT     1
+#define MAX_WEIGHT     10
 
 
 using namespace std;
@@ -26,24 +30,22 @@ struct Node
 struct edge; // forward declaration
 typedef vector<edge> node;
 struct edge {
-	unsigned long dest;
-	unsigned weight;
+    unsigned long dest;
+    unsigned weight;
 };
 
 void BFSGraph(int argc, char** argv);
 void InitializeGraph(Node**, bool**, bool**, bool**, int**, int**, int);
 
-void Usage(int argc, char**argv) {
-
+void Usage(char**argv) {
     fprintf(stderr,"Usage: %s <num_nodes>\n", argv[0]);
-
 }
 ////////////////////////////////////////////////////////////////////////////////
 // Main Program
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv) {
-    srand(12345);
     BFSGraph( argc, argv );
+    return 0;
 }
 
 
@@ -52,8 +54,8 @@ int main( int argc, char** argv) {
 //Apply BFS on a Graph using CUDA
 ////////////////////////////////////////////////////////////////////////////////
 void BFSGraph( int argc, char** argv) {
-    if (argc !=2) {
-        Usage(argc, argv);
+    if (argc != 2) {
+        Usage(argv);
         exit(0);
     }
 
@@ -65,7 +67,9 @@ void BFSGraph( int argc, char** argv) {
     bool *h_graph_visited;
     int  *h_graph_edges;
     int  *h_cost;
+    stopwatch sw1, sw2;
 
+    stopwatch_start(&sw2);
     InitializeGraph(
         &h_graph_nodes,
         &h_graph_mask,
@@ -74,16 +78,18 @@ void BFSGraph( int argc, char** argv) {
         &h_graph_edges,
         &h_cost,
         no_of_nodes);
-
+    stopwatch_stop(&sw2);
 
     int k=0;
 
+
+
+    stopwatch_start(&sw1);
     bool stop;
     do
     {
 //if no thread changes this value then the loop stops
         stop=false;
-
 
         for(int tid = 0; tid < no_of_nodes; tid++ )
         {
@@ -113,13 +119,15 @@ void BFSGraph( int argc, char** argv) {
         k++;
     }
     while(stop);
+    stopwatch_stop(&sw1);
 
-//Store the result into a file
+    fprintf(stderr, "Init time     : %fs\n", get_interval_by_sec(&sw2));
+    fprintf(stderr, "Traversal time: %fs\n", get_interval_by_sec(&sw1));
+
     for(int i=0;i<no_of_nodes;i++)
         printf("%d) cost:%d\n",i,h_cost[i]);
 
 
-// cleanup memory
     free(h_graph_nodes);
     free(h_graph_edges);
     free(h_graph_mask);
@@ -142,9 +150,9 @@ void InitializeGraph(
 
     node *graph = new node[numNodes];
     int source = 0;
-	unsigned numEdges;
-	unsigned long nodeID;
-	unsigned weight;
+    unsigned numEdges;
+    unsigned long nodeID;
+    unsigned weight;
 
     *h_graph_nodes = (Node*) malloc(sizeof(Node)*numNodes);
     *h_graph_mask = (bool*) malloc(sizeof(bool)*numNodes);
@@ -153,17 +161,17 @@ void InitializeGraph(
     *h_cost = (int*) malloc(sizeof(int)*numNodes);
 
     for (int i = 0; i < numNodes; ++i) {
-        numEdges = rand() % ( MAX_INIT_EDGES - MIN_EDGES + 1 ) + MIN_EDGES;
+        numEdges = abs(common_rand() % ( MAX_INIT_EDGES - MIN_EDGES + 1 )) + MIN_EDGES;
         for ( unsigned j = 0; j < numEdges; j++ ) {
-			nodeID = rand() % numNodes;
-			weight = rand() % ( MAX_WEIGHT - MIN_WEIGHT + 1 ) + MIN_WEIGHT;
-			graph[i].push_back( edge() );
-			graph[i].back().dest = nodeID;
-			graph[i].back().weight = weight;
-			graph[nodeID].push_back( edge() );
-			graph[nodeID].back().dest = i;
-			graph[nodeID].back().weight = weight;
-		}
+            nodeID = abs(common_rand() % numNodes);
+            weight = abs(common_rand() % ( MAX_WEIGHT - MIN_WEIGHT + 1 )) + MIN_WEIGHT;
+            graph[i].push_back( edge() );
+            graph[i].back().dest = nodeID;
+            graph[i].back().weight = weight;
+            graph[nodeID].push_back( edge() );
+            graph[nodeID].back().dest = i;
+            graph[nodeID].back().weight = weight;
+        }
     }
 
     unsigned long totalEdges = 0;
@@ -185,8 +193,8 @@ void InitializeGraph(
     (*h_graph_visited)[source] = true;
 
     unsigned k = 0;
-    for ( int i = 0; i < numNodes; i++ ) {
-		for ( unsigned j = 0; j < graph[i].size(); j++ ) {
+    for ( unsigned long i = 0; i < numNodes; i++ ) {
+        for ( unsigned j = 0; j < graph[i].size(); j++ ) {
             (*h_graph_edges)[k] = graph[i][j].dest;
             ++k;
         }
