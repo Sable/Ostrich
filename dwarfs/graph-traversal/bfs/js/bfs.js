@@ -69,8 +69,8 @@ function BFSGraph(no_of_nodes, verbose) {
     t2 = performance.now();
     var traversal_time = t2 - t1;
 
-    console.log("Init time     : " + init_time + "s");
-    console.log("Traversal time: " + traversal_time + "s");
+    console.log("Init time     : " + init_time / 1000);
+    console.log("Traversal time: " + traversal_time / 1000);
 
     if (verbose) {
         for (var i = 0; i < no_of_nodes; ++i) {
@@ -85,10 +85,10 @@ function BFSGraph(no_of_nodes, verbose) {
 
 function InitializeGraph(no_of_nodes) {
     var h_graph_nodes = new Array(no_of_nodes);
-    var h_graph_mask = new Array(no_of_nodes);
-    var h_updating_graph_mask = new Array(no_of_nodes);
-    var h_graph_visited = new Array(no_of_nodes);
-    var h_cost = new Array(no_of_nodes);
+    var h_graph_mask = new Uint8Array(no_of_nodes);
+    var h_updating_graph_mask = new Uint8Array(no_of_nodes);
+    var h_graph_visited = new Uint8Array(no_of_nodes);
+    var h_cost = new Uint32Array(no_of_nodes);
 
     var source = 0;
     var graph = new Array(no_of_nodes);

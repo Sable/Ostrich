@@ -16,7 +16,7 @@
 #define MIN_WEIGHT     1
 #define MAX_WEIGHT     10
 
-#define NUM_NODES      132768
+#define NUM_NODES      4194304
 
 using namespace std;
 
