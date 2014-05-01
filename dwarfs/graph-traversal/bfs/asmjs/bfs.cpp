@@ -16,6 +16,7 @@
 #define MIN_WEIGHT     1
 #define MAX_WEIGHT     10
 
+#define NUM_NODES      132768
 
 using namespace std;
 
@@ -38,7 +39,7 @@ void BFSGraph(int argc, char** argv);
 void InitializeGraph(Node**, bool**, bool**, bool**, int**, int**, int);
 
 void Usage(char**argv) {
-    fprintf(stderr,"Usage: %s <num_nodes>\n", argv[0]);
+    fprintf(stdout,"Usage: %s <num_nodes> [<verbose>]\n", argv[0]);
 }
 ////////////////////////////////////////////////////////////////////////////////
 // Main Program
@@ -54,12 +55,21 @@ int main( int argc, char** argv) {
 //Apply BFS on a Graph using CUDA
 ////////////////////////////////////////////////////////////////////////////////
 void BFSGraph( int argc, char** argv) {
-    if (argc != 2) {
-        Usage(argv);
-        exit(0);
+    int no_of_nodes;
+    int verbose;
+    if (argc == 1) {
+        no_of_nodes = NUM_NODES;
+        verbose = 0;
+    }
+    else if (argc == 2) {
+        no_of_nodes = atoi(argv[1]);
+        verbose = 0;
+    }
+    else {
+        no_of_nodes = atoi(argv[1]);
+        verbose = 1;
     }
 
-    int no_of_nodes = atoi(argv[1]);
 
     Node *h_graph_nodes;
     bool *h_graph_mask;
@@ -121,11 +131,14 @@ void BFSGraph( int argc, char** argv) {
     while(stop);
     stopwatch_stop(&sw1);
 
-    fprintf(stderr, "Init time     : %fs\n", get_interval_by_sec(&sw2));
-    fprintf(stderr, "Traversal time: %fs\n", get_interval_by_sec(&sw1));
+    fprintf(stdout, "Init time     : %fs\n", get_interval_by_sec(&sw2));
+    fprintf(stdout, "Traversal time: %fs\n", get_interval_by_sec(&sw1));
 
-    for(int i=0;i<no_of_nodes;i++)
-        printf("%d) cost:%d\n",i,h_cost[i]);
+    if (verbose) {
+        for(int i=0;i<no_of_nodes;i++) {
+            printf("%d) cost:%d\n",i,h_cost[i]);
+        }
+    }
 
 
     free(h_graph_nodes);

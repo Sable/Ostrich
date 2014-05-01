@@ -20,35 +20,23 @@ function edge(dest, weight) {
     };
 }
 
+function BFSGraph(no_of_nodes, verbose) {
 
-function randInt(lo, hi) {
-    return lo + Math.floor(Math.random() * (hi + 1));
-}
-
-// For testing that randInt has a uniform distribution.
-function distr(lo, hi) {
-    var len = hi - lo + 1;
-    var a = new Array(len);
-    for (var i = 0; i < len; ++i) { a[i] = 0; }
-    for (var i = 0; i < 10000; ++i) { var x = randInt(lo, hi); a[x+lo]++; }
-    for (var i = 0; i < len; ++i) { a[i] /= 10000; }
-    return a;
-}
-
-
-function BFSGraph(no_of_nodes) {
+    var t1 = performance.now();
     var inits = InitializeGraph(no_of_nodes);
-    console.log(inits);
     var h_graph_nodes = inits.h_graph_nodes;
     var h_graph_mask = inits.h_graph_mask;
     var h_updating_graph_mask = inits.h_updating_graph_mask;
     var h_graph_visited = inits.h_graph_visited;
     var h_cost = inits.h_cost;
     var h_graph_edges = inits.h_graph_edges;
+    var t2 = performance.now();
+    var init_time = t2 - t1;
 
     var k = 0;
     var stop;
 
+    t1 = performance.now();
     do {
         stop = false;
 
@@ -78,10 +66,16 @@ function BFSGraph(no_of_nodes) {
         ++k;
     }
     while(stop);
+    t2 = performance.now();
+    var traversal_time = t2 - t1;
 
+    console.log("Init time     : " + init_time + "s");
+    console.log("Traversal time: " + traversal_time + "s");
 
-    for (var i = 0; i < no_of_nodes; ++i) {
-        console.log(i + ") cost: " + h_cost[i]);
+    if (verbose) {
+        for (var i = 0; i < no_of_nodes; ++i) {
+            console.log(i + ") cost: " + h_cost[i]);
+        }
     }
 }
 
@@ -90,7 +84,6 @@ function BFSGraph(no_of_nodes) {
 
 
 function InitializeGraph(no_of_nodes) {
-
     var h_graph_nodes = new Array(no_of_nodes);
     var h_graph_mask = new Array(no_of_nodes);
     var h_updating_graph_mask = new Array(no_of_nodes);
@@ -104,10 +97,10 @@ function InitializeGraph(no_of_nodes) {
     }
 
     for (var i = 0; i < no_of_nodes; ++i) {
-        var no_of_edges = randInt(MIN_EDGES, MAX_INIT_EDGES);
+        var no_of_edges = Math.abs(Math.commonRandom() % ( MAX_INIT_EDGES - MIN_EDGES + 1 )) + MIN_EDGES;
         for (var j = 0; j < no_of_edges; ++j) {
-            var node_id = randInt(0, no_of_nodes - 1);
-            var weight = randInt(MIN_WEIGHT, MAX_WEIGHT);
+            var node_id = Math.abs(Math.commonRandom() % no_of_nodes);
+            var weight = Math.abs(Math.commonRandom() % ( MAX_WEIGHT - MIN_WEIGHT + 1 )) + MIN_WEIGHT;
 
             graph[i].push(edge(node_id, weight));
             graph[node_id].push(edge(i, weight));
