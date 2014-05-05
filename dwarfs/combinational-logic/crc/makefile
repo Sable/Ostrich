@@ -64,8 +64,8 @@ build/js:
 	mkdir -p build/js
 
 build/js/crc.js:
-	cp js/crc.js build/js/ && cp js/lookuptable.js build/js/
-
+	cp js/crc.js build/js/
+ 
 build/js/run.html: build/js build/js/crc.js 
 	cat ../../utils/js/run_template.html > build/js/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html 
