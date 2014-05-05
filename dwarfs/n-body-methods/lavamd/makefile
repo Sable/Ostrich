@@ -29,7 +29,7 @@ build/c/lavamd:	build/c \
 			 -lm -o build/c/lavamd
 
 build/c/run.sh: build/c/lavamd build/c
-	echo 'build/c/lavamd '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
+	echo './lavamd '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
             
 build/asmjs:
 	mkdir -p build/asmjs

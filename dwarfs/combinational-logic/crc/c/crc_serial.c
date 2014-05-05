@@ -96,7 +96,7 @@ int main(int argc, char** argv){
 
     if ((page_size % 8) != 0) {
         printf(
-            "Unsupported page size of '%u', please choose a page size that is a multiple of 4\n",
+            "Unsupported page size of '%u', please choose a page size that is a multiple of 8\n",
             page_size
         );
         exit(1);

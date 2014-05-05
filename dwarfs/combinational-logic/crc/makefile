@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 CCOMP = gcc -O3
-EMCC = emcc -O0
+EMCC = emcc -O2
 
 # Should be a power of 2
 PAGE_SIZE = "65536"
