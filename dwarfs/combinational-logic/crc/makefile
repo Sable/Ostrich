@@ -1,7 +1,6 @@
 SHELL := /bin/bash
 
-CCOMP = gcc -O3
-EMCC = emcc -O2
+include ../../common/options.mk
 
 # Should be a power of 2
 PAGE_SIZE = "65536"

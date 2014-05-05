@@ -335,6 +335,6 @@ function runCRC(numPages, pageSize, numExecs){
     cumulativeTime += Date.now() - t1;
 
 
-    console.log("Total time was " + cumulativeTime/1000 + "s");
+    console.log("Total time was " + cumulativeTime/1000 + " s");
 }
 
