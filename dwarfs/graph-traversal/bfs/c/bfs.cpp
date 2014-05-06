@@ -12,7 +12,7 @@
 #define MIN_NODES      20
 #define MAX_NODES      ULONG_MAX
 #define MIN_EDGES      2
-#define MAX_INIT_EDGES 4 // Nodes will have, on average, 2*MAX_INIT_EDGES edges
+#define MAX_INIT_EDGES 4 
 #define MIN_WEIGHT     1
 #define MAX_WEIGHT     10
 
@@ -21,7 +21,7 @@
 using namespace std;
 
 //Structure to hold a node information
-struct Node
+struct Node 
 {
     int starting;
     int no_of_edges;
@@ -55,6 +55,8 @@ int main( int argc, char** argv) {
 //Apply BFS on a Graph using CUDA
 ////////////////////////////////////////////////////////////////////////////////
 void BFSGraph( int argc, char** argv) {
+    unsigned int expected_no_of_nodes = 3000000;
+    unsigned long int expected_total_cost = 26321966;
     int no_of_nodes;
     int verbose;
     if (argc == 1) {
@@ -131,8 +133,23 @@ void BFSGraph( int argc, char** argv) {
     while(stop);
     stopwatch_stop(&sw1);
 
-    fprintf(stdout, "Init time     : %fs\n", get_interval_by_sec(&sw2));
-    fprintf(stdout, "Traversal time: %fs\n", get_interval_by_sec(&sw1));
+    unsigned long total_cost = 0;
+    for(int i=0;i<no_of_nodes;i++) {
+        total_cost += h_cost[i];
+    }
+
+    
+    if (no_of_nodes == expected_no_of_nodes) {
+        if (total_cost != expected_total_cost) {
+            fprintf(stdout, "ERROR: the total cost obtained for '%d' nodes  is '%lu' while the expected cost is '%lu'\n", no_of_nodes, total_cost, expected_total_cost);
+            exit(1);
+        }
+    } else {
+        fprintf(stdout, "WARNING: no self-checking step for '%u' nodes, only valid for '%u' nodes\n", no_of_nodes, expected_no_of_nodes);
+    }
+
+    fprintf(stdout, "// Init time     : %f s\n", get_interval_by_sec(&sw2));
+    fprintf(stdout, "// Traversal time: %f s\n", get_interval_by_sec(&sw1));
 
     if (verbose) {
         for(int i=0;i<no_of_nodes;i++) {
@@ -219,5 +236,4 @@ void InitializeGraph(
     (*h_cost)[source] = 0;
 
     delete[] graph;
-
 }
