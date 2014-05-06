@@ -42,12 +42,14 @@
 
 #include "./kernel/kernel_cpu.h"				// (in library path specified here)
 
+#include "common_rand.h"
+
 //========================================================================================================================================================================================================200
 //	MAIN FUNCTION
 //========================================================================================================================================================================================================200
 
-int 
-main(	int argc, 
+int
+main(	int argc,
 		char *argv [])
 {
 
@@ -226,8 +228,8 @@ main(	int argc,
 								box_cpu[nh].nei[box_cpu[nh].nn].x = (k+n);
 								box_cpu[nh].nei[box_cpu[nh].nn].y = (j+m);
 								box_cpu[nh].nei[box_cpu[nh].nn].z = (i+l);
-								box_cpu[nh].nei[box_cpu[nh].nn].number =	(box_cpu[nh].nei[box_cpu[nh].nn].z * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) + 
-																			(box_cpu[nh].nei[box_cpu[nh].nn].y * dim_cpu.boxes1d_arg) + 
+								box_cpu[nh].nei[box_cpu[nh].nn].number =	(box_cpu[nh].nei[box_cpu[nh].nn].z * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) +
+																			(box_cpu[nh].nei[box_cpu[nh].nn].y * dim_cpu.boxes1d_arg) +
 																			 box_cpu[nh].nei[box_cpu[nh].nn].x;
 								box_cpu[nh].nei[box_cpu[nh].nn].offset = box_cpu[nh].nei[box_cpu[nh].nn].number * NUMBER_PAR_PER_BOX;
 
@@ -251,22 +253,20 @@ main(	int argc,
 	//	PARAMETERS, DISTANCE, CHARGE AND FORCE
 	//====================================================================================================100
 
-	// random generator seed set to random value - time in this case
-	srand(time(NULL));
 
 	// input (distances)
 	rv_cpu = (FOUR_VECTOR*)malloc(dim_cpu.space_mem);
 	for(i=0; i<dim_cpu.space_elem; i=i+1){
-		rv_cpu[i].v = (rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
-		rv_cpu[i].x = (rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
-		rv_cpu[i].y = (rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
-		rv_cpu[i].z = (rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
+		rv_cpu[i].v = (common_rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
+		rv_cpu[i].x = (common_rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
+		rv_cpu[i].y = (common_rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
+		rv_cpu[i].z = (common_rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
 	}
 
 	// input (charge)
 	qv_cpu = (fp*)malloc(dim_cpu.space_mem2);
 	for(i=0; i<dim_cpu.space_elem; i=i+1){
-		qv_cpu[i] = (rand()%10 + 1) / 10;			// get a number in the range 0.1 - 1.0
+		qv_cpu[i] = (common_rand()%10 + 1) / 10;			// get a number in the range 0.1 - 1.0
 	}
 
 	// output (forces)

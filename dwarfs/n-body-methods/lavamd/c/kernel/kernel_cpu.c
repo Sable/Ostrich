@@ -37,7 +37,7 @@ extern "C" {
 //	PLASMAKERNEL_GPU
 //========================================================================================================================================================================================================200
 
-void  kernel_cpu(	par_str par, 
+void  kernel_cpu(	par_str par,
 					dim_str dim,
 					box_str* box,
 					FOUR_VECTOR* rv,
@@ -74,12 +74,12 @@ void  kernel_cpu(	par_str par,
 
 	// neighbor box
 	int pointer;
-	long first_j; 
+	long first_j;
 	FOUR_VECTOR* rB;
 	fp* qB;
 
 	// common
-	fp r2; 
+	fp r2;
 	fp u2;
 	fp fs;
 	fp vij;
@@ -135,7 +135,7 @@ void  kernel_cpu(	par_str par,
 		//	Do for the # of (home+neighbor) boxes
 		//------------------------------------------------------------------------------------------100
 
-		for (k=0; k<(1+box[l].nn); k++) 
+		for (k=0; k<(1+box[l].nn); k++)
 		{
 
 			//----------------------------------------50
@@ -153,7 +153,7 @@ void  kernel_cpu(	par_str par,
 			//	neighbor box - box parameters
 			//----------------------------------------50
 
-			first_j = box[pointer].offset; 
+			first_j = box[pointer].offset;
 
 			//----------------------------------------50
 			//	neighbor box - distance, force, charge and type parameters
@@ -172,13 +172,13 @@ void  kernel_cpu(	par_str par,
 				for (j=0; j<NUMBER_PAR_PER_BOX; j=j+1){
 
 					// // coefficients
-					r2 = rA[i].v + rB[j].v - DOT(rA[i],rB[j]); 
+					r2 = rA[i].v + rB[j].v - DOT(rA[i],rB[j]);
 					u2 = a2*r2;
 					vij= exp(-u2);
 					fs = 2.*vij;
-					d.x = rA[i].x  - rB[j].x; 
-					d.y = rA[i].y  - rB[j].y; 
-					d.z = rA[i].z  - rB[j].z; 
+					d.x = rA[i].x  - rB[j].x;
+					d.y = rA[i].y  - rB[j].y;
+					d.z = rA[i].z  - rB[j].z;
 					fxij=fs*d.x;
 					fyij=fs*d.y;
 					fzij=fs*d.z;
@@ -198,6 +198,12 @@ void  kernel_cpu(	par_str par,
 	} // for l
 
 	time4 = get_time();
+
+    /*
+    for (i = 0; i < NUMBER_PAR_PER_BOX; ++i) {
+        printf("%f %f %f %f\n", fA[i].v, fA[i].x, fA[i].y, fA[i].z);
+    }
+    */
 
 	//======================================================================================================================================================150
 	//	DISPLAY TIMING
