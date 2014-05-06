@@ -1,11 +1,11 @@
 SHELL := /bin/bash
 
-CCOMP = gcc -O3
-EMCC = emcc -O2
+include ../../common/options.mk
 
 NB_BOXES = "6"
 ASMJS_RUN_ARGUMENT = "'-boxes1d', '"$(NB_BOXES)"'"
 C_RUN_ARGUMENT = "-boxes1d "$(NB_BOXES)
+#JS_RUN_ARGUMENT = "runLavaMD("$(NB_BOXES)")" TODO once the hand-written version is complete
 FILENAME = "lavamd"
 
 build: build/c/run.sh build/asmjs/run.html build/opencl build/webcl
