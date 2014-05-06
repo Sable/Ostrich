@@ -47,7 +47,7 @@ main ( int argc, char *argv[] )
   float *m, *mm;
   stopwatch sw;
 
-  while ((opt = getopt_long(argc, argv, "::vs:i:", 
+  while ((opt = getopt_long(argc, argv, "::vs:i:",
                             long_options, &option_index)) != -1 ) {
       switch(opt){
         case 'i':
@@ -76,7 +76,7 @@ main ( int argc, char *argv[] )
       fprintf(stderr, "Usage: %s [-v] [-s matrix_size|-i input_file]\n", argv[0]);
       exit(EXIT_FAILURE);
   }
-  
+
   if (input_file) {
       printf("Reading matrix from file %s\n", input_file);
       ret = create_matrix_from_file(&m, input_file, &matrix_dim);
@@ -86,18 +86,18 @@ main ( int argc, char *argv[] )
           exit(EXIT_FAILURE);
       }
   } else if(matrix_dim>1) {
-      printf("Generating matrix of size %d x %d\n", matrix_dim, matrix_dim); 
-      ret = create_matrix_from_random(&m, matrix_dim); 
+      printf("Generating matrix of size %d x %d\n", matrix_dim, matrix_dim);
+      ret = create_matrix_from_random(&m, matrix_dim);
       if(ret != RET_SUCCESS){
-        m = NULL; 
-        fprintf(stderr, "error could not generate random matrix of size %d x %d!\n", matrix_dim, matrix_dim); 
-        exit(EXIT_FAILURE); 
+        m = NULL;
+        fprintf(stderr, "error could not generate random matrix of size %d x %d!\n", matrix_dim, matrix_dim);
+        exit(EXIT_FAILURE);
       }
-  } 
+  }
   else {
     printf("No input file specified!\n");
     exit(EXIT_FAILURE);
-  } 
+  }
 
   if (do_verify){
     printf("Before LUD\n");
@@ -108,13 +108,13 @@ main ( int argc, char *argv[] )
   stopwatch_start(&sw);
   lud_base(m, matrix_dim);
   stopwatch_stop(&sw);
-  printf("Time consumed(ms): %lf\n", 1000*get_interval_by_sec(&sw));
+  printf("Time consumed(s): %lf\n", get_interval_by_sec(&sw));
 
   if (do_verify){
     printf("After LUD\n");
     print_matrix(m, matrix_dim);
     printf(">>>Verify<<<<\n");
-    lud_verify(mm, m, matrix_dim); 
+    lud_verify(mm, m, matrix_dim);
     free(mm);
   }
 

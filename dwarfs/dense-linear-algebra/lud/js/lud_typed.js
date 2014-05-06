@@ -1,6 +1,7 @@
 function randomMatrix(matrix, max, min) {
 	for(var i = 0; i < matrix.length; ++i) {
-		matrix[i] = Math.random()*(max-min) + min;
+		//matrix[i] = Math.random()*(max-min) + min;
+        matrix[i] = Math.abs(Math.commonRandomJS()) * (max-min) + min;
 	}
 }
 
@@ -39,8 +40,5 @@ function ludRun(size) {
 	lud(size);
 	var t2 = performance.now();
 
-	console.log("Time consumed(ms): " + (t2-t1).toFixed(6));
+	console.log("Time consumed typed (s): " + ((t2-t1) / 1000).toFixed(6));
 }
-
-ludRun(1024);
-
