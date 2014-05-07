@@ -1,3 +1,7 @@
+if (typeof performance === "undefined") {
+    performance = Date;
+}
+
 var MIN_NODES      = 20;
 var MAX_NODES      = 1<<31;
 var MIN_EDGES      = 2;
