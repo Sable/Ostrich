@@ -6,6 +6,8 @@
 #include <math.h>
 #include <sys/time.h>
 
+#include "common_rand.h"
+
 void runTest( int argc, char** argv);
 int maximum( int a,
 		int b,
@@ -14,7 +16,7 @@ int maximum( int a,
 	int k;
 	if( a <= b )
 		k = b;
-	else 
+	else
 		k = a;
 
 	if( k <=c )
@@ -60,7 +62,7 @@ double gettime() {
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
-int main( int argc, char** argv) 
+int main( int argc, char** argv)
 {
 	runTest( argc, argv);
 
@@ -76,7 +78,7 @@ void usage(int argc, char **argv)
 }
 
 	void
-runTest( int argc, char** argv) 
+runTest( int argc, char** argv)
 {
 	int max_rows, max_cols, penalty,idx, index;
 	int *input_itemsets, *output_itemsets, *referrence;
@@ -95,6 +97,7 @@ runTest( int argc, char** argv)
 		usage(argc, argv);
 	}
 
+
 	max_rows = max_rows + 1;
 	max_cols = max_cols + 1;
 	referrence = (int *)malloc( max_rows * max_cols * sizeof(int) );
@@ -105,8 +108,6 @@ runTest( int argc, char** argv)
 	if (!input_itemsets)
 		fprintf(stderr, "error: can not allocate memory");
 
-	srand ( 7 );
-
 	for (i = 0 ; i < max_cols; i++){
 		for (j = 0 ; j < max_rows; j++){
 			input_itemsets[i*max_cols+j] = 0;
@@ -116,49 +117,44 @@ runTest( int argc, char** argv)
 	printf("Start Needleman-Wunsch\n");
 
 	t1 = gettime();
-	for( i=1; i< max_rows ; i++){    //please define your own sequence. 
-		input_itemsets[i*max_cols] = rand() % 10 + 1;
+	for( i=1; i< max_rows ; i++){    //please define your own sequence.
+		input_itemsets[i*max_cols] = abs(common_rand()) % 10 + 1;
 	}
 	for( j=1; j< max_cols ; j++){    //please define your own sequence.
-		input_itemsets[j] = rand() % 10 + 1;
+		input_itemsets[j] = abs(common_rand()) % 10 + 1;
 	}
 
-
-	for (i = 1 ; i < max_cols; i++){
-		for (j = 1 ; j < max_rows; j++){
-			referrence[i*max_cols+j] = blosum62[input_itemsets[i*max_cols]][input_itemsets[j]];
-		}
-	}
 
 	for(i = 1; i< max_rows ; i++)
 		input_itemsets[i*max_cols] = -i * penalty;
 	for(j = 1; j< max_cols ; j++)
 		input_itemsets[j] = -j * penalty;
 
-	//Compute top-left matrix 
+	//Compute top-left matrix
 	printf("Processing top-left matrix\n");
 	for(i = 0 ; i < max_cols-2 ; i++){
 		for( idx = 0 ; idx <= i ; idx++){
 			index = (idx + 1) * max_cols + (i + 1 - idx);
-			input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ referrence[index], 
-					input_itemsets[index-1]         - penalty, 
+			input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ referrence[index],
+					input_itemsets[index-1]         - penalty,
 					input_itemsets[index-max_cols]  - penalty);
 		}
 	}
 	printf("Processing bottom-right matrix\n");
-	//Compute bottom-right matrix 
+	//Compute bottom-right matrix
 	for(i = max_cols - 4 ; i >= 0 ; i--){
 		for( idx = 0 ; idx <= i ; idx++){
 			index =  ( max_cols - idx - 2 ) * max_cols + idx + max_cols - i - 2 ;
-			input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ referrence[index], 
-					input_itemsets[index-1]         - penalty, 
+			input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ referrence[index],
+					input_itemsets[index-1]         - penalty,
 					input_itemsets[index-max_cols]  - penalty);
 		}
 
 	}
 	t2 = gettime();
 	printf("The total time spent is %lf seconds\n", (t2-t1));
-	printf("Random input ref val %d and input val %d\n", referrence[0], input_itemsets[0]); 
+	printf("Random input ref val %d and input val %d\n", referrence[0], input_itemsets[0]);
+
 
 	//#define TRACEBACK
 	/* #ifdef TRACEBACK */
@@ -225,6 +221,3 @@ runTest( int argc, char** argv)
 	free(input_itemsets);
 	free(output_itemsets);
 }
-
-
-
