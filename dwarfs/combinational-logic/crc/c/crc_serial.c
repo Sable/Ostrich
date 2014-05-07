@@ -59,7 +59,7 @@ int main(int argc, char** argv){
     double cumulative_time=0;
     stopwatch sw;
 
-	while((c = getopt(argc, argv, "h::s::n::r::")) != -1)
+	while((c = getopt(argc, argv, "hs:n:r:")) != -1)
 	{
 		switch(c)
 		{
@@ -68,25 +68,13 @@ int main(int argc, char** argv){
 				exit(0);
 				break;
             case 's':
-				if(optarg != NULL) {
-					page_size = atoi(optarg);
-				} else {
-					page_size = atoi(argv[optind]);
-                }
+                page_size = atoi(optarg);
 				break;
 			case 'n':
-				if(optarg != NULL) {
-					num_pages = atoi(optarg);
-                } else {
-					num_pages = atoi(argv[optind]);
-                }
+                num_pages = atoi(optarg);
 				break;
 			case 'r':
-				if(optarg != NULL) {
-					num_execs = atoi(optarg);
-                } else {
-					num_execs = atoi(argv[optind]);
-                }
+                num_execs = atoi(optarg);
 				break;
 			default:
 				fprintf(stderr, "Invalid argument: '%s'\n\n",optarg);
@@ -117,13 +105,22 @@ int main(int argc, char** argv){
 
         // Self-checking crc results
         final_crc = crc32_8bytes(crcs, sizeof(*crcs)*num_pages);     
-        if (final_crc != expected_crc)
-        {
-            printf("Invalid crc check, received '%u' while expecting '%u'\n", final_crc, expected_crc);
-            return 1;
+        if (page_size == 65536 && num_pages == 128) {
+            if (final_crc != expected_crc)
+            {
+                printf("Invalid crc check, received '%u' while expecting '%u'\n", final_crc, expected_crc);
+                return 1;
+            } 
         } 
     }
     stopwatch_stop(&sw);
+
+    // Moved out of the loop to avoid slowing down the benchmark with IO in case 
+    // no self-checking is performed
+    if (!(page_size == 65536 && num_pages == 128)){
+        printf("WARNING: no self-checking step for page_size '%u' and num_pages '%u'\n", page_size, num_pages);
+    }
+
     cumulative_time += get_interval_by_sec(&sw);
 
 

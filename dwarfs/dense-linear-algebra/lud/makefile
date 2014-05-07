@@ -1,7 +1,8 @@
 SHELL := /bin/bash
 
-CCOMP = gcc -O3
-EMCC = emcc -O2 -s TOTAL_MEMORY=1000000000
+include ../../common/options.mk
+
+EMOPTIONS = -s TOTAL_MEMORY=400000000
 
 SIZE = "1024"
 ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
@@ -43,7 +44,7 @@ build/asmjs/lud.js: build/asmjs \
 			../../common/common_rand.c \
 			-Icommon \
 			-I../../common \
-			-lm -o build/asmjs/lud.js
+			$(EMOPTIONS) -lm -o build/asmjs/lud.js
 
 build/asmjs/run.html: build/asmjs \
             build/asmjs/lud.js

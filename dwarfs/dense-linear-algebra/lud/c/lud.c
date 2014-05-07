@@ -41,13 +41,13 @@ int
 main ( int argc, char *argv[] )
 {
   int matrix_dim = 32; /* default matrix_dim */
-  int opt, option_index=0;
+  int opt, option_index=0, error=0;
   func_ret_t ret;
   const char *input_file = NULL;
   float *m, *mm;
   stopwatch sw;
 
-  while ((opt = getopt_long(argc, argv, "::vs:i:",
+  while ((opt = getopt_long(argc, argv, ":vs:i:",
                             long_options, &option_index)) != -1 ) {
       switch(opt){
         case 'i':
@@ -61,18 +61,18 @@ main ( int argc, char *argv[] )
           break;
         case '?':
           fprintf(stderr, "invalid option\n");
+          error=1;
           break;
         case ':':
           fprintf(stderr, "missing argument\n");
+          error=1;
           break;
         default:
-          fprintf(stderr, "Usage: %s [-v] [-s matrix_size|-i input_file]\n",
-                  argv[0]);
-          exit(EXIT_FAILURE);
+          error=1;
       }
   }
 
-  if ( (optind < argc) || (optind == 1)) {
+  if ((optind < argc) || (optind == 1) || error) {
       fprintf(stderr, "Usage: %s [-v] [-s matrix_size|-i input_file]\n", argv[0]);
       exit(EXIT_FAILURE);
   }
@@ -95,7 +95,7 @@ main ( int argc, char *argv[] )
       }
   }
   else {
-    printf("No input file specified!\n");
+    printf("No input file or valid matrix size specified!\n");
     exit(EXIT_FAILURE);
   }
 
