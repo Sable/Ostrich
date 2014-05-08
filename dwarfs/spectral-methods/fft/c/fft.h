@@ -21,6 +21,6 @@ Retrieved from: http://en.literateprograms.org/Cooley-Tukey_FFT_algorithm_(C)?ol
 complex* DFT_naive_1(complex* x, int N);
 complex* DFT_naive_2(complex* x, int N);
 complex* FFT_simple(complex* x, int N /* must be a power of 2 */);
+complex** FFT_2D(complex **, int);
 
 #endif /* #ifndef _FFT_H_ */
-

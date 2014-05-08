@@ -1,118 +1,77 @@
-# Makefile for LU Decomposition
-#
-#
+SHELL := /bin/bash
 
-# DEBUG can be set to YES to include debugging info, or NO otherwise
-DEBUG          := YES
+include ../../common/options.mk
 
-# PROFILE can be set to YES to include profiling info, or NO otherwise
-PROFILE        := NO
+EMOPTIONS = -s TOTAL_MEMORY=400000000
 
-# ------------  name of the executable  ----------------------------------------
-EXECUTABLE      := lud_base
+ASMJS_RUN_ARGUMENT = ""
+C_RUN_ARGUMENT = ""
+JS_RUN_ARGUMENT = "runFFT()"
+FILENAME = "fft"
 
-# ------------  list of all source files  --------------------------------------
-SOURCES         := lud.c lud_base.c ../common/common.c 
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
 
-# ------------  compiler  ------------------------------------------------------
-CC              := gcc
-CXX             := g++
+build/c:
+	mkdir -p build/c
 
-# ------------  compiler flags  ------------------------------------------------
-DEBUG_CFLAGS    := -Wall -O0 -g
-RELEASE_CFLAGS  := -Wall -O3 
-COMMON_CFLAGS   := 
+# link objects (binaries) together
+build/c/fft:	build/c \
+            c/fft.c \
+			c/main.c \
+            common/common.c \
+			common/complex_simple.c
+	$(CCOMP) c/fft.c \
+             c/main.c \
+			 common/common.c \
+			 ../../common/common_rand.c \
+			 common/complex_simple.c \
+			 -Icommon \
+			 -I../../common \
+			 -lm -o build/c/fft
 
-# ------------  compiler defs  ------------------------------------------------
-DEBUG_CDEFS    := -D_DEBUG_RESULT
-RELEASE_CDEFS  := 
-COMMON_CDEFS   := 
+build/c/run.sh: build/c/fft build/c
+	echo 'build/c/fft '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
 
-# ------------  linker flags  --------------------------------------------------
-DEBUG_LDFLAGS    := -g
-RELEASE_LDFLAGS  := 
-COMMON_LDFLAGS   :=  
+build/asmjs:
+	mkdir -p build/asmjs
 
-ifeq (YES, ${DEBUG})
-  CFLAGS       := ${DEBUG_CFLAGS} ${DEBUG_CDEFS}
-  CXXFLAGS     := ${DEBUG_CXXFLAGS} ${DEBUG_CDEFS}
-  LDFLAGS      := ${DEBUG_LDFLAGS}
-else
-  CFLAGS       := ${RELEASE_CFLAGS} ${RELEASE_CDEFS}
-  CXXFLAGS     := ${RELEASE_CXXFLAGS} ${RELEASE_CDEFS}
-  LDFLAGS      := ${RELEASE_LDFLAGS}
-endif
+build/asmjs/fft.js: build/asmjs \
+            c/fft.c \
+			c/main.c \
+			common/complex_simple.c \
+            common/common.c
+	$(EMCC) c/fft.c \
+            c/main.c \
+			common/common.c \
+			../../common/common_rand.c \
+			common/complex_simple.c \
+			-Icommon \
+			-I../../common \
+			$(EMOPTIONS) -lm -o build/asmjs/fft.js
 
-CFLAGS         := ${CFLAGS} ${COMMON_CFLAGS}
-CXXFLAGS       := ${CXXFLAGS} ${COMMON_CFLAGS}
-LDFLAGS        := ${LDFLAGS} ${COMMON_LDFLAGS}
-
-ifeq (YES, ${PROFILE})
-  CFLAGS       := ${CFLAGS}   -pg -O3
-  CXXFLAGS     := ${CXXFLAGS} -pg -O3
-  LDFLAGS      := ${LDFLAGS}  -pg
-endif
-
-# ------------  additional system include directories  -------------------------
-GLOBAL_INC_DIR  =
-
-# ------------  private include directories  -----------------------------------
-LOCAL_INC_DIR   = ../common
-
-# ------------  system libraries  (e.g. -lm )  ---------------------------------
-SYS_LIBS        = 
-
-# ------------  additional system library directories  -------------------------
-GLOBAL_LIB_DIR  =
-
-# ------------  additional system libraries  -----------------------------------
-GLOBAL_LIBS     = 
-
-# ------------  private library directories  -----------------------------------
-LOCAL_LIB_DIR   = 
-
-# ------------  private libraries  (e.g. libxyz.a )  ---------------------------
-LOCAL_LIBS      =
+build/asmjs/run.html: build/asmjs \
+            build/asmjs/fft.js
+	cat ../../utils/asmjs/run_template.html > build/asmjs/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html
 
 
-C_SOURCES       = $(filter     %.c, $(SOURCES))
-CPP_SOURCES     = $(filter-out %.c, $(SOURCES))
-ALL_INC_DIR     = $(addprefix -I, $(LOCAL_INC_DIR) $(GLOBAL_INC_DIR))
-ALL_LIB_DIR     = $(addprefix -L, $(LOCAL_LIB_DIR) $(GLOBAL_LIB_DIR))
-GLOBAL_LIBSS    = $(addprefix $(GLOBAL_LIB_DIR)/, $(GLOBAL_LIBS))
-LOCAL_LIBSS     = $(addprefix $(LOCAL_LIB_DIR)/, $(LOCAL_LIBS))
-ALL_CFLAGS      = $(CFLAGS) $(ALL_INC_DIR)
-ALL_LFLAGS      = $(LDFLAGS) $(ALL_LIB_DIR)
-BASENAMES       = $(basename $(SOURCES))
+build/js:
+	mkdir -p build/js
 
-# ------------  generate the names of the object files  ------------------------
-OBJECTS         = $(addsuffix .o,$(BASENAMES))
- 
-# ------------  make the executable (the default goal)  ------------------------
-$(EXECUTABLE):	$(OBJECTS)
-ifeq ($(strip $(CPP_SOURCES)),)
-	$(CC)  $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
-else
-	$(CXX) $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
-endif
+build/js/fft.js:
+	cp js/fft.js build/js/$(FILENAME).js
 
-# ------------  make the objects  ----------------------------------------------
-%.o:		%.c
-				$(CC)  -c $(ALL_CFLAGS) $< -o $@
+build/js/run.html: build/js build/js/fft.js
+	cat ../../utils/js/run_template.html > build/js/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html
 
-%.o:		%.cc
-				$(CXX) -c $(ALL_CFLAGS) $< -o $@
+build/opencl:
+	mkdir -p build/opencl
 
-%.o:		%.cpp
-				$(CXX) -c $(ALL_CFLAGS) $< -o $@
-
-%.o:		%.C
-				$(CXX) -c $(ALL_CFLAGS) $< -o $@
+build/webcl:
+	mkdir -p build/webcl
 
 clean:
-	-rm --force $(EXECUTABLE) $(OBJECTS) *~
-
-.PHONY: clean
-
-# ==============================================================================
-# vim: set tabstop=2: set shiftwidth=2:
+	rm -rf build

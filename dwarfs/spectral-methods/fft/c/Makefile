@@ -9,7 +9,7 @@ DEBUG          := YES
 PROFILE        := NO
 
 # ------------  name of the executable  ----------------------------------------
-EXECUTABLE      := fft 
+EXECUTABLE      := fft
 
 # ------------  list of all source files  --------------------------------------
 SOURCES         := fft.c main.c ../common/complex_simple.c ../common/common.c
@@ -20,18 +20,18 @@ CXX             := g++
 
 # ------------  compiler flags  ------------------------------------------------
 DEBUG_CFLAGS    := -Wall -O0 -g
-RELEASE_CFLAGS  := -Wall -O3 
-COMMON_CFLAGS   := 
+RELEASE_CFLAGS  := -Wall -O3
+COMMON_CFLAGS   :=
 
 # ------------  compiler defs  ------------------------------------------------
 DEBUG_CDEFS    := -D_DEBUG_RESULT
-RELEASE_CDEFS  := 
-COMMON_CDEFS   := 
+RELEASE_CDEFS  :=
+COMMON_CDEFS   :=
 
 # ------------  linker flags  --------------------------------------------------
 DEBUG_LDFLAGS    := -g
-RELEASE_LDFLAGS  := 
-COMMON_LDFLAGS   :=  
+RELEASE_LDFLAGS  :=
+COMMON_LDFLAGS   :=
 
 ifeq (YES, ${DEBUG})
   CFLAGS       := ${DEBUG_CFLAGS} ${DEBUG_CDEFS}
@@ -57,7 +57,7 @@ endif
 GLOBAL_INC_DIR  =
 
 # ------------  private include directories  -----------------------------------
-LOCAL_INC_DIR   = ../common ./
+LOCAL_INC_DIR   = ../common ./ ../../../common
 
 # ------------  system libraries  (e.g. -lm )  ---------------------------------
 SYS_LIBS        = -lm
@@ -66,10 +66,10 @@ SYS_LIBS        = -lm
 GLOBAL_LIB_DIR  =
 
 # ------------  additional system libraries  -----------------------------------
-GLOBAL_LIBS     = 
+GLOBAL_LIBS     =
 
 # ------------  private library directories  -----------------------------------
-LOCAL_LIB_DIR   = 
+LOCAL_LIB_DIR   =
 
 # ------------  private libraries  (e.g. libxyz.a )  ---------------------------
 LOCAL_LIBS      =
@@ -87,7 +87,7 @@ BASENAMES       = $(basename $(SOURCES))
 
 # ------------  generate the names of the object files  ------------------------
 OBJECTS         = $(addsuffix .o,$(BASENAMES))
- 
+
 # ------------  make the executable (the default goal)  ------------------------
 $(EXECUTABLE):	$(OBJECTS)
 ifeq ($(strip $(CPP_SOURCES)),)
