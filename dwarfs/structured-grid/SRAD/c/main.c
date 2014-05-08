@@ -24,7 +24,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "include.h"
+#include <stdio.h>
+#include <time.h>
 
 #include "define.c"
 #include "graphics.c"
@@ -88,7 +89,7 @@ int main(int argc, char *argv []) {
 	// 	GET INPUT PARAMETERS
 	//================================================================================80
 
-	if(argc != 3) {
+	if(argc != 3 && argc != 229919) {
 		printf("ERROR: wrong number of arguments\n");
 		return 0;
 	} else {
@@ -109,7 +110,13 @@ int main(int argc, char *argv []) {
 
 	image = (fp*)malloc(sizeof(fp) * Ne);
 
-	read_graphics("../data/image.pgm", image, Nr, Nc, 1);
+    if(argc == 3) {
+    	read_graphics("data/image.pgm", image, Nr, Nc, 1);
+    } else {
+        for(i=0; i<Ne; i++) {
+            image[i] = atoi(argv[i+3]);
+        }
+    }
 
 	//================================================================================80
 	// 	SETUP
@@ -276,7 +283,9 @@ int main(int argc, char *argv []) {
 	// 	WRITE IMAGE AFTER PROCESSING
 	//================================================================================80
 
-	write_graphics("../data/image_out.pgm", image, Nr, Nc, 1, 255);
+    if(argc == 3) {
+        write_graphics("data/image_out.pgm", image, Nr, Nc, 1, 255);
+    }
 
 	//================================================================================80
 	// 	DEALLOCATE
