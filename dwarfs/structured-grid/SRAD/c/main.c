@@ -85,6 +85,9 @@ int main(int argc, char *argv []) {
     long i,j;    // image row/col
     long k;      // image single index
 
+    // expected results 
+    long expected_output = 52608;
+
 	//================================================================================80
 	// 	GET INPUT PARAMETERS
 	//================================================================================80
@@ -298,9 +301,20 @@ int main(int argc, char *argv []) {
     free(c);																// deallocate diffusion coefficient memory
 
 	//================================================================================80
+	//	    SELF-CHECK	
+	//================================================================================80
+    if (niter == 500 && lambda == 1) {
+        if (j != expected_output) {
+            printf("ERROR: expected output of '%ld' but received '%ld' instead\n", expected_output, j);
+            exit(1);
+        }
+    } else {
+        printf("WARNING: No self-checking step for niter '%d' and lambda '%f'\n", niter, lambda);
+    }
+
+	//================================================================================80
 	//		DISPLAY TIMING
 	//================================================================================80
-    printf("Output: %ld\n", j);
 	printf("Computation time: %.12f s\n", (float) (time1-time0) / 1000000);
 
 //====================================================================================================100

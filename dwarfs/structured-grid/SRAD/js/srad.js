@@ -48,6 +48,8 @@ var image;
 // var imageData;
 var data;
 
+var expectedOutput = 52608;
+
 //write image
 function writeImage() {
     for(i=0; i<Ne; i++) {
@@ -141,7 +143,15 @@ function runSRAD(niter,lambda) {
     for (i=0; i<Nr; i++) {
         output = output + data[i];
     }
-    console.log("Output: " + output);	
+
+    if (niter === 500 & lambda === 1) {
+        if (output !== expectedOutput) {
+            throw new Error("ERROR: expected output of '"+expectedOutput+"' but received '"+output+"' instead");
+        }
+    } else {
+        console.log("WARNING: No self-checking step for niter '" + niter + "' and lambda '" + lambda + "'");
+    }
+
     console.log("Time: " + ((time1-time0)/1000) + "s");
 }
 
