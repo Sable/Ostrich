@@ -3,7 +3,7 @@
 #
 
 # DEBUG can be set to YES to include debugging info, or NO otherwise
-DEBUG          := YES
+DEBUG          := NO 
 
 # PROFILE can be set to YES to include profiling info, or NO otherwise
 PROFILE        := NO
@@ -20,7 +20,7 @@ CC              := emcc
 CXX             := g++
 
 # ------------  compiler flags  ------------------------------------------------
-DEBUG_CFLAGS    := -Wall -O2 -g
+DEBUG_CFLAGS    := -Wall -g
 RELEASE_CFLAGS  := -Wall -O2 
 COMMON_CFLAGS   := 
 EMCC_MEMORY			:= 1000000000
