@@ -1,0 +1,7 @@
+Execution:
+
+[-s stdev] [-d density] [-n number-of-nonzeros]
+
+
+A good run can be achieved by -n 100000
+Some machines can handle -n 500000
