@@ -117,8 +117,7 @@ function printComplexMatrix(m){
 
 
 function runFFT(){
-
-  var n = 32;
+  var n = 1024;
   var data1D = randomComplexArray(n);
   var data2D = randomComplexMatrix(n);
   var t1, t2;
@@ -132,6 +131,4 @@ function runFFT(){
   var results2D = fft2D(data2D);
   t2 = performance.now();
   console.log("2D FFT took " + (t2-t1)/1000 + " s");
-
-    printComplexMatrix(results2D);
 }
