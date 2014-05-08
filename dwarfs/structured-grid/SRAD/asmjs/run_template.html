@@ -4,11 +4,11 @@
 	<title></title>
 </head>
 <body>
-    <script src='../../../../common/common_rand.js'></script>
 	<!--PREAMBLE-->
-	<script src='./FILENAME.js'></script>
 	<script type='text/javascript'>
-		RUN_ARGUMENT;
+		var Module = {};
+		Module['arguments'] = RUN_ARGUMENT;
 	</script>
+	<script src='./FILENAME.js'></script>
 </body>
 </html>

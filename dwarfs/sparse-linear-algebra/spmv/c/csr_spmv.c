@@ -73,20 +73,10 @@ int main(int argc, char *argv[]){
   spmv_csr_cpu(&sm,v,sum, result);  
   stopwatch_stop(&sw); 
 
+  printf("The first value of the result is %lf\n", result[0]);
   printf("The spmv benchmark took a total time of %lf seconds!\n", get_interval_by_sec(&sw)); 
+  free(sum);
+  free(result);
+  free(v); 
+  free_csr(&sm, dim);
 }
-
-   
-
-
-
-
-
-
-  
-
-
-
-
-
-

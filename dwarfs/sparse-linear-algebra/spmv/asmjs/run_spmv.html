@@ -4,11 +4,11 @@
 	<title></title>
 </head>
 <body>
-	<!--PREAMBLE-->
 	<script type='text/javascript'>
+    Date.now = function(){ return performance.now();};
 		var Module = {};
-		Module['arguments'] = [RUN_ARGUMENT];
+		Module['arguments'] = ["-n", "100000"];
 	</script>
-	<script src='./FILENAME.js'></script>
+	<script src='./spmv.js'></script>
 </body>
 </html>

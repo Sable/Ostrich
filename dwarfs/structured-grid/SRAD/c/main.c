@@ -24,7 +24,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "include.h"
+#include <stdio.h>
+#include <time.h>
 
 #include "define.c"
 #include "graphics.c"
@@ -84,11 +85,14 @@ int main(int argc, char *argv []) {
     long i,j;    // image row/col
     long k;      // image single index
 
+    // expected results 
+    long expected_output = 52608;
+
 	//================================================================================80
 	// 	GET INPUT PARAMETERS
 	//================================================================================80
 
-	if(argc != 3) {
+	if(argc != 3 && argc != 229919) {
 		printf("ERROR: wrong number of arguments\n");
 		return 0;
 	} else {
@@ -109,7 +113,13 @@ int main(int argc, char *argv []) {
 
 	image = (fp*)malloc(sizeof(fp) * Ne);
 
-	read_graphics("../data/image.pgm", image, Nr, Nc, 1);
+    if(argc == 3) {
+    	read_graphics("data/image.pgm", image, Nr, Nc, 1);
+    } else {
+        for(i=0; i<Ne; i++) {
+            image[i] = atoi(argv[i+3]);
+        }
+    }
 
 	//================================================================================80
 	// 	SETUP
@@ -276,7 +286,9 @@ int main(int argc, char *argv []) {
 	// 	WRITE IMAGE AFTER PROCESSING
 	//================================================================================80
 
-	write_graphics("../data/image_out.pgm", image, Nr, Nc, 1, 255);
+    if(argc == 3) {
+        write_graphics("data/image_out.pgm", image, Nr, Nc, 1, 255);
+    }
 
 	//================================================================================80
 	// 	DEALLOCATE
@@ -289,9 +301,20 @@ int main(int argc, char *argv []) {
     free(c);																// deallocate diffusion coefficient memory
 
 	//================================================================================80
+	//	    SELF-CHECK	
+	//================================================================================80
+    if (niter == 500 && lambda == 1) {
+        if (j != expected_output) {
+            printf("ERROR: expected output of '%ld' but received '%ld' instead\n", expected_output, j);
+            exit(1);
+        }
+    } else {
+        printf("WARNING: No self-checking step for niter '%d' and lambda '%f'\n", niter, lambda);
+    }
+
+	//================================================================================80
 	//		DISPLAY TIMING
 	//================================================================================80
-    printf("Output: %ld\n", j);
 	printf("Computation time: %.12f s\n", (float) (time1-time0) / 1000000);
 
 //====================================================================================================100
