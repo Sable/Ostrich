@@ -15,6 +15,7 @@ Retrieved from: http://en.literateprograms.org/Cooley-Tukey_FFT_algorithm_(C)?ol
 
 #include "fft.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 
 #define PI  3.1415926535897932
@@ -68,11 +69,23 @@ complex* FFT_simple(complex* x, int N /* must be a power of 2 */) {
 
     E = FFT_simple(e, N/2);
     D = FFT_simple(d, N/2);
-    
+
+
+
     for(k = 0; k < N/2; k++) {
         /* Multiply entries of D by the twiddle factors e^(-2*pi*i/N * k) */
-        D[k] = complex_mult(complex_from_polar(1, -2.0*PI*k/N), D[k]);
+        complex c = complex_from_polar(1, -2.0*PI*k/N);
+        printf("POLAR> %f %f\n    D> %f %f\n", c.re, c.im, D[k].re, D[k].im);
+        D[k] = complex_mult(D[k], c);
+        printf("   D'> %f %f\n", D[k].re, D[k].im);
     }
+
+
+    /* printf("> %d\n", N); */
+	/* for (k = 0; k < N/2; ++k) { */
+    /*     printf("%.6f %.6f   ---    %.6f %.6f\n", E[k].re, E[k].im, D[k].re, D[k].im); */
+    /* } */
+
 
     for(k = 0; k < N/2; k++) {
         X[k]       = complex_add(E[k], D[k]);
@@ -87,30 +100,29 @@ complex* FFT_simple(complex* x, int N /* must be a power of 2 */) {
 }
 
 void transpose(complex **x, int N){
-  int i,j; 
-  complex t; 
-  for(i=0; i<N/2; ++i){
-    for(j=0; j<N/2; ++j){
-      t = x[i][j];
-      x[i][j] = x[j][i];
-      x[j][i] = t; 
+    int i,j;
+    complex t;
+    for(i=0; i < N; ++i) {
+        for(j=0; j < i; ++j) {
+            t = x[i][j];
+            x[i][j] = x[j][i];
+            x[j][i] = t;
+        }
     }
-  }
-      
 }
 
 
 complex** FFT_2D(complex **x, int N){
-  complex **X = malloc(sizeof(complex*)*N); 
-  complex *temp; 
+  complex **X = malloc(sizeof(complex*)*N);
+  complex *temp;
   int i;
 
   for(i=0; i<N; ++i){
-    X[i] = FFT_simple(x[i], N); 
-  } 
+    X[i] = FFT_simple(x[i], N);
+  }
 
   transpose(X, N);
-  for(i=0; i<N; ++i){ 
+  for(i=0; i<N; ++i){
     temp = X[i];
     X[i] = FFT_simple(X[i], N);
     free(temp);

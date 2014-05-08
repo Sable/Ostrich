@@ -9,38 +9,47 @@ complex* random_complex_vector(int n){
   int i;
 
   for(i=0;i<n; ++i){
-      x[i].re = ((abs(common_rand())/(float)RAND_MAX)*2-1);
-      x[i].im = ((abs(common_rand())/(float)RAND_MAX)*2-1);
+      x[i].re = common_randJS()*2 - 1;
+      x[i].im = common_randJS()*2 - 1;
   }
   return x;
 }
 
 void print_complex_array(complex *x, int n){
   int i;
-  for(i = 0; i < n; ++i) printf("%lf + %lfi,", x[i].re, x[i].im);
-  printf("\n");
+  for(i = 0; i < n; ++i) printf("%.6f + %.6fi\n", x[i].re, x[i].im);
 }
 
 void print_complex_matrix(complex **x, int n){
   int i;
-  for(i=0; i < n; ++i) print_complex_array(x[i], n);
+  for(i=0; i < n; ++i) { print_complex_array(x[i], n); printf("\n"); }
   printf("\n");
 }
 
 int main(){
   complex *x, **m;
-  int n = 1024;
+  int n = 4;
   int i;
   stopwatch sw;
 
+  /* m = malloc(sizeof(complex*)*n); */
+  /* for(i=0; i<n; ++i) m[i] = random_complex_vector(n); */
+  /* print_complex_matrix(m, n); */
+  /* transpose(m, n); */
+  /* print_complex_matrix(m, n); */
+  /* exit(0); */
+
   // Test 1D arrays
   x = random_complex_vector(n);
+  print_complex_array(x, n);
   stopwatch_start(&sw);
   complex *results = FFT_simple(x,n);
   stopwatch_stop(&sw);
   printf("The total 1D FFT time for %d size was %lf seconds!\n", n,
       get_interval_by_sec(&sw));
 
+  print_complex_array(results, n);
+  exit(0);
 
   // Test 2D arrays
   m = malloc(sizeof(complex*)*n);
