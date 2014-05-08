@@ -39,18 +39,11 @@ function fftSimple(r, i){
 
   for(var k = 0; k < r.length/2; ++k){
     var c = complexPolar(1, -2.0*Math.PI*k/N);
-    console.log("POLAR> ", c.r, c.i);
-    console.log("    D> ", DR[k], DI[k]);
-    DR[k] = DR[k]*c.r - DI[k]*c.i;
-    DI[k] = DR[k]*c.i + DI[k]*c.r;
-    console.log("   D'> ", DR[k], DI[k]);
+    var t = DR[k];
+    DR[k] = t*c.r - DI[k]*c.i;
+    DI[k] = t*c.i + DI[k]*c.r;
   }
 
-
-  // console.log("> " + N);
-  // for (var k = 0; k < N/2; ++k) {
-  //     console.log(ER[k].toFixed(6), EI[k].toFixed(6), DR[k].toFixed(6), DI[k].toFixed(6));
-  // }
 
 
   for(k = 0; k<N/2; ++k){
@@ -125,22 +118,20 @@ function printComplexMatrix(m){
 
 function runFFT(){
 
-  var n = 4;
+  var n = 32;
   var data1D = randomComplexArray(n);
   var data2D = randomComplexMatrix(n);
   var t1, t2;
 
-    printComplexArray(data1D.r, data1D.i);
   t1 = performance.now();
   var results = fftSimple(data1D.r,data1D.i);
   t2 = performance.now();
   console.log("1D FFT took " + (t2-t1)/1000 + " s");
 
-    printComplexArray(results.r, results.i);
-    return;
-
   t1 = performance.now();
   var results2D = fft2D(data2D);
   t2 = performance.now();
   console.log("2D FFT took " + (t2-t1)/1000 + " s");
+
+    printComplexMatrix(results2D);
 }

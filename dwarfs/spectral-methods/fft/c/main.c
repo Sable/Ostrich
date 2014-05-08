@@ -28,7 +28,7 @@ void print_complex_matrix(complex **x, int n){
 
 int main(){
   complex *x, **m;
-  int n = 4;
+  int n = 32;
   int i;
   stopwatch sw;
 
@@ -48,9 +48,6 @@ int main(){
   printf("The total 1D FFT time for %d size was %lf seconds!\n", n,
       get_interval_by_sec(&sw));
 
-  print_complex_array(results, n);
-  exit(0);
-
   // Test 2D arrays
   m = malloc(sizeof(complex*)*n);
   for(i=0; i<n; ++i) m[i] = random_complex_vector(n);
@@ -68,7 +65,7 @@ int main(){
   // printf("1D Output Array: \n");
   // print_complex_array(results, n);
   // printf("2D Output Array: \n");
-  // print_complex_matrix(results2D, n);
+  print_complex_matrix(results2D, n);
   free(x);
   for(i=0; i<n; ++i) free(m[i]);
   free(m);
