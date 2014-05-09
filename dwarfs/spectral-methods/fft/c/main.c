@@ -28,20 +28,12 @@ void print_complex_matrix(complex **x, int n){
 
 int main(){
   complex *x, **m;
-  int n = 32;
+  int n = 1024;
   int i;
   stopwatch sw;
 
-  /* m = malloc(sizeof(complex*)*n); */
-  /* for(i=0; i<n; ++i) m[i] = random_complex_vector(n); */
-  /* print_complex_matrix(m, n); */
-  /* transpose(m, n); */
-  /* print_complex_matrix(m, n); */
-  /* exit(0); */
-
   // Test 1D arrays
   x = random_complex_vector(n);
-  print_complex_array(x, n);
   stopwatch_start(&sw);
   complex *results = FFT_simple(x,n);
   stopwatch_stop(&sw);
@@ -65,7 +57,7 @@ int main(){
   // printf("1D Output Array: \n");
   // print_complex_array(results, n);
   // printf("2D Output Array: \n");
-  print_complex_matrix(results2D, n);
+  // print_complex_matrix(results2D, n);
   free(x);
   for(i=0; i<n; ++i) free(m[i]);
   free(m);

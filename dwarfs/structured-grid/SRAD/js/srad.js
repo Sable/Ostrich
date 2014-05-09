@@ -152,6 +152,6 @@ function runSRAD(niter,lambda) {
         console.log("WARNING: No self-checking step for niter '" + niter + "' and lambda '" + lambda + "'");
     }
 
-    console.log("Time: " + ((time1-time0)/1000) + "s");
+    console.log("Time: " + ((time1-time0)/1000) + " s");
 }
 

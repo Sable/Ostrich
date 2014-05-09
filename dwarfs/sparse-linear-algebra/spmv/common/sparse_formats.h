@@ -25,10 +25,10 @@
 #include<string.h>
 
 #ifdef SERIAL
-#include "common_args_serial.h" 
+#include "common_args_serial.h"
 #else
 #include "common_args.h"
-#endif 
+#endif
 
 #include "ziggurat.h"
 
@@ -151,5 +151,3 @@ csr_matrix rand_csr(const unsigned int N,const unsigned int density,const double
 void free_csr(csr_matrix* csr,const unsigned int num_csr);
 
 #endif
-
-
