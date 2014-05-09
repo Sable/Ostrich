@@ -78,5 +78,4 @@ int main(int argc, char *argv[]){
   free(sum);
   free(result);
   free(v); 
-  free_csr(&sm, dim);
 }

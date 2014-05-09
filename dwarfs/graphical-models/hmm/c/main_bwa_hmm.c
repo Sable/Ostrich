@@ -343,8 +343,8 @@ void est_a_dev(float *a_d, float *alpha_d, float *beta_d,
     for(j=0; j<nstates; ++j){
       a_d[(j * nstates) + i] = xi_sum_d[(j * nstates) + i] /
         (gamma_sum_d[j] -
-         alpha_d[(length * nstates) + j] *
-         beta_d[(length * nstates) + j] /
+         alpha_d[(j* nstates) + i] *
+         beta_d[(j* nstates) + i] /
          sum_ab);
     }
   }
@@ -374,7 +374,6 @@ int estimate_a(float *a)
 	// ones_n_d, 1, 0, c_d, 1 );
 	mat_vec_mul( 't', nstates, nstates, a, nstates, 
 			ones_n, 0, c, 0);
-
 
 	/* Normalize A matrix */
 	// scale_a_dev<<<grid, threads>>>( a_d,

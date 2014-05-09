@@ -12,7 +12,7 @@ PROFILE        := NO
 EXECUTABLE      := page_rank
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := pagerank.c ../common/common.c ../../../common/common_rand.c 
+SOURCES         := ../c/pagerank.c ../common/common.c ../../../common/common_rand.c 
 
 # ------------  compiler  ------------------------------------------------------
 CC              := emcc

@@ -51,3 +51,10 @@ int common_rand() {
 float common_randJS() {
 	return ((float) abs(common_rand()) / (float) MAXRND);
 }
+
+
+float common_norm_rand(){
+  float R1 = common_randJS(); 
+  float R2 = common_randJS(); 
+  return 0.0f + 1.0f *cos(2*3.14*R1)*sqrt(-log(R2));
+}

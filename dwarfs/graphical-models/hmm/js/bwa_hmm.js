@@ -99,24 +99,22 @@ function calc_alpha_dev(nstates, alpha_d, offset, b_d, obs_t){
 }
 function log10(val) { return Math.log(val) / Math.LN10;}
 
-function prIM(aa,  m,  n){
+function printIM(aa,  m,  n){
   var i=0;
   var j=0; 
   for(i=0; i<m;++i){
     for(j=0; j<n;++j){
-      printf("%d,", aa[i*n+j]); 
+      console.log(aa[i*n+j]); 
     }
-    printf("\n");
   }
 }
-function prM(aa,  m,  n){
+function printM(aa,  m,  n){
   var i=0;
   var j=0; 
   for(i=0; i<m;++i){
     for(j=0; j<n;++j){
-      printf("%lf,", aa[i*n+j]); 
+     console.log(aa[i*n+j]); 
     }
-    printf("\n");
   }
 }
 
@@ -173,8 +171,7 @@ function init_beta_dev(nstates, beta_d, offset, scale){
   }
 }
 
-function calc_beta_dev(beta_d, b_d, scale_t, nstates,
-    obs_t, t){
+function calc_beta_dev(beta_d, b_d, scale_t, nstates, obs_t, t){
   var i; 
   for(i=0; i<nstates; ++i){
 		beta_d[(t * nstates) + i] = beta_d[((t + 1) * nstates) + i] *
@@ -199,8 +196,7 @@ function calc_beta(a, b){
 	return 0;
 }
 
-function calc_gamma_dev(gamma_sum_d, alpha_d, beta_d, 
-    nstates, t){
+function calc_gamma_dev(gamma_sum_d, alpha_d, beta_d, nstates, t){
   var i; 
   for(i=0; i< nstates; ++i){
 		gamma_sum_d[i] += alpha_d[(t * nstates) + i] *
@@ -258,8 +254,8 @@ function est_a_dev(a_d, alpha_d, beta_d,
     for(j=0; j<nstates; ++j){
       a_d[(j * nstates) + i] = xi_sum_d[(j * nstates) + i] /
         (gamma_sum_d[j] -
-         alpha_d[(length * nstates) + j] *
-         beta_d[(length * nstates) + j] /
+         alpha_d[(j * nstates) + i] *
+         beta_d[(j * nstates) + i] /
          sum_ab);
     }
   }
@@ -282,14 +278,12 @@ function estimate_a(a)
 	sum_ab = dot_product(nstates, alpha, (length - 1) * nstates, 
 			beta, (length - 1) * nstates);
   est_a_dev(a, alpha, beta, xi_sum, gamma_sum, sum_ab, nstates, length); 
-
-
+  
 	/* Sum rows of A to get scaling values */
 	// mat_vec_mul( 'T', nstates, nstates, 1.0f, a_d, nstates, 
 	// ones_n_d, 1, 0, c_d, 1 );
 	mat_vec_mul( 't', nstates, nstates, a, nstates, 
 			ones_n, 0, c, 0);
-
 
 	/* Normalize A matrix */
 	// scale_a_dev<<<grid, threads>>>( a_d,
@@ -386,9 +380,9 @@ function est_pi_dev(pi_d, alpha_d, beta_d, sum_ab, nstates){
 		pi_d[i] = alpha_d[i] * beta_d[i] / sum_ab;
   }
 }
+
 /* Re-estimates the initial state probabilities (Pi) */
-function estimate_pi(pi)
-{
+function estimate_pi(pi){
 
 	var sum_ab;
 	/* Calculate denominator */
@@ -405,8 +399,7 @@ function estimate_pi(pi)
 //  */
 
 // /* Runs the Baum-Welch Algorithm on the supplied HMM and observation sequence */
-function run_hmm_bwa(  hmm, in_obs, iterations, threshold)
-{
+function run_hmm_bwa(hmm, in_obs, iterations, threshold){
 
 	/* Host-side variables */
 	var a;
@@ -428,7 +421,6 @@ function run_hmm_bwa(  hmm, in_obs, iterations, threshold)
 	/* Allocate host memory */
 	scale = new Float32Array(length);
 
-// 	/* Allocate device memory */
   alpha = new Float32Array(nstates*length);    
   beta = new Float32Array(nstates*length);     
   gamma_sum =  new Float32Array(nstates);
@@ -451,10 +443,10 @@ function run_hmm_bwa(  hmm, in_obs, iterations, threshold)
 		if (new_log_lik == EXIT_ERROR) {
 			return EXIT_ERROR;
 		}
-
 		if (calc_beta(a, b) == EXIT_ERROR) {
 			return EXIT_ERROR;
 		}
+
 		calc_gamma_sum();
 
 		if (calc_xi_sum(a, b) == EXIT_ERROR) {
@@ -498,8 +490,8 @@ function bwa_hmm(v_, n_, s_, t_)
 	var log_lik;           /* Output likelihood of FO */
 	var mul;
 	var m;
-	var s = s_ | S, t = t_ | T;
-	var n = n_ | N;
+	var s = s_ || S, t = t_ || T;
+	var n = n_ || N;
 	var v_model= v_;
 	var i;
  
@@ -642,6 +634,4 @@ function bwa_hmm(v_, n_, s_, t_)
 	}
 	return 0;
 }
-
-
 bwa_hmm('n', 1000);

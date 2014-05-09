@@ -111,7 +111,6 @@ function runPageRank(n_, iter_, thresh_){
   console.log("T reached "+ t+ " at max dif " + max_diff + "\n");
 
   console.log("The total time taken for a random web of" + n + "pages is " +(t2-t1)/1000 + " seconds\n"); 
-
 }
 
 

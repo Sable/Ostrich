@@ -140,6 +140,10 @@ int main(int argc, char *argv[]){
   printf("The total time taken for a random web of %d pages is %lf seconds\n", 
       n, get_interval_by_sec(&sw));
 
+  // for(t=0; t< n; ++t){
+  //   printf("%lf, ", page_ranks[t]);
+  // }
+
   free(pages);
   free(maps);
   free(page_ranks);
