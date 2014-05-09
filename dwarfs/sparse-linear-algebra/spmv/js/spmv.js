@@ -1,4 +1,4 @@
-/* Ziggurat code taken from james bloomer's implementation that can be 
+/* Ziggurat code taken from james bloomer's implementation that can be
   * found at  https://github.com/jamesbloomer/node-ziggurat
   */
 function Ziggurat(){
@@ -27,10 +27,10 @@ function Ziggurat(){
     while(true){
       x = hz * wn[iz];
       if( iz == 0 ){
-        x = (-Math.log(UNI()) * r1); 
+        x = (-Math.log(UNI()) * r1);
         y = -Math.log(UNI());
         while( y + y < x * x){
-          x = (-Math.log(UNI()) * r1); 
+          x = (-Math.log(UNI()) * r1);
           y = -Math.log(UNI());
         }
         return ( hz > 0 ) ? r+x : -r-x;
@@ -41,7 +41,7 @@ function Ziggurat(){
       }
       hz = SHR3();
       iz = hz & 127;
- 
+
       if( Math.abs(hz) < kn[iz]){
         return (hz * wn[iz]);
       }
@@ -70,7 +70,7 @@ function Ziggurat(){
     var dn = 3.442619855899;
     var tn = dn;
     var vn = 9.91256303526217e-3;
-    
+
     var q = vn / Math.exp(-0.5 * dn * dn);
     kn[0] = Math.floor((dn/q)*m1);
     kn[1] = 0;
@@ -92,152 +92,150 @@ function Ziggurat(){
 
   zigset();
 }
-var gaussian = new Ziggurat(); 
+var gaussian = new Ziggurat();
 
 function randNorm(){
   return gaussian.nextGaussian();
 }
 
 function genRand(lb, hb){
-  if(lb < 0 || hb < 0 || hb < lb) return 0; 
+  if(lb < 0 || hb < 0 || hb < lb) return 0;
 
-  var range = hb - lb + 1; 
-  return (rand() % range) + lb; 
+  var range = hb - lb + 1;
+  return (rand() % range) + lb;
 }
 
 function rand(){
  var n = Math.random() * (Math.pow(2, 32) - 1);
- return Math.floor(n) ? Math.floor(n) : Math.ceil(n); 
+ return Math.floor(n) ? Math.floor(n) : Math.ceil(n);
 }
 function randf(){
   return 1.0 - 2.0 * (rand() / (2147483647 + 1.0));
 }
 function sortArray(a, start, finish){
-  var t = Array.prototype.sort.call(a.subarray(start, finish), function(a, b){return a-b;}); 
+  var t = Array.prototype.sort.call(a.subarray(start, finish), function(a, b){return a-b;});
   for(var i = start; i<finish; ++i){
-    a[i] = t[i-start]; 
+    a[i] = t[i-start];
   }
 }
 
 function generateRandomCSR(dim, density, stddev){
-  var i, j, nnz_ith_row, nnz, update_interval, rand_col; 
-  var nnz_ith_row_double, nz_error, nz_per_row_doubled, high_bound; 
-  var kn = new Int32Array(128); 
+  var i, j, nnz_ith_row, nnz, update_interval, rand_col;
+  var nnz_ith_row_double, nz_error, nz_per_row_doubled, high_bound;
+  var kn = new Int32Array(128);
   var fn = new Float32Array(128);
-  var wn = new Float32Array(128); 
-  var used_cols; 
-  var m = {}; 
+  var wn = new Float32Array(128);
+  var used_cols;
+  var m = {};
 
   // lets figure out how many non zero entries we have
-  m.num_rows = dim; 
-  m.num_cols = dim; 
+  m.num_rows = dim;
+  m.num_cols = dim;
   m.density_perc = density/10000.0;
-  m.nz_per_row = dim*density/1000000; 
-  m.num_nonzeros = Math.round(m.nz_per_row*dim); 
-  m.stdev = stddev * m.nz_per_row; 
-  
-  m.Arow = new Int32Array(m.num_rows+1); 
-  m.Acol = new Int32Array(m.num_nonzeros); 
+  m.nz_per_row = dim*density/1000000;
+  m.num_nonzeros = Math.round(m.nz_per_row*dim);
+  m.stdev = stddev * m.nz_per_row;
 
-  m.Arow[0] = 0; 
-  nnz = 0; 
+  m.Arow = new Int32Array(m.num_rows+1);
+  m.Acol = new Int32Array(m.num_nonzeros);
+
+  m.Arow[0] = 0;
+  nnz = 0;
   nz_per_row_doubled = 2*m.nz_per_row;
-  high_bound = Math.min(m.num_cols, nz_per_row_doubled); 
+  high_bound = Math.min(m.num_cols, nz_per_row_doubled);
   used_cols = new Int8Array(m.num_cols);
 
-  update_interval = Math.round(m.num_rows/10.0); 
+  update_interval = Math.round(m.num_rows/10.0);
   for(i=0; i<m.num_rows; ++i){
-    if(i % update_interval == 0) console.log(i + " rows of " + m.num_rows + 
-        " generated. Continuing..."); 
+    if(i % update_interval == 0) console.log(i + " rows of " + m.num_rows +
+        " generated. Continuing...");
 
-   nnz_ith_row_double = randNorm(); 
-   nnz_ith_row_double *= m.stdev; 
-   nnz_ith_row_double += m.nz_per_row; 
+   nnz_ith_row_double = randNorm();
+   nnz_ith_row_double *= m.stdev;
+   nnz_ith_row_double += m.nz_per_row;
 
-   if(nnz_ith_row_double < 0) nnz_ith_row = 0; 
-   else if (nnz_ith_row_double > high_bound) nnz_ith_row = high_bound; 
-   else nnz_ith_row = Math.abs(Math.round(nnz_ith_row_double)); 
+   if(nnz_ith_row_double < 0) nnz_ith_row = 0;
+   else if (nnz_ith_row_double > high_bound) nnz_ith_row = high_bound;
+   else nnz_ith_row = Math.abs(Math.round(nnz_ith_row_double));
 
-   m.Arow[i+1] = m.Arow[i] + nnz_ith_row; 
+   m.Arow[i+1] = m.Arow[i] + nnz_ith_row;
 
-   // no realloc in javascript typed arrays 
+   // no realloc in javascript typed arrays
    if(m.Arow[i+1] > m.num_nonzeros){
      var temp =  m.Acol;
      m.Acol = new Int32Array(m.Arow[i+1]);
      m.Acol.set(temp, 0);
-   } 
-   
+   }
+
    for(j=0; j<m.num_cols; ++j){
-     used_cols[j] = 0; 
+     used_cols[j] = 0;
    }
 
    for(j=0; j<nnz_ith_row; ++j){
-     rand_col = genRand(0, m.num_cols -1); 
+     rand_col = genRand(0, m.num_cols -1);
      if(used_cols[rand_col]){
-       --j; 
+       --j;
      }
-     else { 
-       m.Acol[m.Arow[i]+j] = rand_col; 
-       used_cols[rand_col] = 1; 
+     else {
+       m.Acol[m.Arow[i]+j] = rand_col;
+       used_cols[rand_col] = 1;
      }
    }
 
-   // sort the column entries 
-   sortArray(m.Acol, m.Arow[i], m.Arow[i+1]); 
+   // sort the column entries
+   sortArray(m.Acol, m.Arow[i], m.Arow[i+1]);
   }
 
-  nz_error = (Math.abs(m.num_nonzeros - m.Arow[m.num_rows]))/m.num_nonzeros; 
+  nz_error = (Math.abs(m.num_nonzeros - m.Arow[m.num_rows]))/m.num_nonzeros;
   if(nz_error >= 0.5)
    console.log("WARNING: Actual NNZ differs from Theoretical NNZ by" +
        nz_error*100+ "%\n");
 
-  m.num_nonzeros = m.Arow[m.num_rows]; 
-  console.log("Actual NUM_nonzeros: " + m.num_nonzeros + "\n"); 
+  m.num_nonzeros = m.Arow[m.num_rows];
+  console.log("Actual NUM_nonzeros: " + m.num_nonzeros + "\n");
 
-  m.density_perc = m.num_nonzeros*100.0/(m.num_cols*m.num_rows); 
-  m.density_ppm = Math.round(m.density_perc * 10000.0); 
+  m.density_perc = m.num_nonzeros*100.0/(m.num_cols*m.num_rows);
+  m.density_ppm = Math.round(m.density_perc * 10000.0);
   console.log("Actual Density: " + m.density_perc + "% ppm: " + m.density_ppm);
 
-  m.Ax = new Float32Array(m.num_nonzeros); 
+  m.Ax = new Float32Array(m.num_nonzeros);
   for(i=0; i<m.num_nonzeros; ++i){
     m.Ax[i] = randf();
     while(m.Ax[i] === 0.0)
-      m.Ax[i] = randf(); 
-  } 
-  return m; 
+      m.Ax[i] = randf();
+  }
+  return m;
 }
 
 
 function spmv_csr(matrix, dim, rowv, colv, v, y, out){
-  var row, row_start, row_end, jj; 
-  var sum = 0; 
+  var row, row_start, row_end, jj;
+  var sum = 0;
 
   for(row=0; row< dim; ++row){
-    sum = y[row]; 
-    row_start = rowv[row]; 
-    row_end = rowv[row+1]; 
+    sum = y[row];
+    row_start = rowv[row];
+    row_end = rowv[row+1];
 
     for(jj = row_start; jj<row_end; ++jj){
-      sum += matrix[jj] * v[colv[jj]]; 
+      sum += matrix[jj] * v[colv[jj]];
     }
 
-    out[row] = sum; 
+    out[row] = sum;
   }
 }
 
 
 function spmvRun(dim, density, stddev){
-  var m = generateRandomCSR(dim, density, stddev); 
-  var v = new Float32Array(dim); 
-  var y = new Float32Array(dim); 
-  var out = new Float32Array(dim); 
-  Array.prototype.forEach.call(v, function(n, i, a){ a[i] = randf(); }); 
+  var m = generateRandomCSR(dim, density, stddev);
+  var v = new Float32Array(dim);
+  var y = new Float32Array(dim);
+  var out = new Float32Array(dim);
+  Array.prototype.forEach.call(v, function(n, i, a){ a[i] = randf(); });
 
-  var t1 =  Date.now(); 
-  spmv_csr(m.Ax, dim, m.Arow, m.Acol, v, y, out);  
-  var t2 = Date.now(); 
-  
-  console.log("The total time for the spmv is " + (t2-t1) + " mseconds"); 
+  var t1 =  Date.now();
+  spmv_csr(m.Ax, dim, m.Arow, m.Acol, v, y, out);
+  var t2 = Date.now();
+
+  console.log("The total time for the spmv is " + (t2-t1)/1000 + " seconds");
 }
-
-spmvRun(100000, 20000, 0.01); 
