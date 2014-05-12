@@ -156,7 +156,7 @@ main ( int argc, char *argv[] )
 	
 	else if (matrix_dim) {
 	  printf("Creating matrix internally size=%d\n", matrix_dim);
-	  ret = create_matrix(&m, matrix_dim);
+	  ret = create_matrix_from_random(&m, matrix_dim);
 	  if (ret != RET_SUCCESS) {
 	    m = NULL;
 	    fprintf(stderr, "error create matrix internally size=%d\n", matrix_dim);

@@ -1,3 +1,21 @@
+Math.commonRandom = (function() {
+    var seed = 49734321;
+    return function() {
+        // Robert Jenkins' 32 bit integer hash function.
+        seed = ((seed + 0x7ed55d16) + (seed << 12))  & 0xffffffff;
+        seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
+        seed = ((seed + 0x165667b1) + (seed << 5))   & 0xffffffff;
+        seed = ((seed + 0xd3a2646c) ^ (seed << 9))   & 0xffffffff;
+        seed = ((seed + 0xfd7046c5) + (seed << 3))   & 0xffffffff;
+        seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
+        return seed;
+    };
+})();
+
+Math.commonRandomJS = function () {
+    return Math.abs(Math.commonRandom() / 0x7fffffff);
+}
+
 if (typeof performance === "undefined") {
     performance = Date;
 }
@@ -7,6 +25,15 @@ function randomMatrix(matrix, max, min) {
 		//matrix[i] = Math.random()*(max-min) + min;
         matrix[i] = Math.abs(Math.commonRandomJS()) * (max-min) + min;
 	}
+}
+
+function printM(a, m, n){
+    console.log("Printing Matrix:");    
+    for(var i =0; i<m; ++i){
+        console.log("[" + 
+            Array.prototype.join.call(Array.prototype.slice.call(a, i*m, i*m + n), ",") +
+            "]");
+    }    
 }
 
 function lud(size) {
@@ -39,10 +66,11 @@ var matrix;
 function ludRun(size) {
 	matrix = new Float32Array(size*size);
 	randomMatrix(matrix, 0, 10000);
-	console.log("Matrix of size: " + 1024);
+	console.log("Matrix of size: " + size);
 	var t1 = performance.now();
 	lud(size);
 	var t2 = performance.now();
-
 	console.log("Time consumed typed (s): " + ((t2-t1) / 1000).toFixed(6));
 }
+
+ludRun(2048);
