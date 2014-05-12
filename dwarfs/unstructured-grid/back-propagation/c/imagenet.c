@@ -4,7 +4,7 @@
 #include "common_rand.h"
 #include "backprop.h"
 
-extern layer_size;
+extern int layer_size;
 
 void load(net)
 BPNN *net;
