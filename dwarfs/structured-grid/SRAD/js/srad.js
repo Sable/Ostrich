@@ -1,3 +1,7 @@
+if (typeof performance === "undefined") {
+    performance = Date;
+}
+
 Nr = 502;
 Nc = 458;
 Ne = Nr*Nc;
