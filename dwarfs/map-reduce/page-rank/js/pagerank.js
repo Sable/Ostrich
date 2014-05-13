@@ -20,7 +20,7 @@ Math.commonRandomJS = function () {
     return Math.abs(Math.commonRandom() / 0x7fffffff);
 }
 
-// generates an array of random pages and their links 
+// generates an array of random pages and their links
 function random_pages(n, noutlinks){
   var i, j, k;
   var pages = new Int32Array(n*n);  // matrix cell i,j means link from j->i
@@ -29,15 +29,15 @@ function random_pages(n, noutlinks){
     noutlinks[i] = 0;
     for(j=0; j<n; ++j){
       if(i!=j && (Math.commonRandom()%2 == 1)){
-        pages[i*n+j] = 1; 
-        noutlinks[i] += 1; 
+        pages[i*n+j] = 1;
+        noutlinks[i] += 1;
       }
     }
-    
+
     // the case with no outlinks is afunctioned
     if(noutlinks[i] == 0){
       do { k = Math.commonRandom() % n; } while ( k == i);
-      pages[i*n + k] = 1; 
+      pages[i*n + k] = 1;
       noutlinks[i] = 1;
     }
   }
@@ -45,7 +45,7 @@ function random_pages(n, noutlinks){
 }
 
 function init_array(a, n, val){
-  var i; 
+  var i;
   for(i=0; i<n; ++i){
     a[i] = val;
   }
@@ -77,7 +77,7 @@ function reduce_page_rank(page_ranks, maps, n){
     }
 
     new_rank = ((1-d_factor)/n)+(d_factor*new_rank);
-    dif = Math.abs(new_rank - page_ranks[i]) > dif ? Math.abs(new_rank - page_ranks[i]) : dif; 
+    dif = Math.abs(new_rank - page_ranks[i]) > dif ? Math.abs(new_rank - page_ranks[i]) : dif;
   }
   return dif;
 }
@@ -92,26 +92,23 @@ function runPageRank(n_, iter_, thresh_){
 
   var n = n_ || 1000;
   var iter = iter_ || max_iter;
-  var thresh = thresh_ || threshold; 
+  var thresh = thresh_ || threshold;
 
   max_diff=99.0;
   page_ranks = new Float32Array(n);
-  maps = new Float32Array(n*n); 
-  noutlinks = new Int32Array(n); 
+  maps = new Float32Array(n*n);
+  noutlinks = new Int32Array(n);
 
   pages = random_pages(n,noutlinks);
   init_array(page_ranks, n, 1.0 / n);
 
-  var t1 = Date.now();
+  var t1 = performance.now();
   for(t=0; t< iter && max_diff > thresh; ++t){
     map_page_rank(pages, page_ranks, maps, noutlinks, n);
     max_diff = reduce_page_rank(page_ranks, maps, n);
   }
-  var t2 = Date.now();
+  var t2 = performance.now();
   console.log("T reached "+ t+ " at max dif " + max_diff + "\n");
 
-  console.log("The total time taken for a random web of" + n + "pages is " +(t2-t1)/1000 + " seconds\n"); 
+  console.log("The total time taken for a random web of" + n + "pages is " +(t2-t1)/1000 + " seconds\n");
 }
-
-
-runPageRank(1000, 500, 0.00001);
