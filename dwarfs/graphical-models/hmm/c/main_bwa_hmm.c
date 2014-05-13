@@ -22,10 +22,10 @@ static int imax(int x, int y)
 }
 
 /* Subtracts time values to determine run time */
-int timeval_subtract(struct timeval *result, struct timeval *t2, 
-		struct timeval *t1)
+int timeval_subtract(struct timeval *result, struct timeval *t2,
+                     struct timeval *t1)
 {
-	long int diff = (t2->tv_usec + 1000000 * t2->tv_sec) - 
+	long int diff = (t2->tv_usec + 1000000 * t2->tv_sec) -
 		(t1->tv_usec + 1000000 * t1->tv_sec);
 	result->tv_sec = diff / 1000000;
 	result->tv_usec = diff % 1000000;
@@ -96,28 +96,28 @@ int *obs;                           /* The observation sequence */
 int length;                         /* The length of the observation sequence */
 float *scale;                       /* Scaling factor as determined by alpha */
 
-float *alpha; 
+float *alpha;
 float *beta;
-float *ones_n; 
+float *ones_n;
 float *ones_s;
-float *gamma_sum; 
-float *xi_sum; 
-float *c; 
+float *gamma_sum;
+float *xi_sum;
+float *c;
 
 /**
- * Calculates the dot product of two vectors. 
- * Both vectors must be atleast of length n 
+ * Calculates the dot product of two vectors.
+ * Both vectors must be atleast of length n
  */
 float dot_product(int n, float *x, int offsetx, float *y, int offsety){
-  float result = 0.0f; 
-  int i = 0; 
-  if(x == NULL || y == NULL || n == 0) return result; 
+    float result = 0.0f;
+    int i = 0;
+    if(x == NULL || y == NULL || n == 0) return result;
 
-  
-  for(i = 0; i < n; ++i)
-    result += x[i + offsetx]*y[i + offsety];
-    
-  return result;
+
+    for(i = 0; i < n; ++i)
+        result += x[i + offsetx]*y[i + offsety];
+
+    return result;
 }
 
 void mat_vec_mul(char trans, int m, int n, float *a, int lda, float *x, int offsetx, float *y, int offsety){
@@ -125,101 +125,101 @@ void mat_vec_mul(char trans, int m, int n, float *a, int lda, float *x, int offs
 		return;
 	}
 
-  int i,j, n_size, m_size;
-  float sum;
-  if(lda == m){
-    n_size = n; 
-    m_size = m; 
-  } 
-  else{ 
-    n_size = m; 
-    m_size = n;
-  }
-  if(trans=='n'){
-    for(i=0; i<m_size; ++i){
-      sum = 0.0f;
-      for(j=0; j<n_size; ++j){
-        sum  += a[i*n_size + j]*x[offsetx + j];
-      }
-      y[i + offsety] = sum;
+    int i,j, n_size, m_size;
+    float sum;
+    if(lda == m){
+        n_size = n;
+        m_size = m;
     }
-  }
-  else{
-    for(i=0; i<m_size; ++i){
-      sum = 0.0f;
-      for(j=0; j<n_size; ++j){
-        sum += a[j*n_size + i]*x[offsetx + j];
-      }
-      y[i + offsety] = sum;
+    else{
+        n_size = m;
+        m_size = n;
     }
-  }
+    if(trans=='n'){
+        for(i=0; i<m_size; ++i){
+            sum = 0.0f;
+            for(j=0; j<n_size; ++j){
+                sum  += a[i*n_size + j]*x[offsetx + j];
+            }
+            y[i + offsety] = sum;
+        }
+    }
+    else{
+        for(i=0; i<m_size; ++i){
+            sum = 0.0f;
+            for(j=0; j<n_size; ++j){
+                sum += a[j*n_size + i]*x[offsetx + j];
+            }
+            y[i + offsety] = sum;
+        }
+    }
 }
 
 void init_ones_dev(float *ones, int nsymbols){
-  int i; 
-  for(i=0; i<nsymbols; ++i) ones[i] = 1.0f;
+    int i;
+    for(i=0; i<nsymbols; ++i) ones[i] = 1.0f;
 }
 
 /*******************************************************************************
  * Supporting functions
  */
 void init_alpha(float *b_d, float *pi_d, int nstates, float *alpha_d, float *ones_n_d, int obs_t){
-  int i = 0; 
-  for(i = 0; i < nstates; ++i){
-    alpha_d[i] = pi_d[i]*b_d[(obs_t*nstates)+i];
-    ones_n_d[i] = 1.0f; 
-  }
+    int i = 0;
+    for(i = 0; i < nstates; ++i){
+        alpha_d[i] = pi_d[i]*b_d[(obs_t*nstates)+i];
+        ones_n_d[i] = 1.0f;
+    }
 }
 
 
 void scale_alpha_values(int nstates, float* alpha_d,  int offset, float scale){
-  int i =0; 
-  for(i=0; i<nstates; ++i) alpha_d[offset + i] = alpha_d[offset + i]/scale;
+    int i =0;
+    for(i=0; i<nstates; ++i) alpha_d[offset + i] = alpha_d[offset + i]/scale;
 }
 
 void calc_alpha_dev(int nstates, float *alpha_d, int offset, float *b_d, int obs_t){
-  int i = 0; 
-  for(i=0; i<nstates; ++i){
+    int i = 0;
+    for(i=0; i<nstates; ++i){
 		alpha_d[offset + i] = alpha_d[offset + i] * b_d[(obs_t * nstates) + i];
-  }
+    }
 }
 
 void printIM(int *aa, int m, int n){
-  int i=0;
-  int j=0; 
-  for(i=0; i<m;++i){
-    for(j=0; j<n;++j){
-      printf("%d,", aa[i*n+j]); 
+    int i=0;
+    int j=0;
+    for(i=0; i<m;++i){
+        for(j=0; j<n;++j){
+            printf("%d,", aa[i*n+j]);
+        }
+        printf("\n");
     }
-    printf("\n");
-  }
 }
 void printM(float *aa, int m, int n){
-  int i=0;
-  int j=0; 
-  for(i=0; i<m;++i){
-    for(j=0; j<n;++j){
-      printf("%lf,", aa[i*n+j]); 
+    int i=0;
+    int j=0;
+    for(i=0; i<m;++i){
+        for(j=0; j<n;++j){
+            printf("%lf,", aa[i*n+j]);
+        }
+        printf("\n");
     }
-    printf("\n");
-  }
 }
 
 /* Calculates the forward variables (alpha) for an HMM and obs. sequence */
 float calc_alpha(float *a, float *b, float *pi){
 	float log_lik;
-  int t;
+    int t;
 	int offset_cur;
 	int offset_prev;
 
-  // initialize alpha variables
-  init_alpha(b, pi, nstates, alpha, ones_n, obs[0]);
+    // initialize alpha variables
+    init_alpha(b, pi, nstates, alpha, ones_n, obs[0]);
 
 	/* Sum alpha values to get scaling factor */
 	scale[0] = dot_product(nstates, alpha, 0, ones_n, 0);
 
-  // Scale the alpha values
-  scale_alpha_values(nstates, alpha,0,scale[0]);
+    // Scale the alpha values
+    scale_alpha_values(nstates, alpha,0,scale[0]);
 
 	/* Initilialize log likelihood */
 	log_lik = log10(scale[0]);
@@ -233,38 +233,38 @@ float calc_alpha(float *a, float *b, float *pi){
 
 		/* Multiply transposed A matrix by alpha(t-1) */
 		/* Note: the matrix is auto-transposed by cublas reading column-major */
-		// mat_vec_mul( 'N', nstates, nstates, 1.0f, a_d, nstates, 
+		// mat_vec_mul( 'N', nstates, nstates, 1.0f, a_d, nstates,
 		//              alpha_d + offset_prev, 1, 0, alpha_d + offset_cur, 1 );
-		mat_vec_mul( 'n', nstates, nstates, a, nstates, 
-				alpha, offset_prev, alpha, offset_cur);
+		mat_vec_mul( 'n', nstates, nstates, a, nstates,
+                     alpha, offset_prev, alpha, offset_cur);
 
-    calc_alpha_dev(nstates, alpha, offset_cur, b, *(obs + t)); 
+        calc_alpha_dev(nstates, alpha, offset_cur, b, *(obs + t));
 
 		/* Sum alpha values to get scaling factor */
 		scale[t] = dot_product(nstates, alpha, offset_cur, ones_n, 0);
-   
-    // scale alpha values  
-    scale_alpha_values(nstates, alpha, offset_cur, scale[t]);
+
+        // scale alpha values
+        scale_alpha_values(nstates, alpha, offset_cur, scale[t]);
 
 		log_lik += log10(scale[t]);
 	}
 	return log_lik;
 }
 
-void init_beta_dev(int nstates, float *beta_d, int offset, float scale){ 
-  int i = 0; 
-  for(i=0; i < nstates; ++i){
+void init_beta_dev(int nstates, float *beta_d, int offset, float scale){
+    int i = 0;
+    for(i=0; i < nstates; ++i){
 		beta_d[offset + i] = 1.0f / scale;
-  }
+    }
 }
 
 void calc_beta_dev(float *beta_d, float *b_d, float scale_t, int nstates,
-    int obs_t, int t){
-  int i; 
-  for(i=0; i<nstates; ++i){
+                   int obs_t, int t){
+    int i;
+    for(i=0; i<nstates; ++i){
 		beta_d[(t * nstates) + i] = beta_d[((t + 1) * nstates) + i] *
-      b_d[(obs_t * nstates) + i] / scale_t;
-  }
+            b_d[(obs_t * nstates) + i] / scale_t;
+    }
 }
 
 /* Calculates the backward variables (beta) */
@@ -272,91 +272,90 @@ int calc_beta(float *a, float *b){
 
 	/* Initialize beta variables */
 	int offset  = ((length - 1) * nstates);
-  int t;
-  init_beta_dev(nstates, beta, offset, *(scale + length - 1));
+    int t;
+    init_beta_dev(nstates, beta, offset, *(scale + length - 1));
 	/* Calculate the rest of the beta variables */
 	for (t = length - 2; t >= 0; t--) {
-    calc_beta_dev(beta, b, scale[t], nstates, *(obs + t + 1),t);
+        calc_beta_dev(beta, b, scale[t], nstates, *(obs + t + 1),t);
 
-		mat_vec_mul( 'n', nstates, nstates, a, nstates, 
-				beta, t * nstates, beta, t * nstates);
+		mat_vec_mul( 'n', nstates, nstates, a, nstates,
+                     beta, t * nstates, beta, t * nstates);
 	}
 	return 0;
 }
 
-void calc_gamma_dev(float *gamma_sum_d, float *alpha_d, float *beta_d, 
-    int nstates, int t){
-  int i; 
-  for(i=0; i< nstates; ++i){
+void calc_gamma_dev(float *gamma_sum_d, float *alpha_d, float *beta_d,
+                    int nstates, int t){
+    int i;
+    for(i=0; i< nstates; ++i){
 		gamma_sum_d[i] += alpha_d[(t * nstates) + i] *
 			beta_d[(t * nstates) + i];
-  }
+    }
 }
-    
+
 /* Calculates the gamma sum */
 void calc_gamma_sum(){
-	int size;
 	int t;
 
-  for(t=0; t<nstates; ++t) gamma_sum[t] = 0.0f;
+    for(t=0; t<nstates; ++t) gamma_sum[t] = 0.0f;
 	/* Find sum of gamma variables */
 	for (t = 0; t < length; t++) {
-    calc_gamma_dev(gamma_sum, alpha, beta, nstates, t); 
+        calc_gamma_dev(gamma_sum, alpha, beta, nstates, t);
 	}
 }
 
-void calc_xi_sum_dev(float *xi_sum_d, float *a_d, float *b_d, float *alpha_d, 
-    float *beta_d, float sum_ab, int nstates, int obs_t, int t){
-  int i,j; 
-  for(i=0; i<nstates; ++i){
-    for(j=0;j<nstates; ++j){
-      xi_sum_d[(j * nstates) + i] += alpha_d[(t * nstates) + j] *
-        a_d[(j * nstates) + i] *
-        b_d[(obs_t * nstates) + i] *
-        beta_d[((t+1) * nstates) + i] /
-        sum_ab;
+void calc_xi_sum_dev(float *xi_sum_d, float *a_d, float *b_d, float *alpha_d,
+                     float *beta_d, float sum_ab, int nstates, int obs_t, int t){
+    int i,j;
+    for(i=0; i<nstates; ++i){
+        for(j=0;j<nstates; ++j){
+            xi_sum_d[(j * nstates) + i] += alpha_d[(t * nstates) + j] *
+                a_d[(j * nstates) + i] *
+                b_d[(obs_t * nstates) + i] *
+                beta_d[((t+1) * nstates) + i] /
+                sum_ab;
+        }
     }
-  }
 }
 
 /* Calculates the sum of xi variables */
 int calc_xi_sum(float *a, float *b){
 	float sum_ab;
 	int t;
-  memset(xi_sum, 0, sizeof(float *)*nstates);
+    memset(xi_sum, 0, sizeof(float *)*nstates);
 
 	/* Find the sum of xi variables */
 	for (t = 0; t < length - 1; t++) {
 		/* Calculate denominator */
-		sum_ab = dot_product(nstates, alpha, t * nstates, 
-				beta, t * nstates);
-    calc_xi_sum_dev(xi_sum, a, b, alpha, beta, sum_ab, nstates,*(obs+t+1), t);
+		sum_ab = dot_product(nstates, alpha, t * nstates,
+                             beta, t * nstates);
+        calc_xi_sum_dev(xi_sum, a, b, alpha, beta, sum_ab, nstates,*(obs+t+1), t);
 	}
 	return 0;
 }
 
-void est_a_dev(float *a_d, float *alpha_d, float *beta_d, 
-    float *xi_sum_d, float *gamma_sum_d, float sum_ab, int nstates, int length){
+void est_a_dev(float *a_d, float *alpha_d, float *beta_d,
+               float *xi_sum_d, float *gamma_sum_d, float sum_ab, int nstates, int length){
 
-  int i,j;
-  for(i=0; i<nstates; ++i){
-    for(j=0; j<nstates; ++j){
-      a_d[(j * nstates) + i] = xi_sum_d[(j * nstates) + i] /
-        (gamma_sum_d[j] -
-         alpha_d[(j* nstates) + i] *
-         beta_d[(j* nstates) + i] /
-         sum_ab);
+    int i,j;
+    for(i=0; i<nstates; ++i){
+        for(j=0; j<nstates; ++j){
+            a_d[(j * nstates) + i] = xi_sum_d[(j * nstates) + i] /
+                (gamma_sum_d[j] -
+                 alpha_d[(j* nstates) + i] *
+                 beta_d[(j* nstates) + i] /
+                 sum_ab);
+        }
     }
-  }
 }
 
 void scale_a_dev(float *a_d, float *c_d, int nstates){
-  int i,j;
-  for(i=0; i<nstates; ++i){
-    for(j=0; j<nstates; ++j){
-      a_d[(j * nstates) + i] = a_d[(j * nstates) + i] / c_d[j];
+    int i,j;
+    for(i=0; i<nstates; ++i){
+        for(j=0; j<nstates; ++j){
+            a_d[(j * nstates) + i] = a_d[(j * nstates) + i] / c_d[j];
+        }
     }
-  }
 }
 /* Re-estimates the state transition probabilities (A) */
 int estimate_a(float *a)
@@ -364,75 +363,75 @@ int estimate_a(float *a)
 	float sum_ab;
 
 	/* Calculate denominator */
-	sum_ab = dot_product(nstates, alpha, (length - 1) * nstates, 
-			beta, (length - 1) * nstates);
-  est_a_dev(a, alpha, beta, xi_sum, gamma_sum, sum_ab, nstates, length); 
+	sum_ab = dot_product(nstates, alpha, (length - 1) * nstates,
+                         beta, (length - 1) * nstates);
+    est_a_dev(a, alpha, beta, xi_sum, gamma_sum, sum_ab, nstates, length);
 
 
 	/* Sum rows of A to get scaling values */
-	// mat_vec_mul( 'T', nstates, nstates, 1.0f, a_d, nstates, 
+	// mat_vec_mul( 'T', nstates, nstates, 1.0f, a_d, nstates,
 	// ones_n_d, 1, 0, c_d, 1 );
-	mat_vec_mul( 't', nstates, nstates, a, nstates, 
-			ones_n, 0, c, 0);
+	mat_vec_mul( 't', nstates, nstates, a, nstates,
+                 ones_n, 0, c, 0);
 
 	/* Normalize A matrix */
 	// scale_a_dev<<<grid, threads>>>( a_d,
 	// c_d,
 	// nstates);
-  scale_a_dev(a, c, nstates);
+    scale_a_dev(a, c, nstates);
 
 	return 0;
 }
 
 /* Accumulate B values */
-void acc_b_dev(float *b_d, float *alpha_d, float *beta_d, float sum_ab, 
-    int nstates, int nsymbols, int obs_t, int t){ 
-  int i,j; 
-  for(i=0; i<nstates; ++i){
-    for(j=0; j<nsymbols; ++j){
-      if(j==obs_t){
-        b_d[(j * nstates) + i] += alpha_d[(t * nstates) + i] *
-          beta_d[(t * nstates) + i] / sum_ab;
-      }
+void acc_b_dev(float *b_d, float *alpha_d, float *beta_d, float sum_ab,
+               int nstates, int nsymbols, int obs_t, int t){
+    int i,j;
+    for(i=0; i<nstates; ++i){
+        for(j=0; j<nsymbols; ++j){
+            if(j==obs_t){
+                b_d[(j * nstates) + i] += alpha_d[(t * nstates) + i] *
+                    beta_d[(t * nstates) + i] / sum_ab;
+            }
+        }
     }
-  }
 }
 
 /* Re-estimate B values */
 void est_b_dev(float *b_d, float *gamma_sum_d, int nstates, int nsymbols){
-  int i,j; 
-  for(i=0; i<nstates; ++i){
-    for(j=0; j<nsymbols; ++j){
-      b_d[(j* nstates) + i] = b_d[(j * nstates) + i] /
-        gamma_sum_d[i];
+    int i,j;
+    for(i=0; i<nstates; ++i){
+        for(j=0; j<nsymbols; ++j){
+            b_d[(j* nstates) + i] = b_d[(j * nstates) + i] /
+                gamma_sum_d[i];
+        }
     }
-  }
 }
 
 /* Normalize B matrix */
 void scale_b_dev(float *b_d, float *c_d, int nstates, int nsymbols){
-  int i,j; 
-  for(i=0; i<nstates; ++i){
-    for(j=0; j<nsymbols; ++j){
-      if (fabs(b_d[(i * nsymbols) + j]) <0.000001)
-      {
-        b_d[(i * nsymbols) + j] = 1e-10;
-      }
-      else
-      {
-        b_d[(i * nsymbols) + j] = b_d[(i * nsymbols) + j] / c_d[i];
-      }
-      // if (fabs(b_d[(j * nstates) + i]) <0.000001)
-      // {
-      //   b_d[(j * nstates) + i] = 1e-10;
-      //   printf("something hits here\n");
-      // }
-      // else
-      // {
-      //   b_d[(j * nstates) + i] = b_d[(j * nstates) + i] / c_d[i];
-      // }
+    int i,j;
+    for(i=0; i<nstates; ++i){
+        for(j=0; j<nsymbols; ++j){
+            if (fabs(b_d[(i * nsymbols) + j]) <0.000001)
+            {
+                b_d[(i * nsymbols) + j] = 1e-10;
+            }
+            else
+            {
+                b_d[(i * nsymbols) + j] = b_d[(i * nsymbols) + j] / c_d[i];
+            }
+            // if (fabs(b_d[(j * nstates) + i]) <0.000001)
+            // {
+            //   b_d[(j * nstates) + i] = 1e-10;
+            //   printf("something hits here\n");
+            // }
+            // else
+            // {
+            //   b_d[(j * nstates) + i] = b_d[(j * nstates) + i] / c_d[i];
+            // }
+        }
     }
-  }
 }
 
 /* Re-estimates the output symbol probabilities (B) */
@@ -440,37 +439,36 @@ int estimate_b(float *b)
 {
 	float sum_ab;
 	int t;
-	int offset;
 
-  for(t=0; t<nstates*nsymbols; ++t) b[t] = 0.0f;
+    for(t=0; t<nstates*nsymbols; ++t) b[t] = 0.0f;
 
 	for (t = 0; t < length; t++) {
 
 		/* Calculate denominator */
-		sum_ab = dot_product(nstates, alpha, t * nstates, 
-				beta, t * nstates);
-    acc_b_dev(b, alpha, beta, sum_ab, nstates, nsymbols, *(obs + t+1), t);
+		sum_ab = dot_product(nstates, alpha, t * nstates,
+                             beta, t * nstates);
+        acc_b_dev(b, alpha, beta, sum_ab, nstates, nsymbols, *(obs + t+1), t);
 	}
 
 	/* Re-estimate B values */
-  est_b_dev(b, gamma_sum, nstates, nsymbols); 
+    est_b_dev(b, gamma_sum, nstates, nsymbols);
 
 	/* Sum rows of B to get scaling values */
-	// mat_vec_mul( 'N', nstates, nsymbols, 1.0f, b_d, nstates, 
+	// mat_vec_mul( 'N', nstates, nsymbols, 1.0f, b_d, nstates,
 	// ones_s_d, 1, 0, c_d, 1 );
-  for(t=0; t<nstates; ++t) c[t] = 0.0f;
-	mat_vec_mul( 'n', nstates, nsymbols, b, nstates, 
-			ones_s, 0, c, 0);
+    for(t=0; t<nstates; ++t) c[t] = 0.0f;
+	mat_vec_mul( 'n', nstates, nsymbols, b, nstates,
+                 ones_s, 0, c, 0);
 	/* Normalize B matrix */
-  scale_b_dev(b, c, nstates, nsymbols); 
+    scale_b_dev(b, c, nstates, nsymbols);
 	return 0;
-}    
-void est_pi_dev(float *pi_d, float *alpha_d, float *beta_d, float sum_ab, 
-    int nstates){ 
-  int i;
-  for(i=0; i<nstates; ++i){ 
+}
+void est_pi_dev(float *pi_d, float *alpha_d, float *beta_d, float sum_ab,
+                int nstates){
+    int i;
+    for(i=0; i<nstates; ++i){
 		pi_d[i] = alpha_d[i] * beta_d[i] / sum_ab;
-  }
+    }
 }
 /* Re-estimates the initial state probabilities (Pi) */
 int estimate_pi(float *pi)
@@ -481,7 +479,7 @@ int estimate_pi(float *pi)
 	sum_ab = dot_product(nstates, alpha, 0, beta, 0);
 
 	/* Estimate Pi values */
-  est_pi_dev(pi, alpha, beta, sum_ab,nstates);
+    est_pi_dev(pi, alpha, beta, sum_ab,nstates);
 
 	return 0;
 }
@@ -491,17 +489,17 @@ int estimate_pi(float *pi)
 //  */
 
 // /* Runs the Baum-Welch Algorithm on the supplied HMM and observation sequence */
-float run_hmm_bwa(  Hmm *hmm, 
-		Obs *in_obs, 
-		int iterations, 
-		float threshold)
+float run_hmm_bwa(  Hmm *hmm,
+                    Obs *in_obs,
+                    int iterations,
+                    float threshold)
 {
 
 	/* Host-side variables */
 	float *a;
 	float *b;
 	float *pi;
-	float new_log_lik;
+	float new_log_lik = 0;
 	float old_log_lik = 0;
 	int iter;
 
@@ -522,21 +520,21 @@ float run_hmm_bwa(  Hmm *hmm,
 	}
 
 // 	/* Allocate device memory */
-  alpha = malloc(sizeof(*alpha)*nstates*length); 
-  beta = malloc(sizeof(*beta)*nstates*length);
-  gamma_sum = malloc(sizeof(*gamma_sum)*nstates); 
-  xi_sum = malloc(sizeof(*xi_sum)*nstates*nstates); 
-  c = malloc(sizeof(*c)*nstates); 
-  ones_n = malloc(sizeof(*ones_n)*nstates); 
-  ones_s = malloc(sizeof(*ones_s)*nsymbols); 
+    alpha = malloc(sizeof(*alpha)*nstates*length);
+    beta = malloc(sizeof(*beta)*nstates*length);
+    gamma_sum = malloc(sizeof(*gamma_sum)*nstates);
+    xi_sum = malloc(sizeof(*xi_sum)*nstates*nstates);
+    c = malloc(sizeof(*c)*nstates);
+    ones_n = malloc(sizeof(*ones_n)*nstates);
+    ones_s = malloc(sizeof(*ones_s)*nsymbols);
 
-  init_ones_dev(ones_s, nsymbols);
+    init_ones_dev(ones_s, nsymbols);
 
 //   /**
-//    * a_d => a 
-//    * b_d => b 
-//    * pi_d => pi 
-//    */ 
+//    * a_d => a
+//    * b_d => b
+//    * pi_d => pi
+//    */
 
 	/* Run BWA for either max iterations or until threshold is reached */
 	for (iter = 0; iter < iterations; iter++) {
@@ -572,25 +570,25 @@ float run_hmm_bwa(  Hmm *hmm,
 			if (fabs(pow(10,new_log_lik) - pow(10,old_log_lik)) < threshold) {
 				break;
 			}
-	  }
+        }
 
-		old_log_lik = new_log_lik;   
+		old_log_lik = new_log_lik;
 	}
 	return new_log_lik;
 }
 
-static struct option size_opts[] = 
+static struct option size_opts[] =
 {
 	/* name, has_tag, flag, val*/
 	{"state number", 1, NULL, 'n'},
 	{"symbol number", 1, NULL, 's'},
 	{"observation number", 1, NULL, 't'},
 	{"varying mode", 1, NULL, 'v'},
-	{0, 0, 0, 0}	
+	{0, 0, 0, 0}
 };
 
-/* Time the forward algorithm and vary the number of states */ 
-int main(int argc, char *argv[]) 
+/* Time the forward algorithm and vary the number of states */
+int main(int argc, char *argv[])
 {
 	/* Initialize variables */
 	Hmm *hmm;                /* Initial HMM */
@@ -600,8 +598,6 @@ int main(int argc, char *argv[])
 	float *pi;
 	int *obs_seq;
 	float log_lik;           /* Output likelihood of FO */
-	int mul;
-	int m;
 	int s = S, t = T;
 	int n = N;
 	int i;
@@ -610,29 +606,29 @@ int main(int argc, char *argv[])
 	printf("Starting bwa_hmm\n");
 
 	int opt, opt_index = 0;
-	char v_model;
+	char v_model = '\0';
 	while((opt = getopt_long(argc, argv, "::n:s:t:v:", size_opts, &opt_index)) != -1)
 	{
 		//printf("here");
 		switch(opt)
 		{
-			case 'v':
-				v_model = optarg[0];
-				break;
-			case 'n':
-				n = atoi(optarg);
-				break;
-			case 's':
-				s = atoi(optarg);
-				break;
-			case 't':
-				t = atoi(optarg);
-				break;
-			default:
-				fprintf(stderr, "Usage %s [-n state number | -s symbol number | -t observation number] [-v varying model]\n", argv[0]);
-				exit(EXIT_FAILURE);
-		}	
-	} 
+        case 'v':
+            v_model = optarg[0];
+            break;
+        case 'n':
+            n = atoi(optarg);
+            break;
+        case 's':
+            s = atoi(optarg);
+            break;
+        case 't':
+            t = atoi(optarg);
+            break;
+        default:
+            fprintf(stderr, "Usage %s [-n state number | -s symbol number | -t observation number] [-v varying model]\n", argv[0]);
+            exit(EXIT_FAILURE);
+		}
+	}
 
 	/* Initialize HMM and observation sequence */
 	hmm = (Hmm *)malloc(sizeof(Hmm));
@@ -655,7 +651,7 @@ int main(int argc, char *argv[])
 		if (n >= 8000) {
 			return 0;
 		}
-		// n = 7000;           
+		// n = 7000;
 		/* Assign HMM parameters */
 		hmm->nstates = n;
 		hmm->nsymbols = S;
@@ -674,7 +670,7 @@ int main(int argc, char *argv[])
 			pi[i] = 1.0f/(float)n;
 		}
 		hmm->pi = pi;
-    
+
 
 		/* Run the BWA on the observation sequence */
 
@@ -697,7 +693,7 @@ int main(int argc, char *argv[])
 
 		// printf("\n");
 	} else if(v_model == 's')
-	{	
+	{
 		/* Create observation sequence */
 		obs->length = T;
 		obs_seq = (int *)malloc(sizeof(int) * T);
