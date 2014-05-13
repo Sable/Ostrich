@@ -129,10 +129,12 @@ function runFFT(twoExp){
     var data2D = randomComplexMatrix(n);
     var t1, t2;
 
+    /*
     t1 = performance.now();
     var results = fftSimple(data1D.r,data1D.i);
     t2 = performance.now();
     console.log("The total 1D FFT time for " + n + " size was " + (t2-t1)/1000 + " s");
+    */
 
     t1 = performance.now();
     var results2D = fft2D(data2D);

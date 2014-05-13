@@ -46,12 +46,14 @@ int main(int argc, char** argv){
 
 
     // Test 1D arrays
+    /*
     x = random_complex_vector(n);
     stopwatch_start(&sw);
     complex *results = FFT_simple(x,n);
     stopwatch_stop(&sw);
     printf("The total 1D FFT time for %d size was %lf seconds!\n", n,
       get_interval_by_sec(&sw));
+    */
 
     // Test 2D arrays
     m = malloc(sizeof(complex*)*n);
@@ -71,7 +73,7 @@ int main(int argc, char** argv){
     // print_complex_array(results, n);
     // printf("2D Output Array: \n");
     // print_complex_matrix(results2D, n);
-    free(x);
+    //free(x);
     for(i=0; i<n; ++i) free(m[i]);
     free(m);
 }
