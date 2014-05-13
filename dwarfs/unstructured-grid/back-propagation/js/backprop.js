@@ -182,7 +182,7 @@ function backprop_face(layer_size) {
 
 	//console.log("Output: " + net.output_units[1].toFixed(4) + "\t" + net.output_delta[1].toFixed(4));
 	net = null;
-	console.log("Computation time: " + (time1-time0)/1000 + "s\n");
+	console.log("Computation time: " + (time1-time0)/1000 + " s\n");
 }
 
 function runBackProp(nb_input_elems) {
