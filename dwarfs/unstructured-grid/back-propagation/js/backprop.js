@@ -1,3 +1,7 @@
+if (typeof performance === "undefined") {
+    performance = Date;
+}
+
 /*** The squashing function.  Currently, it's a sigmoid. ***/
 Math.random = Math.commonRandomJS;
 
