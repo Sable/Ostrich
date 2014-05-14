@@ -49,7 +49,7 @@ var blosum62= [
 function runNeedle(dimensions, pen)
 {
     var max_rows, max_cols, penalty,idx, index;
-    var input_itemsets, output_itemsets, referrence;
+    var input_itemsets, output_itemsets, reference;
     var size;
     var t1, t2;
     var i,j;
@@ -58,11 +58,11 @@ function runNeedle(dimensions, pen)
     // And at current stage  max_rows needs to equal max_cols
     max_rows = dimensions;
     max_cols = dimensions;
-    penalty = penalty;
+    penalty = pen;
 
     max_rows = max_rows + 1;
     max_cols = max_cols + 1;
-    referrence = new Int32Array(max_rows*max_cols);
+    reference = new Int32Array(max_rows*max_cols);
     input_itemsets = new Int32Array(max_rows*max_cols);
     output_itemsets = new Int32Array(max_rows*max_cols);
 
@@ -85,7 +85,7 @@ function runNeedle(dimensions, pen)
 
     for (i = 1 ; i < max_cols; i++){
         for (j = 1 ; j < max_rows; j++){
-            referrence[i*max_cols+j] = blosum62[input_itemsets[i*max_cols]][input_itemsets[j]];
+            reference[i*max_cols+j] = blosum62[input_itemsets[i*max_cols]][input_itemsets[j]];
         }
     }
     for(i = 1; i< max_rows ; i++)
@@ -98,7 +98,7 @@ function runNeedle(dimensions, pen)
     for(i = 0 ; i < max_cols-2 ; i++){
         for( idx = 0 ; idx <= i ; idx++){
             index = (idx + 1) * max_cols + (i + 1 - idx);
-            input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ referrence[index],
+            input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ reference[index],
                                             input_itemsets[index-1]         - penalty,
                                             input_itemsets[index-max_cols]  - penalty);
         }
@@ -108,7 +108,7 @@ function runNeedle(dimensions, pen)
     for(i = max_cols - 4 ; i >= 0 ; i--){
         for( idx = 0 ; idx <= i ; idx++){
             index =  ( max_cols - idx - 2 ) * max_cols + idx + max_cols - i - 2 ;
-            input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ referrence[index],
+            input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ reference[index],
                                             input_itemsets[index-1]         - penalty,
                                             input_itemsets[index-max_cols]  - penalty);
         }
