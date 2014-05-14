@@ -81,7 +81,7 @@ void usage(int argc, char **argv)
 runTest( int argc, char** argv)
 {
 	int max_rows, max_cols, penalty,idx, index;
-	int *input_itemsets, *output_itemsets, *referrence;
+	int *input_itemsets, *output_itemsets, *reference;
 	int size;
 	double t1, t2;
 	int i,j;
@@ -100,7 +100,7 @@ runTest( int argc, char** argv)
 
 	max_rows = max_rows + 1;
 	max_cols = max_cols + 1;
-	referrence = (int *)malloc( max_rows * max_cols * sizeof(int) );
+	reference = (int *)malloc( max_rows * max_cols * sizeof(int) );
 	input_itemsets = (int *)malloc( max_rows * max_cols * sizeof(int) );
 	output_itemsets = (int *)malloc( max_rows * max_cols * sizeof(int) );
 
@@ -124,6 +124,11 @@ runTest( int argc, char** argv)
 		input_itemsets[j] = abs(common_rand()) % 10 + 1;
 	}
 
+	for ( i = 1 ; i < max_cols; i++){
+		for ( j = 1 ; j < max_rows; j++){
+		    reference[i*max_cols+j] = blosum62[input_itemsets[i*max_cols]][input_itemsets[j]];
+		}
+	}
 
 	for(i = 1; i< max_rows ; i++)
 		input_itemsets[i*max_cols] = -i * penalty;
@@ -135,7 +140,7 @@ runTest( int argc, char** argv)
 	for(i = 0 ; i < max_cols-2 ; i++){
 		for( idx = 0 ; idx <= i ; idx++){
 			index = (idx + 1) * max_cols + (i + 1 - idx);
-			input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ referrence[index],
+			input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ reference[index],
 					input_itemsets[index-1]         - penalty,
 					input_itemsets[index-max_cols]  - penalty);
 		}
@@ -145,7 +150,7 @@ runTest( int argc, char** argv)
 	for(i = max_cols - 4 ; i >= 0 ; i--){
 		for( idx = 0 ; idx <= i ; idx++){
 			index =  ( max_cols - idx - 2 ) * max_cols + idx + max_cols - i - 2 ;
-			input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ referrence[index],
+			input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ reference[index],
 					input_itemsets[index-1]         - penalty,
 					input_itemsets[index-max_cols]  - penalty);
 		}
@@ -153,7 +158,7 @@ runTest( int argc, char** argv)
 	}
 	t2 = gettime();
 	printf("The total time spent is %lf seconds\n", (t2-t1));
-	printf("Random input ref val %d and input val %d\n", referrence[0], input_itemsets[0]);
+	printf("Random input ref val %d and input val %d\n", reference[0], input_itemsets[0]);
 
 
 	//#define TRACEBACK
@@ -186,7 +191,7 @@ runTest( int argc, char** argv)
 
 	/* 		//traceback = maximum(nw, w, n); */
 	/* 		int new_nw, new_w, new_n; */
-	/* 		new_nw = nw + referrence[i * max_cols + j]; */
+	/* 		new_nw = nw + reference[i * max_cols + j]; */
 	/* 		new_w = w - penalty; */
 	/* 		new_n = n - penalty; */
 
@@ -217,7 +222,7 @@ runTest( int argc, char** argv)
 
 	/* #endif */
 
-	free(referrence);
+	free(reference);
 	free(input_itemsets);
 	free(output_itemsets);
 }
