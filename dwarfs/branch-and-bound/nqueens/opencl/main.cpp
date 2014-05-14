@@ -8,15 +8,16 @@
 #include <CL/cl.h>
 #endif
 
-#include "../../include/rdtsc.h"
-#include "../../include/common_args.h"
+#include "common_args.h"
 #include "nqueen_cpu.h"
 #include "nqueen_cl.h"
+#include "common.h"
 #include <iostream>
 #include <iomanip>
 #include <cstring>
 #include <ctime>
 #include <cstdlib>
+#include <sys/time.h>
 
 int main(int argc, char** argv)
 {
@@ -30,12 +31,9 @@ int main(int argc, char** argv)
 		std::cerr << "Usage: " << argv[0] << " [options] N\n";
 		std::cerr << "\tN: board size (1 ~ 32)\n";
 		std::cerr << "\t-cpu: use CPU (multi-threaded on Windows)\n";
-		//std::cerr << "\t-clcpu: use OpenCL CPU device\n";
 		std::cerr << "\t-prof: enable profiler\n";
 		std::cerr << "\t-threads #: set number of threads to #\n";
 		std::cerr << "\t-blocksize #: set size of thread blocks to #\n";
-		//std::cerr << "\t-platform #: select platform #\n";
-		//std::cerr << "\t-device #: select device # (default: use all devices)\n";
 		std::cerr << "\t-local: use local memory for arrays (default: off)\n";
 		std::cerr << "\t-noatomics: do not use global atomics\n";
 		std::cerr << "\t-novec: do not use vectorization\n";
@@ -45,9 +43,6 @@ int main(int argc, char** argv)
 
 	// handle options
 	bool force_cpu = false;
-	//bool use_clcpu = false;
-	//cl_uint platform_index = 0;
-	//int device_index = -1;
 	bool profiling = false;
 	int threads = 0;
 	int block_size = 0;
@@ -61,12 +56,6 @@ int main(int argc, char** argv)
 		if(std::strcmp(argv[start], "-cpu") == 0) {
 			force_cpu = true;
 		}
-		//else if(std::strcmp(argv[start], "-clcpu") == 0) {
-		//	use_clcpu = true;
-		//}
-		//else if(std::strcmp(argv[start], "-prof") == 0) {
-		//	profiling = true;
-		//}
 		else if(std::strcmp(argv[start], "-threads") == 0 && start < argc - 2) {
 			threads = std::atoi(argv[start + 1]);
 			start++;
@@ -75,20 +64,9 @@ int main(int argc, char** argv)
 			block_size = std::atoi(argv[start + 1]);
 			start++;
 		}
-		//else if(std::strcmp(argv[start], "-platform") == 0 && start < argc - 2) {
-		//	platform_index = std::atoi(argv[start + 1]);
-		//	start++;
-		//}
-		//else if(std::strcmp(argv[start], "-device") == 0 && start < argc - 2) {
-		//	device_index = std::atoi(argv[start + 1]);
-		//	start++;
-		//}
 		else if(std::strcmp(argv[start], "-local") == 0) {
 			local = true;
 		}
-		//else if(std::strcmp(argv[start], "-nolocal") == 0) {
-		//	local = false;
-		//}
 		else if(std::strcmp(argv[start], "-noatomics") == 0) {
 			noatomics = true;
 		}
@@ -111,91 +89,30 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	clock_t start_time, end_time;
+  stopwatch sw;
 	long long solutions = 0;
 	long long unique_solutions = 0;
 	if(force_cpu) {
-		start_time = std::clock();
+    stopwatch_start(&sw);
 		solutions = nqueen_cpu(board_size, &unique_solutions);
-		end_time = std::clock();
+    stopwatch_stop(&sw);
 	}
 	else {
-		cl_int err;
-		//cl_uint num;
-		//err = clGetPlatformIDs(0, 0, &num);
-		//if(err != CL_SUCCESS) {
-		//	std::cerr << "Unable to get platforms\n";
-		//	return 0;
-		//}
-
-		//std::vector<cl_platform_id> platforms(num);
-		//err = clGetPlatformIDs(num, &platforms[0], &num);
-		//if(err != CL_SUCCESS) {
-		//	std::cerr << "Unable to get platforms\n";
-		//	return 0;
-		//}
-
-		// display all platform data
-		//for(cl_uint i = 0; i < num; i++) {
-		//	size_t size;
-		//	clGetPlatformInfo(platforms[i], CL_PLATFORM_NAME, 0, 0, &size);
-		//	std::string name;
-		//	name.reserve(size + 1);
-		//	clGetPlatformInfo(platforms[i], CL_PLATFORM_NAME, size, &name[0], 0);
-		//	std::cerr << "Platform [" << i << "]: " << name.c_str() << "\n";
-		//}
-
-		//if(platform_index >= num) {
-		//	platform_index = num - 1;
-		//}
-
-		//std::cerr << "Select platform " << platform_index << "\n";
-
-		//cl_context context;
-		//cl_context_properties prop[] = { CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(platforms[platform_index]), 0 };
-		//context = clCreateContextFromType(prop, use_clcpu ? CL_DEVICE_TYPE_CPU : CL_DEVICE_TYPE_GPU, 0, 0, &err);
-		//if(err != CL_SUCCESS) {
-		//	std::cerr << "Unable to create context\n";
-		//	return 0;
-		//}
-
-		//if(use_clcpu) {
-		//	std::cerr << "Using CPU device\n";
-		//}
-		//else {
-		//	std::cerr << "Using GPU device\n";
-		//}
+    stopwatch_start(&sw);
+    cl_int err;
 
 		// show device list
 		size_t num_devices;
-		//err = clGetContextInfo(context, CL_CONTEXT_DEVICES, 0, 0, &num_devices);
-		//if(err != CL_SUCCESS) {
-		//	std::cerr << "Unable to get device information\n";
-		//	return 0;
-		//}
 
 		num_devices=1;//In OpenDwarfs we only work with one device at a time.
 		std::vector<cl_device_id> devices(num_devices / sizeof(cl_device_id));
-		//err = clGetContextInfo(context, CL_CONTEXT_DEVICES, num_devices, &devices[0], &num_devices);
-		//if(err != CL_SUCCESS) {
-		//	std::cerr << "Unable to get device information\n";
-		//	return 0;
-		//}
 
-		//if(device_index >= 0 && device_index < devices.size()) {
-		//	cl_device_id device_id = devices[device_index];
 		devices.clear();
 		devices.resize(1);
 		devices[0] = device_id;
-		//}
-
-		//context and devices[0]=device_id are now as gotten from ocd_initCL();
-		//ocd_initCL(); has also return the commands command queue.
-
 
 		try {
 			NQueenSolver nqueen(context, devices, profiling, threads, block_size, local, noatomics, novec, use_vec4);
-			//std::cerr << "Number of devices:" << devices.size() << "\n";
 			for(int i = 0; i < devices.size(); i++) {
 				size_t name_length;
 				err = clGetDeviceInfo(devices[i], CL_DEVICE_NAME, 0, 0, &name_length);
@@ -228,11 +145,6 @@ int main(int argc, char** argv)
 			solutions = nqueen.Compute(board_size, &unique_solutions);
 			//end_time = std::clock();
 
-			//if(profiling) {
-			//	for(int i = 0; i < devices.size(); i++) {
-			//		std::cerr << "Profile time for device " << i << ": " << nqueen.GetProfilingTime(i) << "ns\n";
-			//	}
-			//}
 		}
 		catch(CLError x)
 		{
@@ -249,12 +161,12 @@ int main(int argc, char** argv)
 				std::cerr << x << "\n";
 			}
 		}
-
+    stopwatch_stop(&sw);
 		clReleaseContext(context);
 	}
 
-	std::cerr << board_size << "-queen has " << solutions << " solutions (" << unique_solutions << " unique)\n";
-	//std::cerr << "Time used: " << std::setprecision(3) << static_cast<double>(end_time - start_time) / CLOCKS_PER_SEC << "s\n";
+  std::cout << "Solution took " << get_interval_by_sec(&sw) << " seconds to complete\n";
+	std::cout << board_size << "-queen has " << solutions << " solutions (" << unique_solutions << " unique)\n";
 
 	ocd_finalize();
 	return 0;

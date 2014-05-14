@@ -11,8 +11,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
-#include "rdtsc.h"
 #include "common_args.h"
+#include "common.h"
 #include "crc_formats.h"
 #include "eth_crc32_lut.h"
 
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 	char* file=NULL,*optptr;
 	char** kernel_files=NULL;
 	int c;
-	struct timeval start,end;
+	struct timeval start,end; 
 
 	//Does NOT use ocd_init() because we use TIMER_INIT (the 3rd thing in ocd_init) MANY TIMES in LOOOP! (nz-ocl)
 	ocd_requirements req;
@@ -227,6 +227,12 @@ int main(int argc, char** argv)
 				num_parallel_crcs = tmp;
 				num_parallel_crcs[num_block_sizes-1] = atoi(optptr);
 				break;
+      case 'n':
+        num_pages = atoi(optarg);
+        break; 
+      case 's': 
+        page_size = atoi(optarg); 
+        break;
 			case 'w':
 				if(optarg != NULL)
 					optptr = optarg;
@@ -256,8 +262,12 @@ int main(int argc, char** argv)
 		}	
 	}
 
-	check(file != NULL,"-i option must be supplied!");
-	h_num = read_crc(&num_pages,&page_size,file);
+  if (file != NULL){
+    h_num = read_crc(&num_pages,&page_size,file);
+  }
+  else {
+    h_num = rand_crc(num_pages, page_size);
+  }
 
 	if(!num_block_sizes)
 	{
@@ -268,6 +278,9 @@ int main(int argc, char** argv)
 
 	num_words = page_size / 4;
 	if(verbosity) printf("num_words = %u\n",num_words);
+  stopwatch sw;
+
+  stopwatch_start(&sw);
 
 	//ocd_options opts = ocd_get_options();
 	//platform_id = opts.platform_id;
@@ -347,9 +360,6 @@ int main(int argc, char** argv)
 				{
 					if(verbosity) printf("Beginning execution #%u of %u...\n",ii+1,num_execs);
 
-#ifdef ENABLE_TIMER
-					TIMER_INIT
-#endif
 						for(i=0; i<num_blocks; i++)
 						{
 							if(verbosity >= 2) printf("\tEnqueuing commmands for block #%d of %d...\n",i+1,num_blocks);
@@ -376,30 +386,24 @@ int main(int argc, char** argv)
 					clFinish(commands);
 					clFinish(read_queue);
 
-#ifdef ENABLE_TIMER
-					TIMER_STOP
-#endif
 
-						for(i=0; i<num_blocks; i++)
-						{
-							if(verbosity >= 2) printf("Parallel Computation: '%X'\n", ocl_remainders[i]);
+						// for(i=0; i<num_blocks; i++)
+						// {
+						// 	if(verbosity >= 2) printf("Parallel Computation: '%X'\n", ocl_remainders[i]);
 
-							START_TIMER(write_page[i], OCD_TIMER_H2D, "CRC Data Copy", ocdTempTimer)
-							END_TIMER(ocdTempTimer)
-							clReleaseEvent(write_page[i]);
+						// 	START_TIMER(write_page[i], OCD_TIMER_H2D, "CRC Data Copy", ocdTempTimer)
+						// 	END_TIMER(ocdTempTimer)
+						// 	clReleaseEvent(write_page[i]);
 
-							START_TIMER(kernel_exec[i], OCD_TIMER_KERNEL, "CRC Kernel", ocdTempTimer)
-							END_TIMER(ocdTempTimer)
-							clReleaseEvent(kernel_exec[i]);
+						// 	START_TIMER(kernel_exec[i], OCD_TIMER_KERNEL, "CRC Kernel", ocdTempTimer)
+						// 	END_TIMER(ocdTempTimer)
+						// 	clReleaseEvent(kernel_exec[i]);
 
-							START_TIMER(read_page[i], OCD_TIMER_D2H, "CRC Data Copy", ocdTempTimer)
-							END_TIMER(ocdTempTimer)
-							clReleaseEvent(read_page[i]);
-						}
+						// 	START_TIMER(read_page[i], OCD_TIMER_D2H, "CRC Data Copy", ocdTempTimer)
+						// 	END_TIMER(ocdTempTimer)
+						// 	clReleaseEvent(read_page[i]);
+						// }
 
-#ifdef ENABLE_TIMER
-					TIMER_PRINT
-#endif
 
 						if(run_serial) // verify that we have the correct answer with regular C
 						{
@@ -434,9 +438,6 @@ int main(int argc, char** argv)
 		}
 
 
-#ifdef ENABLE_TIMER
-		TIMER_DEST
-#endif
 			for(i=0; i<num_blocks; i++)
 			{
 				clReleaseMemObject(dev_input[i]);
@@ -448,6 +449,8 @@ int main(int argc, char** argv)
 	clReleaseCommandQueue(read_queue);
 	clReleaseContext(context);
 	free(h_num);
+  stopwatch_stop(&sw);
+  printf("The time taken was %lf seconds \n", get_interval_by_sec(&sw)); 
 
 	return 0;
 }

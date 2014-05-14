@@ -9,10 +9,11 @@
 #include <cstdlib>
 #include <cstring>
 #include "nqueen_cl.h"
-#include "../../include/common_args.h"
+#include "common_args.h"
 
 //#define CHECK_ERROR(err) { if(err != CL_SUCCESS) throw CLError(err, __LINE__); }
 
+cl_event ocdTempEvent;
 class CLMemAutoRelease
 {
 public:
@@ -511,8 +512,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 						// get data from the device
 						err = clEnqueueReadBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ResultBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * 4, &results[0], 0, NULL, &ocdTempEvent);
 						clFinish(m_SolverInfo[device_idx].m_Queue);
-                				START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "m_ResultBuffer Copy", ocdTempTimer)
-                				END_TIMER(ocdTempTimer)
                 				CHKERR(err, "Error in reading m_ResultsBuffer");
 						//CHECK_ERROR(err);
 
@@ -561,8 +560,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 					if(!forbidden_written[device_idx]) {
 						err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ForbiddenBuffer, CL_FALSE, 0, (level + 1) * sizeof(int), forbidden + board_size - level - 1, 0, 0, &ocdTempEvent);
 						clFinish(m_SolverInfo[device_idx].m_Queue);
-        					START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "m_ForbiddenBuffer Copy", ocdTempTimer)
-        					END_TIMER(ocdTempTimer)
 						CHKERR(err, "Error in writing m_ForbiddenBuffer");
 						//CHECK_ERROR(err);
 						forbidden_written[device_idx] = true;
@@ -570,8 +567,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 
 					err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ParamBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * (4 + 32), &mask_vector[0], 0, 0, &ocdTempEvent);
 					clFinish(m_SolverInfo[device_idx].m_Queue);
-        				START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "m_ParamBuffer Copy", ocdTempTimer)
-        				END_TIMER(ocdTempTimer)
 					CHKERR(err, "Error in writing m_ParamBuffer");
 					//CHECK_ERROR(err);
 
@@ -586,8 +581,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 					if(m_SolverInfo[device_idx].m_bEnableAtomics) {
 						err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_GlobalIndex, CL_FALSE, 0, sizeof(int), &num_threads, 0, 0, &ocdTempEvent);
 						clFinish(m_SolverInfo[device_idx].m_Queue);
-        					START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "m_GlobalIndex Copy", ocdTempTimer)
-        					END_TIMER(ocdTempTimer)
 						CHKERR(err, "Error in writing m_GlobalIndex");
 						//CHECK_ERROR(err);
 					}
@@ -595,8 +588,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 					if(ocdTempEvent != 0) clReleaseEvent(ocdTempEvent);
 					err = clEnqueueNDRangeKernel(m_SolverInfo[device_idx].m_Queue, queen, 1, 0, work_dim, group_dim, 0, 0, &ocdTempEvent);
                 			clFinish(m_SolverInfo[device_idx].m_Queue);
-                			START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "nqueen Kernels", ocdTempTimer)
-                			END_TIMER(ocdTempTimer)
 					CHKERR(err, "Launch kernel error");
 					//CHECK_ERROR(err);
 
@@ -708,8 +699,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 				// get data from the device
 				err = clEnqueueReadBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ResultBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * 4, &results[0], 0, NULL, &ocdTempEvent);
 				clFinish(m_SolverInfo[device_idx].m_Queue);
-        			START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "m_ResultBuffer Copy", ocdTempTimer)
-        			END_TIMER(ocdTempTimer)
 				CHKERR(err, "Error in reading m_ResultsBuffer");
 				//CHECK_ERROR(err);
 
@@ -760,8 +749,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			if(!forbidden_written[device_idx]) {
 				err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ForbiddenBuffer, CL_FALSE, 0, (level + 1) * sizeof(int), forbidden + board_size - level - 1, 0, 0, &ocdTempEvent);
 				clFinish(m_SolverInfo[device_idx].m_Queue);
-        			START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "m_ForbiddenBuffer Copy", ocdTempTimer)
-        			END_TIMER(ocdTempTimer)
 				CHKERR(err, "Error in writing m_ForbiddenBuffer");
 				//CHECK_ERROR(err);
 				forbidden_written[device_idx] = true;
@@ -769,8 +756,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 
 			err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ParamBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * (4 + 32), &mask_vector[0], 0, 0, &ocdTempEvent);
 			clFinish(m_SolverInfo[device_idx].m_Queue);
-        		START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "m_ParamBuffer Copy", ocdTempTimer)
-        		END_TIMER(ocdTempTimer)
 			CHKERR(err, "Error in writing m_ParamBuffer");
 			//CHECK_ERROR(err);
 
@@ -795,8 +780,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			if(m_SolverInfo[device_idx].m_bEnableAtomics) {
 				err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_GlobalIndex, CL_FALSE, 0, sizeof(int), &num_thread, 0, 0, &ocdTempEvent);
 				clFinish(m_SolverInfo[device_idx].m_Queue);
-        		START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "m_GlobalIndex Copy", ocdTempTimer)
-        		END_TIMER(ocdTempTimer)
 				CHKERR(err, "Error in writing m_GlobalIndex");
 				//CHECK_ERROR(err);
 			}
@@ -804,8 +787,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			if(ocdTempEvent != 0) clReleaseEvent(ocdTempEvent);
 			err = clEnqueueNDRangeKernel(m_SolverInfo[device_idx].m_Queue, queen, 1, 0, work_dim, group_dim, 0, 0, &ocdTempEvent);
             		clFinish(m_SolverInfo[device_idx].m_Queue);
-            		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "nqueen Kernels", ocdTempTimer)
-            		END_TIMER(ocdTempTimer)
 			CHKERR(err, "Launch kernel error");
 
 			err = clFlush(m_SolverInfo[device_idx].m_Queue);
@@ -904,8 +885,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			// get data from the device
 			err = clEnqueueReadBuffer(m_SolverInfo[idx].m_Queue, m_SolverInfo[idx].m_ResultBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * 4, &results[0], 0, NULL, &ocdTempEvent);
 			clFinish(m_SolverInfo[device_idx].m_Queue);
-	        	START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "m_ResultBuffer Copy", ocdTempTimer)
-        		END_TIMER(ocdTempTimer)
 			CHKERR(err, "Error in reading m_ResultsBuffer");
 			//CHECK_ERROR(err);
 

@@ -67,7 +67,7 @@ int main(int argc, char** argv){
 				usage();
 				exit(0);
 				break;
-            case 's':
+      case 's':
                 page_size = atoi(optarg);
 				break;
 			case 'n':

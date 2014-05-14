@@ -78,6 +78,8 @@ int ocd_parse(int* argc, char*** argv)
 				fprintf(stderr, "%s\n", optsusage(op));
 	}
 
+
+
 	*argv += largc;
 	*argc = *argc - largc;
 	return largc;
@@ -241,19 +243,10 @@ void ocd_init(int* argc, char*** argv, ocd_requirements* reqs)
 {
 	ocd_parse(argc, argv);
 	ocd_check_requirements(reqs);
-	#ifdef ENABLE_TIMER
-	TIMER_INIT;
-	#endif
 }
 
 void ocd_finalize()
 {
-	#ifdef ENABLE_TIMER
-	//TIMER_FINISH;//TIMER_FINISH was broken into TIMER_STOP, TIMER_PRINT, TIMER_DEST, per nz-ocl to allow for extra functionalities
-	TIMER_STOP
-	TIMER_PRINT
-	TIMER_DEST
-	#endif
 }
 
 void checkDeviceChoice(int devType)
@@ -342,7 +335,7 @@ cl_program ocdBuildProgramFromFile(cl_context context, cl_device_id device_id, c
 	}
 	fseek(kernel_fp, 0, SEEK_END);
 	kernelLength = (size_t) ftell(kernel_fp);
-	kernelSource = malloc(sizeof(char)*kernelLength);
+	kernelSource = (char *)malloc(sizeof(char)*kernelLength);
 	if(kernelSource == NULL){
 		fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Heap Overflow! Cannot allocate space for kernelSource.");
 		exit(-1);

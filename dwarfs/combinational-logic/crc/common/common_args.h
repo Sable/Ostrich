@@ -14,7 +14,6 @@ extern "C" {
 #include <OpenCL/opencl.h>
 #endif
 #include <string.h>
-#include "rdtsc.h"
 #include <stdio.h>
 
 #define USEGPU 1
@@ -31,6 +30,10 @@ extern int _deviceType;
         exit(1); \
     }
 
+#define CHECK_ERROR(err) {if (err != CL_SUCCESS) { \
+	fprintf(stderr, "Error: %d\n", err);\
+	exit(1); \
+}}
 typedef struct ocd_options
 {
 	int platform_id;
