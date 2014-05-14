@@ -11,18 +11,35 @@ int layer_size = 0;
 
 void backprop_face() {
 	BPNN *net;
-	int i;
+	int i,j;
 	float out_err, hid_err;
 	long long time0,time1;
+    double sum_of_hidden_weights = 0;
+    double expected_sum_of_hidden_weights = 10.855641469359398;
+    int expected_layer_size = 2850000;
 	net = bpnn_create(layer_size, 16, 1); // (16, 1 can not be changed)
-	//printf("Input layer size : %d\n", layer_size);
 	load(net);
 	//entering the training kernel, only one iteration
-	//printf("Starting training kernel\n");
 	time0 = gettime();
 	bpnn_train_kernel(net, &out_err, &hid_err);
 	time1 = gettime();
-	printf("Output: %.4f\t%.4f\n", net->output_units[1], net->output_delta[1]);
+    
+    
+    if (layer_size == expected_layer_size) {
+        for (i=1; i<=net->hidden_n; ++i) {
+            for (j=1; j<=net->output_n; ++j) {
+                sum_of_hidden_weights += net->hidden_weights[i][j]; 
+            }
+        }
+        if (sum_of_hidden_weights != expected_sum_of_hidden_weights) {
+            printf("ERROR: expected a sum of hidden weights of '%f' for an input size of '%d' but got '%f' instead\n", expected_sum_of_hidden_weights, expected_layer_size, sum_of_hidden_weights);
+            exit(1);
+        }
+    } else {
+        printf("WARNING: no self-checking for input size of '%d'\n", layer_size);
+    }
+
+	//printf("Output: %.4f\t%.4f\n", net->output_units[1], net->output_delta[1]);
 	bpnn_free(net);
 	//printf("Training done\n");
 	printf("Computation time: %.12f s\n", (float) (time1-time0) / 1000000);
@@ -38,11 +55,6 @@ char *argv[];
 	}
 
 	layer_size = atoi(argv[1]);
-	
-	int seed;
-
-	seed = 7;
-	bpnn_initialize(seed);
 	backprop_face();
 
 	exit(0);

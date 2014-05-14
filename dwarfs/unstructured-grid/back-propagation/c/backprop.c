@@ -7,7 +7,6 @@
  ******************************************************************
  */
 
-#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -27,25 +26,12 @@
 	for (_i = 0; _i < _l; _i++) *_to++ = *_from++;\
 }
 
-/*** Return random number between 0.0 and 1.0 ***/
-float drnd() {
-	return ((float) rand() / (float) BIGRND);
-}
-
-/*** Return random number between -1.0 and 1.0 ***/
-float dpn1() {
-	return ((drnd() * 2.0) - 1.0);
-}
-
 /*** The squashing function.  Currently, it's a sigmoid. ***/
 
 float squash(x)
 float x;
 {
 	float m;
-	//x = -x;
-	//m = 1 + x + x*x/2 + x*x*x/6 + x*x*x*x/24 + x*x*x*x*x/120;
-	//return(1.0 / (1.0 + m));
 	return (1.0 / (1.0 + exp(-x)));
 }
 
@@ -96,9 +82,7 @@ int m, n;
 
 	for (i = 0; i <= m; i++) {
 		for (j = 0; j <= n; j++) {
-			// w[i][j] = (float) rand()/RAND_MAX;
 			w[i][j] = common_randJS();
-			//  w[i][j] = dpn1();
 		}
 	}
 }
@@ -109,7 +93,6 @@ int m;
 {
 	int i;
 	for (i = 0; i <= m; i++) {
-		//w[i] = (float) rand()/RAND_MAX;
 		w[i] = 0.1;
 	}
 }
@@ -127,13 +110,6 @@ int m, n;
 		}
 	}
 }
-
-
-void bpnn_initialize(seed) {
-	//printf("Random number generator seed: %d\n", seed);
-	srand(seed);
-}
-
 
 BPNN *bpnn_internal_create(n_in, n_hidden, n_out)
 int n_in, n_hidden, n_out;
@@ -218,11 +194,7 @@ int n_in, n_hidden, n_out;
 
 	newnet = bpnn_internal_create(n_in, n_hidden, n_out);
 
-#ifdef INITZERO
-	bpnn_zero_weights(newnet->input_weights, n_in, n_hidden);
-#else
 	bpnn_randomize_weights(newnet->input_weights, n_in, n_hidden);
-#endif
 	bpnn_randomize_weights(newnet->hidden_weights, n_hidden, n_out);
 	bpnn_zero_weights(newnet->input_prev_weights, n_in, n_hidden);
 	bpnn_zero_weights(newnet->hidden_prev_weights, n_hidden, n_out);
@@ -240,10 +212,6 @@ int n1, n2;
 
 	/*** Set up thresholding unit ***/
 	l1[0] = 1.0;
-	/*#ifdef OPEN
-		omp_set_num_threads(NUM_THREAD);
-		#pragma omp parallel for shared(conn, n1, n2, l1) private(k, j) reduction(+: sum) schedule(static)
-	#endif */
 	/*** For each unit in second layer ***/
 	for (j = 1; j <= n2; j++) {
 
@@ -307,16 +275,7 @@ float *delta, *ly, **w, **oldw;
 	float new_dw;
 	int k, j;
 	ly[0] = 1.0;
-	//eta = 0.3;
-	//momentum = 0.3;
 
-	/*#ifdef OPEN
-		omp_set_num_threads(NUM_THREAD);
-		#pragma omp parallel for  \
-				shared(oldw, w, delta) \
-			private(j, k, new_dw) \
-			firstprivate(ndelta, nly) 
-	#endif */
 	for (j = 1; j <= ndelta; j++) {
 		for (k = 0; k <= nly; k++) {
 			new_dw = ((ETA * delta[j] * ly[k]) + (MOMENTUM * oldw[k][j]));
@@ -376,71 +335,4 @@ float *eo, *eh;
 	bpnn_adjust_weights(net->hidden_delta, hid, net->input_units, in,
 			net->input_weights, net->input_prev_weights);
 
-}
-
-
-
-
-void bpnn_save(net, filename)
-BPNN *net;
-char *filename;
-{
-	int n1, n2, n3, i, j, memcnt;
-	float dvalue, **w;
-	char *mem;
-	///add//
-	FILE *pFile;
-	pFile = fopen( filename, "w+" );
-	///////
-	/*
-	if ((fd = creat(filename, 0644)) == -1) {
-		printf("BPNN_SAVE: Cannot create '%s'\n", filename);
-		return;
-	}
-	*/
-
-	n1 = net->input_n;  n2 = net->hidden_n;  n3 = net->output_n;
-	printf("Saving %dx%dx%d network to '%s'\n", n1, n2, n3, filename);
-	//fflush(stdout);
-
-	//write(fd, (char *) &n1, sizeof(int));
-	//write(fd, (char *) &n2, sizeof(int));
-	//write(fd, (char *) &n3, sizeof(int));
-
-	fwrite( (char *) &n1 , sizeof(char), sizeof(char), pFile);
-	fwrite( (char *) &n2 , sizeof(char), sizeof(char), pFile);
-	fwrite( (char *) &n3 , sizeof(char), sizeof(char), pFile);
-
-	
-
-	memcnt = 0;
-	w = net->input_weights;
-	mem = (char *) malloc ((unsigned) ((n1+1) * (n2+1) * sizeof(float)));
-	for (i = 0; i <= n1; i++) {
-		for (j = 0; j <= n2; j++) {
-			dvalue = w[i][j];
-			fastcopy(&mem[memcnt], &dvalue, sizeof(float));
-			memcnt += sizeof(float);
-		}
-	}
-	//write(fd, mem, (n1+1) * (n2+1) * sizeof(float));
-	fwrite( mem , (unsigned)(sizeof(float)), (unsigned) ((n1+1) * (n2+1) * sizeof(float)) , pFile);
-	free(mem);
-
-	memcnt = 0;
-	w = net->hidden_weights;
-	mem = (char *) malloc ((unsigned) ((n2+1) * (n3+1) * sizeof(float)));
-	for (i = 0; i <= n2; i++) {
-		for (j = 0; j <= n3; j++) {
-			dvalue = w[i][j];
-			fastcopy(&mem[memcnt], &dvalue, sizeof(float));
-			memcnt += sizeof(float);
-		}
-	}
-	//write(fd, mem, (n2+1) * (n3+1) * sizeof(float));
-	fwrite( mem , sizeof(float), (unsigned) ((n2+1) * (n3+1) * sizeof(float)) , pFile);
-	free(mem);
-
-	fclose(pFile);
-	return;
 }

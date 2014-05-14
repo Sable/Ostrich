@@ -4,9 +4,10 @@ include ../../common/options.mk
 
 EMOPTIONS = -s TOTAL_MEMORY=400000000
 
-ASMJS_RUN_ARGUMENT = ""
-C_RUN_ARGUMENT = ""
-JS_RUN_ARGUMENT = "runFFT()"
+EXPONENT = "10"
+ASMJS_RUN_ARGUMENT = "'"$(EXPONENT)"'"
+C_RUN_ARGUMENT = $(EXPONENT)
+JS_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
 FILENAME = "fft"
 
 build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl

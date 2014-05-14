@@ -42,7 +42,8 @@ void bpnn_free();
 void bpnn_train();
 void bpnn_feedforward();
 
-void bpnn_save();
+void bpnn_train_kernel();
 
+long long gettime();
 
 #endif
