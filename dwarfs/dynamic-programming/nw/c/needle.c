@@ -124,6 +124,11 @@ runTest( int argc, char** argv)
 		input_itemsets[j] = abs(common_rand()) % 10 + 1;
 	}
 
+	for ( i = 1 ; i < max_cols; i++){
+		for ( j = 1 ; j < max_rows; j++){
+		    reference[i*max_cols+j] = blosum62[input_itemsets[i*max_cols]][input_itemsets[j]];
+		}
+	}
 
 	for(i = 1; i< max_rows ; i++)
 		input_itemsets[i*max_cols] = -i * penalty;
