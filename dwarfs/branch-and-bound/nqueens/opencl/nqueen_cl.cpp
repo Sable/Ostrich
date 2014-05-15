@@ -108,6 +108,8 @@ void NQueenSolver::InitKernels(int i, int block_size)
 	if(!m_bForceNoVectorization && !m_SolverInfo[i].m_bCPU && vector_width != 1) {
 		m_SolverInfo[i].m_bEnableVectorize = true;
 		m_SolverInfo[i].m_bEnableLocal = true;
+
+
 	}
 
 	size_t max_size;
@@ -157,6 +159,7 @@ void NQueenSolver::InitKernels(int i, int block_size)
 	CHECK_ERROR(err);
 
 	err = clGetKernelWorkGroupInfo(m_SolverInfo[i].m_NQueen, device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &m_SolverInfo[i].m_nMaxWorkItems, 0);
+
 	CHECK_ERROR(err);
 
 	if(m_SolverInfo[i].m_nMaxWorkItems > 256) {
@@ -169,7 +172,9 @@ void NQueenSolver::InitKernels(int i, int block_size)
 
 	int block_multiplier = (max_size + 255) / 256;
 
+
 	if(m_SolverInfo[i].m_nThreads == 0) {
+
 		if(m_SolverInfo[i].m_bEnableAtomics) {
 			m_SolverInfo[i].m_nThreads = m_SolverInfo[i].m_nMaxWorkItems * units * (block_multiplier == 1 ? 1 : block_multiplier - 1);
 		}
@@ -202,6 +207,14 @@ void NQueenSolver::InitKernels(int i, int block_size)
 		}
 	}
 	
+}
+
+
+void printArray(unsigned int *a, int n){
+  for(int k = 0; k < n; ++k){
+    printf("%u, ", a[k]);
+    }
+  printf("\n\n\n");
 }
 
 
@@ -316,6 +329,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 		level = 11;
 	}
 
+
 //	std::cerr << "start: " << clock() << "\n";
 
 //	if(m_bCPU) {
@@ -366,6 +380,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 	std::vector<unsigned int> results(max_pitch * 4);
 	std::vector<bool> forbidden_written(threads.size());
 
+
 	long long solutions = 0;
 	long long unique_solutions = 0;
 	bool has_data = false;
@@ -376,10 +391,12 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 	int total_size = 0;
 	int last_total_size = 0;
 	int device_idx = 0;
+
 	for(int j = 0; j < board_size / 2; j++) {
 	// only do nqueen1
 //	int j = 1;
 //	{
+
 		unsigned int masks[32];
 		unsigned int left_masks[32];
 		unsigned int right_masks[32];
@@ -389,7 +406,11 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 		unsigned int border_mask = 0;
 		int idx = 0;
 		int i = 0;
-
+    
+    for(int k = 0; k < 32; ++k){
+      forbidden[k] = 0;
+    }
+    
 		masks[0] = (1 << j);
 		left_masks[0] = 1 << (j + 1);
 		right_masks[0] = (1 << j) >> 1;
@@ -402,7 +423,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			border_mask |= (1 << k);
 			border_mask |= (1 << (board_size - k - 1));
 		}
-
+      
 		for(int k = 0; k < board_size; k++) {
 			if(k == board_size - 2) {
 				forbidden[k] = border_mask;
@@ -453,28 +474,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 				}
 				total_size++;
 				if(total_size == max_threads) {
-//					std::cerr << "device A[" << device_idx << "]: " << clock() << "\n";
-//					if(has_data) {
-//						err = clEnqueueReadBuffer(m_Queue, result_buffer, CL_TRUE, 0, threads * sizeof(int) * 2, &results[0], 0, 0, 0);
-//						CHECK_ERROR(err);
-//
-//						if(m_bProfiling) {
-//							cl_ulong start, end;
-//							clGetEventProfilingInfo(profile_event, CL_PROFILING_COMMAND_START, sizeof(start), &start, 0);
-//							clGetEventProfilingInfo(profile_event, CL_PROFILING_COMMAND_END, sizeof(end), &end, 0);
-//
-//							m_TotalTime += end - start;
-//
-//							clReleaseEvent(profile_event);
-//							profile_event = 0;
-//						}
-//
-//						for(int k = 0; k < last_total_size; k++) {
-//							solutions += results[k];
-//							unique_solutions += results[k + threads];
-//						}
-//					}
-
 					// wait for available device
 					int last_device_idx = device_idx;
 					
@@ -661,6 +660,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 				mask_vector[k + max_pitch * 3] = 0;
 				mask_vector[k + max_pitch * 4] = 0;
 			}
+      
 
 			// wait for available device
 			int last_device_idx = device_idx;
@@ -716,7 +716,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 
 				for(int k = 0; k < m_SolverInfo[device_idx].m_nLastTotalSize; k++) {
 					if(results[k + max_pitch * 2] != results[k + max_pitch * 3]) {
-						printf("k=%d, max_pitch=%d results[%d]=%d results[%d]=%d\n", k, max_pitch, k+max_pitch*2, k+max_pitch*3);
+            printf("k=%d, max_pitch=%d results[%d]=%d results[%d]=%d\n", k, max_pitch, k+max_pitch*2, k+max_pitch*3);
 						throw CLError(2);
 					}
 
@@ -734,6 +734,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			int t_size = total_size > threads[device_idx] ? threads[device_idx] : total_size;
 			cl_int arg_threads = m_SolverInfo[device_idx].m_bEnableVectorize ? (t_size + vec_size - 1) / vec_size : t_size;
 			cl_int arg_pitch = m_SolverInfo[device_idx].m_bEnableVectorize ? max_pitch / vec_size : max_pitch;
+
 			err = clSetKernelArg(queen, 0, sizeof(cl_int), &arg_board_size);
 			err |= clSetKernelArg(queen, 1, sizeof(cl_int), &arg_level);
 			err |= clSetKernelArg(queen, 2, sizeof(cl_int), &arg_threads);
@@ -795,7 +796,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 //			std::cerr << "device [" << device_idx << "]: " << " launch: " << clock() << "\n";
 
 //			has_data = true;
-			m_SolverInfo[device_idx].m_nLastTotalSize = t_size;
+      m_SolverInfo[device_idx].m_nLastTotalSize = t_size;
 			//total_size = 0;
 
 			if(total_size > t_size) {
