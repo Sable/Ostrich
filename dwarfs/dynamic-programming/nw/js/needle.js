@@ -116,6 +116,4 @@ function runNeedle(dimensions, pen)
     }
     var t2 = Date.now();
     console.log("The total time spent isi "+ (t2-t1)/1000+ " seconds\n" );
-    console.log(Array.prototype.join.call(input_itemsets, ","));
-
 }

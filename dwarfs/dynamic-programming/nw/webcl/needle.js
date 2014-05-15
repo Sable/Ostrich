@@ -232,7 +232,6 @@ function webclNeedle(dim, penalty, platformIdx, deviceIdx){
     var t2 = performance.now();
 
     console.log("Total time elapsed is "+ (t2-t1)/1000+ " seconds");
-    console.log(Array.prototype.join.call(outputItemsets, ","));
     
     if(doTraceBack){
       for (i = maxRows - 2,  j = maxRows - 2; i>=0, j>=0;){
