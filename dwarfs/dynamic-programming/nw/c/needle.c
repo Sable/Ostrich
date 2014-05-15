@@ -160,7 +160,6 @@ runTest( int argc, char** argv)
 	printf("The total time spent is %lf seconds\n", (t2-t1));
 	printf("Random input ref val %d and input val %d\n", reference[0], input_itemsets[0]);
 
-
 	//#define TRACEBACK
 	/* #ifdef TRACEBACK */
 
