@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script id="clsrad" type="text/x-opencl">
+        #define fp double
+        #define NUMBER_THREADS 512
+
+        //  Prepare KERNEL
+        __kernel void 
+        prepare_kernel(long d_Ne, __global fp* d_I, __global fp* d_sums, __global fp* d_sums2) {
+            int bx = get_group_id(0);
+            int tx = get_local_id(0);
+            int ei = (bx*NUMBER_THREADS)+tx;
+
+            if(ei<d_Ne) {
+                d_sums[ei] = d_I[ei];
+                d_sums2[ei] = d_I[ei]*d_I[ei];
+            }
+        }
+
+        //  Reduce KERNEL
+        __kernel void 
+        reduce_kernel(long d_Ne, long d_no, int d_mul, __global fp* d_sums, __global fp* d_sums2, int gridDim) {
+            int bx = get_group_id(0);
+            int tx = get_local_id(0);
+            int ei = (bx*NUMBER_THREADS)+tx;
+            
+            int nf = NUMBER_THREADS-(gridDim*NUMBER_THREADS-d_no);
+            int df = 0;
+
+            __local fp d_psum[NUMBER_THREADS];
+            __local fp d_psum2[NUMBER_THREADS];
+
+            int i;
+
+            if(ei<d_no) {
+                d_psum[tx] = d_sums[ei*d_mul];
+                d_psum2[tx] = d_sums2[ei*d_mul];
+            }
+
+            if(nf == NUMBER_THREADS) {
+                for(i=2; i<=NUMBER_THREADS; i=2*i) {
+                    if((tx+1) % i == 0) {
+                        d_psum[tx] = d_psum[tx] + d_psum[tx-i/2];
+                        d_psum2[tx] = d_psum2[tx] + d_psum2[tx-i/2];
+                    }
+                    barrier(CLK_LOCAL_MEM_FENCE);
+                }
+                
+                if(tx==(NUMBER_THREADS-1)) {
+                    d_sums[bx*d_mul*NUMBER_THREADS] = d_psum[tx];
+                    d_sums2[bx*d_mul*NUMBER_THREADS] = d_psum2[tx];
+                }
+            }
+            // reduction of sums if last block is not full (common case)
+            else {
+                if(bx != (gridDim - 1)) {
+                    // sum of every 2, 4, ..., NUMBER_THREADS elements
+                    for(i=2; i<=NUMBER_THREADS; i=2*i) {
+                        // sum of elements
+                        if((tx+1) % i == 0) {
+                            d_psum[tx] = d_psum[tx] + d_psum[tx-i/2];
+                            d_psum2[tx] = d_psum2[tx] + d_psum2[tx-i/2];
+                        }
+                        // synchronization
+                        barrier(CLK_LOCAL_MEM_FENCE);
+                    }
+                    // final sumation by last thread in every block
+                    if(tx==(NUMBER_THREADS-1)) {
+                        d_sums[bx*d_mul*NUMBER_THREADS] = d_psum[tx];
+                        d_sums2[bx*d_mul*NUMBER_THREADS] = d_psum2[tx];
+                    }
+                }
+                // for not full block (last block)
+                else {
+                    // figure out divisibility
+                    for(i=2; i<=NUMBER_THREADS; i=2*i) {
+                        if(nf >= i) {
+                            df = i;
+                        }
+                    }
+                    // sum of every 2, 4, ..., NUMBER_THREADS elements
+                    for(i=2; i<=df; i=2*i) {
+                        // sum of elements (only busy threads)
+                        if((tx+1) % i == 0 && tx<df) {
+                            d_psum[tx] = d_psum[tx] + d_psum[tx-i/2];
+                            d_psum2[tx] = d_psum2[tx] + d_psum2[tx-i/2];
+                        }
+                        // synchronization (all threads)
+                        barrier(CLK_LOCAL_MEM_FENCE);
+                    }
+                    // remainder / final summation by last thread
+                    if(tx==(df-1)) {
+                        // compute the remainder and final summation by last busy thread
+                        for(i=(bx*NUMBER_THREADS)+df; i<(bx*NUMBER_THREADS)+nf; i++) {
+                            d_psum[tx] = d_psum[tx] + d_sums[i];
+                            d_psum2[tx] = d_psum2[tx] + d_sums2[i];
+                        }
+                        // final sumation by last thread in every block
+                        d_sums[bx*d_mul*NUMBER_THREADS] = d_psum[tx];
+                        d_sums2[bx*d_mul*NUMBER_THREADS] = d_psum2[tx];
+                    }
+                }
+            }
+        }
+
+        //  SRAD KERNEL
+        __kernel void 
+        srad_kernel(fp d_lambda, int d_Nr, int d_Nc, long d_Ne, __global int* d_iN, __global int* d_iS, __global int* d_jE, __global int* d_jW, __global fp* d_dN, __global fp* d_dS, __global fp* d_dE, __global fp* d_dW, fp d_q0sqr, __global fp* d_c, __global fp* d_I) {
+            int bx = get_group_id(0);
+            int tx = get_local_id(0);
+            int ei = bx*NUMBER_THREADS+tx;
+            int row;
+            int col;
+
+            fp d_Jc;
+            fp d_dN_loc, d_dS_loc, d_dW_loc, d_dE_loc;
+            fp d_c_loc;
+            fp d_G2,d_L,d_num,d_den,d_qsqr;
+            
+            row = (ei+1) % d_Nr - 1;
+            col = (ei+1) / d_Nr + 1 - 1;
+            
+            if((ei+1) % d_Nr == 0) {
+                row = d_Nr - 1;
+                col = col - 1;
+            }
+            
+            if(ei<d_Ne) {
+                d_Jc = d_I[ei];
+                // directional derivates (every element of IMAGE)(try to copy to shared memory or temp files)
+                d_dN_loc = d_I[d_iN[row] + d_Nr*col] - d_Jc;
+                d_dS_loc = d_I[d_iS[row] + d_Nr*col] - d_Jc;
+                d_dW_loc = d_I[row + d_Nr*d_jW[col]] - d_Jc;
+                d_dE_loc = d_I[row + d_Nr*d_jE[col]] - d_Jc;
+                     
+                // normalized discrete gradient mag squared (equ 52,53)
+                d_G2 = (d_dN_loc*d_dN_loc + d_dS_loc*d_dS_loc + d_dW_loc*d_dW_loc + d_dE_loc*d_dE_loc) / (d_Jc*d_Jc);
+
+                // normalized discrete laplacian (equ 54)
+                d_L = (d_dN_loc + d_dS_loc + d_dW_loc + d_dE_loc) / d_Jc;
+
+                // ICOV (equ 31/35)
+                d_num  = (0.5*d_G2) - ((1.0/16.0)*(d_L*d_L)) ;
+                d_den  = 1 + (0.25*d_L);
+                d_qsqr = d_num/(d_den*d_den);
+             
+                // diffusion coefficent (equ 33) (every element of IMAGE)
+                d_den = (d_qsqr-d_q0sqr) / (d_q0sqr * (1+d_q0sqr));
+                d_c_loc = 1.0 / (1.0+d_den);
+                
+                // saturate diffusion coefficent to 0-1 range
+                if (d_c_loc < 0) {
+                    d_c_loc = 0;
+                } else if (d_c_loc > 1) {
+                    d_c_loc = 1;
+                }
+
+                // save data to global memory
+                d_dN[ei] = d_dN_loc; 
+                d_dS[ei] = d_dS_loc; 
+                d_dW[ei] = d_dW_loc; 
+                d_dE[ei] = d_dE_loc;
+                d_c[ei] = d_c_loc;
+            }
+        }
+
+        //  SRAD2 KERNEL
+        __kernel void 
+        srad2_kernel(fp d_lambda, int d_Nr, int d_Nc, long d_Ne, __global int* d_iN, __global int* d_iS, __global int* d_jE, __global int* d_jW, __global fp* d_dN, __global fp* d_dS, __global fp* d_dE, __global fp* d_dW, __global fp* d_c, __global fp* d_I) {
+            int bx = get_group_id(0);
+            int tx = get_local_id(0);
+            int ei = bx*NUMBER_THREADS+tx;
+            int row;
+            int col;
+            fp d_cN,d_cS,d_cW,d_cE;
+            fp d_D;
+
+            row = (ei+1) % d_Nr - 1;
+            col = (ei+1) / d_Nr + 1 - 1;
+            if((ei+1) % d_Nr == 0) {
+                row = d_Nr - 1;
+                col = col - 1;
+            }
+
+            if(ei<d_Ne) {
+                // diffusion coefficent
+                d_cN = d_c[ei];
+                d_cS = d_c[d_iS[row] + d_Nr*col];
+                d_cW = d_c[ei];
+                d_cE = d_c[row + d_Nr * d_jE[col]];
+                // divergence (equ 58)
+                d_D = d_cN*d_dN[ei] + d_cS*d_dS[ei] + d_cW*d_dW[ei] + d_cE*d_dE[ei];
+                // image update (equ 61) (every element of IMAGE)
+                d_I[ei] = d_I[ei] + 0.25*d_lambda*d_D;
+            }
+        }
+    </script>
+    <script type="text/javascript" src="../../../common/common_rand.js"></script>
+    <script type="text/javascript" src="../data/data.js"></script>
+    <script src="srad.js"></script>
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
