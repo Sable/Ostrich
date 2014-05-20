@@ -43,10 +43,11 @@ function lavamd(boxes1d) {
     var time0, time1;
 
     // counters
-    var i, j, k, l, m, n;
+    var i, j, k, l, m, n, expected_boxes1d = 6;
 
     // system memory
     var par_cpu = {}, dim_cpu = {}, box_cpu = [], rv_cpu = [], qv_cpu, fv_cpu = [], nh;
+    var expectedAns = [4144561.0, 181665.0, -190914.0, 140373.0];
 
     // assign default values
     dim_cpu.cores_arg = 1;
@@ -143,6 +144,22 @@ function lavamd(boxes1d) {
     time0 = performance.now();
 
     kernel_cpu(par_cpu, dim_cpu, box_cpu, rv_cpu, qv_cpu, fv_cpu);
+
+    var sum = space_mem();
+    if (dim_cpu.boxes1d_arg == expected_boxes1d) {
+        for(i=0; i<dim_cpu.space_elem; i=i+1) {
+            sum.v += fv_cpu[i].v;
+            sum.x += fv_cpu[i].x;
+            sum.y += fv_cpu[i].y;
+            sum.z += fv_cpu[i].z;
+        }
+        if(Math.round(sum.v) != expectedAns[0] || Math.round(sum.x) != expectedAns[1] || Math.round(sum.y) != expectedAns[2] || Math.round(sum.z) != expectedAns[3]) {
+            console.log("Expected: [" + expectedAns[0] + ", " + expectedAns[1] + ", " + expectedAns[2] + ", " + expectedAns[3] + "]");
+            console.log("Got: [" + sum.v + ", " + sum.x + ", " + sum.y + ", " + sum.z + "]");
+        }
+    } else {
+        console.log("WARNING: no self-checking for input size of '%d'\n", dim_cpu.boxes1d_arg);
+    }
 
     time1 = performance.now();
     console.log("Total time: " + (time1-time0) / 1000 + " s");
