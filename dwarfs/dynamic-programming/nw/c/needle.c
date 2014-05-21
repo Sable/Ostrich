@@ -118,7 +118,7 @@ int input_index(int row_index, int col_index) {
 #ifdef CHECK_ACCESS_BOUNDS
     if (row_index < 0 || row_index >= max_rows ||
         col_index < 0 || col_index >= max_cols) {
-        printf("ERROR: out of bounds access i: %d j: %d\n", row_index, col_index);
+        printf("ERROR: out of bounds access row_index: %d col_index: %d\n", row_index, col_index);
         exit(1);
     }
 #endif
@@ -363,13 +363,13 @@ runTest( int argc, char** argv)
             traceback = maximum(nw, w, n);
 		} else if ( i == 0 ){
             n_limit = 1;
-		    traceback = w =  input_itemsets[input_index(i,j-1)] - penalty;
+            w_limit = 0;
 		} else if ( j == 0 ){
+            n_limit = 0;
             w_limit = 1;
-            traceback = n = input_itemsets[input_index(i-1,j)] - penalty;
 		} else{ printf("ERROR\n"); exit(1); } 
 
-		if(traceback == nw && n_limit == 0 && w_limit == 0) {
+		if(n_limit == 0 && w_limit == 0 && traceback == nw) {
             // Add the matching items to each of the aligned sequences
             // and move iterators to the previous items
             aligned_seq_1[aligned_index_1--] = input_seq_1[i--];
