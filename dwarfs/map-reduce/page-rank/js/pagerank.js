@@ -77,6 +77,7 @@ function reduce_page_rank(page_ranks, maps, n){
     }
 
     new_rank = ((1-d_factor)/n)+(d_factor*new_rank);
+    page_ranks[i] = new_rank;
     dif = Math.abs(new_rank - page_ranks[i]) > dif ? Math.abs(new_rank - page_ranks[i]) : dif;
   }
   return dif;
@@ -103,7 +104,7 @@ function runPageRank(n_, iter_, thresh_){
   init_array(page_ranks, n, 1.0 / n);
 
   var t1 = performance.now();
-  for(t=0; t< iter && max_diff > thresh; ++t){
+  for(t=0; t< iter; ++t){
     map_page_rank(pages, page_ranks, maps, noutlinks, n);
     max_diff = reduce_page_rank(page_ranks, maps, n);
   }

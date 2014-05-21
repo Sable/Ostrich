@@ -48,18 +48,6 @@ void  kernel_cpu(	par_str par,
 	//======================================================================================================================================================150
 	//	Variables
 	//======================================================================================================================================================150
-
-	// timer
-	long long time0;
-
-	time0 = get_time();
-
-	// timer
-	long long time1;
-	long long time2;
-	long long time3;
-	long long time4;
-
 	// parameters
 	fp alpha;
 	fp a2;
@@ -86,15 +74,11 @@ void  kernel_cpu(	par_str par,
 	fp fxij,fyij,fzij;
 	THREE_VECTOR d;
 
-	time1 = get_time();
-
 	//======================================================================================================================================================150
 	//	MCPU SETUP
 	//======================================================================================================================================================150
 
 	//omp_set_num_threads(dim.cores_arg);
-
-	time2 = get_time();
 
 	//======================================================================================================================================================150
 	//	INPUTS
@@ -102,8 +86,6 @@ void  kernel_cpu(	par_str par,
 
 	alpha = par.alpha;
 	a2 = 2.0*alpha*alpha;
-
-	time3 = get_time();
 
 	//======================================================================================================================================================150
 	//	PROCESS INTERACTIONS
@@ -197,27 +179,11 @@ void  kernel_cpu(	par_str par,
 
 	} // for l
 
-	time4 = get_time();
-
     /*
     for (i = 0; i < NUMBER_PAR_PER_BOX; ++i) {
         printf("%f %f %f %f\n", fA[i].v, fA[i].x, fA[i].y, fA[i].z);
     }
     */
-
-	//======================================================================================================================================================150
-	//	DISPLAY TIMING
-	//======================================================================================================================================================150
-
-	printf("Time spent in different stages of CPU/MCPU KERNEL:\n");
-
-	printf("%15.12f s, %15.12f : CPU/MCPU: VARIABLES\n",				(float) (time1-time0) / 1000000, (float) (time1-time0) / (float) (time4-time0) * 100);
-	printf("%15.12f s, %15.12f : MCPU: SET DEVICE\n",					(float) (time2-time1) / 1000000, (float) (time2-time1) / (float) (time4-time0) * 100);
-	printf("%15.12f s, %15.12f : CPU/MCPU: INPUTS\n", 				(float) (time3-time2) / 1000000, (float) (time3-time2) / (float) (time4-time0) * 100);
-	printf("%15.12f s, %15.12f : CPU/MCPU: KERNEL\n",					(float) (time4-time3) / 1000000, (float) (time4-time3) / (float) (time4-time0) * 100);
-
-	printf("Total time:\n");
-	printf("%.12f s\n", 												(float) (time4-time0) / 1000000);
 
 } // main
 

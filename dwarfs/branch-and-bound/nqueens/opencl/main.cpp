@@ -110,7 +110,6 @@ int main(int argc, char** argv)
 		devices.clear();
 		devices.resize(1);
 		devices[0] = device_id;
-
 		try {
 			NQueenSolver nqueen(context, devices, profiling, threads, block_size, local, noatomics, novec, use_vec4);
 			for(int i = 0; i < devices.size(); i++) {

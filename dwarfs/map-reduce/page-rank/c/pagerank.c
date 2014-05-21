@@ -70,6 +70,7 @@ void reduce_page_rank(float *page_ranks, float *maps, int n, float *max_diff){
     }
 
     new_rank = ((1-d_factor)/n)+(d_factor*new_rank);
+    page_ranks[i] = new_rank;
     dif = fabs(new_rank - page_ranks[i]) > dif ? fabs(new_rank - page_ranks[i]) : dif; 
   }
   *max_diff = dif;
@@ -130,7 +131,7 @@ int main(int argc, char *argv[]){
   init_array(page_ranks, n, 1.0f / (float) n);
 
   stopwatch_start(&sw);
-  for(t=0; t< iter && max_diff > thresh; ++t){
+  for(t=0; t< iter; ++t){
     map_page_rank(pages, page_ranks, maps, noutlinks, n);
     reduce_page_rank(page_ranks, maps, n, &max_diff);
   }

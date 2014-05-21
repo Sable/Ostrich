@@ -5,8 +5,8 @@
 #include <math.h>
 #include "needle.h"
 #include <sys/time.h>
-#include "../../include/rdtsc.h"
-#include "../../include/common_args.h"
+#include "common_args.h"
+#include "common.h"
 
 //#define TRACE
 
@@ -39,6 +39,7 @@ int blosum62[24][24] = {
 	{-4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,  1}
 };
 
+cl_event ocdTempEvent;
 double gettime() {
 	struct timeval t;
 	gettimeofday(&t,NULL);
@@ -91,6 +92,7 @@ void runTest( int argc, char** argv)
 	cl_mem matrix_cuda,referrence_cuda;
 	int size;
 	int i, j;
+  stopwatch sw;
 
 	cl_int errcode;
 
@@ -110,6 +112,8 @@ void runTest( int argc, char** argv)
 		fprintf(stderr,"The dimension values must be a multiple of 16\n");
 		exit(1);
 	}
+
+  stopwatch_start(&sw);
 
 	max_rows = max_rows + 1;
 	max_cols = max_cols + 1;
@@ -202,19 +206,16 @@ void runTest( int argc, char** argv)
 
 	errcode = clEnqueueWriteBuffer(commands, referrence_cuda, CL_TRUE, 0, sizeof(int)*size, (void *) referrence, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "NW Reference Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errcode, "Failed to enqueue write buffer!");
 
 	errcode = clEnqueueWriteBuffer(commands, matrix_cuda, CL_TRUE, 0, sizeof(int)*size, (void *) input_itemsets, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "NW Item Set Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errcode, "Failed to enqueue write buffer!");
 
 	size_t localWorkSize[2] = {BLOCK_SIZE, 1}; //BLOCK_SIZE work items per work-group in 1D only.
 	size_t globalWorkSize[2];
 	int block_width = ( max_cols - 1 )/BLOCK_SIZE;
+  printf("block width is %d \n\n\n", );
 
 	printf("Processing top-left matrix\n");
 	//process top-left matrix
@@ -235,8 +236,6 @@ void runTest( int argc, char** argv)
 		CHKERR(errcode, "Failed to set kernel arguments!");
 		errcode = clEnqueueNDRangeKernel(commands, clKernel_nw1, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "NW Kernel nw1", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errcode, "Failed to enqueue kernel!");
 	}
 	printf("Processing bottom-right matrix\n");
@@ -256,17 +255,31 @@ void runTest( int argc, char** argv)
 		CHKERR(errcode, "Failed to set kernel arguments!");
 		errcode = clEnqueueNDRangeKernel(commands, clKernel_nw2, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "NW Kernel nw2", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errcode, "Failed to enqueue kernel!");
 	}
 
 	errcode = clEnqueueReadBuffer(commands, matrix_cuda, CL_TRUE, 0, sizeof(float)*size, (void *) output_itemsets, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "NW Item Set Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errcode, "Failed to enqueue read buffer!");
 
+	clReleaseMemObject(referrence_cuda);
+	clReleaseMemObject(matrix_cuda);
+	clReleaseKernel(clKernel_nw1);
+	clReleaseKernel(clKernel_nw2);
+	clReleaseProgram(clProgram);
+	clReleaseCommandQueue(commands);
+	clReleaseContext(context);
+
+
+  stopwatch_stop(&sw);
+  printf("The total time taken is %lf seconds!\n", get_interval_by_sec(&sw));
+
+
+  int k;
+  for(k=0; k < max_rows*max_cols; ++k){
+    printf("%d, ", output_itemsets[k]);
+  }
+  printf("\n");
 
 #ifdef TRACE
 
@@ -320,13 +333,6 @@ void runTest( int argc, char** argv)
 
 #endif
 
-	clReleaseMemObject(referrence_cuda);
-	clReleaseMemObject(matrix_cuda);
-	clReleaseKernel(clKernel_nw1);
-	clReleaseKernel(clKernel_nw2);
-	clReleaseProgram(clProgram);
-	clReleaseCommandQueue(commands);
-	clReleaseContext(context);
 
 }
 
