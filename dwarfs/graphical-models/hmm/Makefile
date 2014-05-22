@@ -18,6 +18,10 @@ build/c:
 build/c/hmm:	build/c \
             c/main_bwa_hmm.c
 	$(CCOMP) c/main_bwa_hmm.c \
+			 common/common.c \
+			 ../../common/common_rand.c \
+			 -Icommon \
+			 -I../../common \
 			 -lm -o build/c/hmm
 
 build/c/run.sh: build/c/hmm build/c
@@ -29,6 +33,10 @@ build/asmjs:
 build/asmjs/hmm.js: build/asmjs \
             c/main_bwa_hmm.c
 	$(EMCC) c/main_bwa_hmm.c \
+			common/common.c \
+			../../common/common_rand.c \
+			-Icommon \
+			-I../../common \
 			$(EMOPTIONS) -lm -o build/asmjs/hmm.js
 
 build/asmjs/run.html: build/asmjs \
