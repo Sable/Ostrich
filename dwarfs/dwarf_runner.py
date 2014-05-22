@@ -11,6 +11,9 @@ class Benchmark(object):
         self.dir = dir
 
     def run_c_benchmark(self):
+        """Run the C benchmark.  Assume that there is a build/c/run.sh script
+           that will feed all the correct parameters."""
+
         prev_dir = os.getcwd()
         os.chdir(self.dir)
 
@@ -26,8 +29,9 @@ class Benchmark(object):
         return scipy.mean([r['time'] for r in results])
 
 
-    def build_benchmark(self):
+    def build(self):
         """Move into the benchmark's directory and run make clean && make."""
+
         prev_dir = os.getcwd()
         os.chdir(self.dir)
         subprocess.call(["make", "clean"])
@@ -41,5 +45,5 @@ BENCHMARKS = [
 ]
 
 for b in BENCHMARKS:
-    b.build_benchmark()
+    b.build()
     print "%s,%s" % (b.name, b.run_c_benchmark())
