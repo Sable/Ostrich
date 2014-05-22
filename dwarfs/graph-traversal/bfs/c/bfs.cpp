@@ -12,7 +12,7 @@
 #define MIN_NODES      20
 #define MAX_NODES      ULONG_MAX
 #define MIN_EDGES      2
-#define MAX_INIT_EDGES 4 
+#define MAX_INIT_EDGES 4
 #define MIN_WEIGHT     1
 #define MAX_WEIGHT     10
 
@@ -21,7 +21,7 @@
 using namespace std;
 
 //Structure to hold a node information
-struct Node 
+struct Node
 {
     int starting;
     int no_of_edges;
@@ -138,22 +138,21 @@ void BFSGraph( int argc, char** argv) {
         total_cost += h_cost[i];
     }
 
-    
+
     if (no_of_nodes == expected_no_of_nodes) {
         if (total_cost != expected_total_cost) {
-            fprintf(stdout, "ERROR: the total cost obtained for '%d' nodes  is '%lu' while the expected cost is '%lu'\n", no_of_nodes, total_cost, expected_total_cost);
+            fprintf(stderr, "ERROR: the total cost obtained for '%d' nodes  is '%lu' while the expected cost is '%lu'\n", no_of_nodes, total_cost, expected_total_cost);
             exit(1);
         }
     } else {
-        fprintf(stdout, "WARNING: no self-checking step for '%u' nodes, only valid for '%u' nodes\n", no_of_nodes, expected_no_of_nodes);
+        fprintf(stderr, "WARNING: no self-checking step for '%u' nodes, only valid for '%u' nodes\n", no_of_nodes, expected_no_of_nodes);
     }
 
-    fprintf(stdout, "// Init time     : %f s\n", get_interval_by_sec(&sw2));
-    fprintf(stdout, "// Traversal time: %f s\n", get_interval_by_sec(&sw1));
+    fprintf(stderr, "// Init time     : %f s\n", get_interval_by_sec(&sw2));
 
     if (verbose) {
         for(int i=0;i<no_of_nodes;i++) {
-            printf("%d) cost:%d\n",i,h_cost[i]);
+            fprintf(stderr, "%d) cost:%d\n",i,h_cost[i]);
         }
     }
 
@@ -165,6 +164,7 @@ void BFSGraph( int argc, char** argv) {
     free(h_graph_visited);
     free(h_cost);
 
+    fprintf(stdout, "{\"options\": \"%d\", \"time\": %f, \"status\": %d}\n", no_of_nodes, get_interval_by_sec(&sw1), 1);
 }
 
 
