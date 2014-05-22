@@ -14,53 +14,53 @@ char* expected_aligned_seq_2_chars = "------------------------------------------
 
 void runTest( int argc, char** argv);
 int maximum( int a,
-		int b,
-		int c){
+             int b,
+             int c){
 
-	int k;
-	if( a <= b )
-		k = b;
-	else
-		k = a;
+    int k;
+    if( a <= b )
+        k = b;
+    else
+        k = a;
 
-	if( k <=c )
-		return(c);
-	else
-		return(k);
+    if( k <=c )
+        return(c);
+    else
+        return(k);
 }
 
 
 int blosum62[24][24] = {
-	{ 4, -1, -2, -2,  0, -1, -1,  0, -2, -1, -1, -1, -1, -2, -1,  1,  0, -3, -2,  0, -2, -1,  0, -4},
-	{-1,  5,  0, -2, -3,  1,  0, -2,  0, -3, -2,  2, -1, -3, -2, -1, -1, -3, -2, -3, -1,  0, -1, -4},
-	{-2,  0,  6,  1, -3,  0,  0,  0,  1, -3, -3,  0, -2, -3, -2,  1,  0, -4, -2, -3,  3,  0, -1, -4},
-	{-2, -2,  1,  6, -3,  0,  2, -1, -1, -3, -4, -1, -3, -3, -1,  0, -1, -4, -3, -3,  4,  1, -1, -4},
-	{ 0, -3, -3, -3,  9, -3, -4, -3, -3, -1, -1, -3, -1, -2, -3, -1, -1, -2, -2, -1, -3, -3, -2, -4},
-	{-1,  1,  0,  0, -3,  5,  2, -2,  0, -3, -2,  1,  0, -3, -1,  0, -1, -2, -1, -2,  0,  3, -1, -4},
-	{-1,  0,  0,  2, -4,  2,  5, -2,  0, -3, -3,  1, -2, -3, -1,  0, -1, -3, -2, -2,  1,  4, -1, -4},
-	{ 0, -2,  0, -1, -3, -2, -2,  6, -2, -4, -4, -2, -3, -3, -2,  0, -2, -2, -3, -3, -1, -2, -1, -4},
-	{-2,  0,  1, -1, -3,  0,  0, -2,  8, -3, -3, -1, -2, -1, -2, -1, -2, -2,  2, -3,  0,  0, -1, -4},
-	{-1, -3, -3, -3, -1, -3, -3, -4, -3,  4,  2, -3,  1,  0, -3, -2, -1, -3, -1,  3, -3, -3, -1, -4},
-	{-1, -2, -3, -4, -1, -2, -3, -4, -3,  2,  4, -2,  2,  0, -3, -2, -1, -2, -1,  1, -4, -3, -1, -4},
-	{-1,  2,  0, -1, -3,  1,  1, -2, -1, -3, -2,  5, -1, -3, -1,  0, -1, -3, -2, -2,  0,  1, -1, -4},
-	{-1, -1, -2, -3, -1,  0, -2, -3, -2,  1,  2, -1,  5,  0, -2, -1, -1, -1, -1,  1, -3, -1, -1, -4},
-	{-2, -3, -3, -3, -2, -3, -3, -3, -1,  0,  0, -3,  0,  6, -4, -2, -2,  1,  3, -1, -3, -3, -1, -4},
-	{-1, -2, -2, -1, -3, -1, -1, -2, -2, -3, -3, -1, -2, -4,  7, -1, -1, -4, -3, -2, -2, -1, -2, -4},
-	{ 1, -1,  1,  0, -1,  0,  0,  0, -1, -2, -2,  0, -1, -2, -1,  4,  1, -3, -2, -2,  0,  0,  0, -4},
-	{ 0, -1,  0, -1, -1, -1, -1, -2, -2, -1, -1, -1, -1, -2, -1,  1,  5, -2, -2,  0, -1, -1,  0, -4},
-	{-3, -3, -4, -4, -2, -2, -3, -2, -2, -3, -2, -3, -1,  1, -4, -3, -2, 11,  2, -3, -4, -3, -2, -4},
-	{-2, -2, -2, -3, -2, -1, -2, -3,  2, -1, -1, -2, -1,  3, -3, -2, -2,  2,  7, -1, -3, -2, -1, -4},
-	{ 0, -3, -3, -3, -1, -2, -2, -3, -3,  3,  1, -2,  1, -1, -2, -2,  0, -3, -1,  4, -3, -2, -1, -4},
-	{-2, -1,  3,  4, -3,  0,  1, -1,  0, -3, -4,  0, -3, -3, -2,  0, -1, -4, -3, -3,  4,  1, -1, -4},
-	{-1,  0,  0,  1, -3,  3,  4, -2,  0, -3, -3,  1, -1, -3, -1,  0, -1, -3, -2, -2,  1,  4, -1, -4},
-	{ 0, -1, -1, -1, -2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -2,  0,  0, -2, -1, -1, -1, -1, -1, -4},
-	{-4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,  1}
+    { 4, -1, -2, -2,  0, -1, -1,  0, -2, -1, -1, -1, -1, -2, -1,  1,  0, -3, -2,  0, -2, -1,  0, -4},
+    {-1,  5,  0, -2, -3,  1,  0, -2,  0, -3, -2,  2, -1, -3, -2, -1, -1, -3, -2, -3, -1,  0, -1, -4},
+    {-2,  0,  6,  1, -3,  0,  0,  0,  1, -3, -3,  0, -2, -3, -2,  1,  0, -4, -2, -3,  3,  0, -1, -4},
+    {-2, -2,  1,  6, -3,  0,  2, -1, -1, -3, -4, -1, -3, -3, -1,  0, -1, -4, -3, -3,  4,  1, -1, -4},
+    { 0, -3, -3, -3,  9, -3, -4, -3, -3, -1, -1, -3, -1, -2, -3, -1, -1, -2, -2, -1, -3, -3, -2, -4},
+    {-1,  1,  0,  0, -3,  5,  2, -2,  0, -3, -2,  1,  0, -3, -1,  0, -1, -2, -1, -2,  0,  3, -1, -4},
+    {-1,  0,  0,  2, -4,  2,  5, -2,  0, -3, -3,  1, -2, -3, -1,  0, -1, -3, -2, -2,  1,  4, -1, -4},
+    { 0, -2,  0, -1, -3, -2, -2,  6, -2, -4, -4, -2, -3, -3, -2,  0, -2, -2, -3, -3, -1, -2, -1, -4},
+    {-2,  0,  1, -1, -3,  0,  0, -2,  8, -3, -3, -1, -2, -1, -2, -1, -2, -2,  2, -3,  0,  0, -1, -4},
+    {-1, -3, -3, -3, -1, -3, -3, -4, -3,  4,  2, -3,  1,  0, -3, -2, -1, -3, -1,  3, -3, -3, -1, -4},
+    {-1, -2, -3, -4, -1, -2, -3, -4, -3,  2,  4, -2,  2,  0, -3, -2, -1, -2, -1,  1, -4, -3, -1, -4},
+    {-1,  2,  0, -1, -3,  1,  1, -2, -1, -3, -2,  5, -1, -3, -1,  0, -1, -3, -2, -2,  0,  1, -1, -4},
+    {-1, -1, -2, -3, -1,  0, -2, -3, -2,  1,  2, -1,  5,  0, -2, -1, -1, -1, -1,  1, -3, -1, -1, -4},
+    {-2, -3, -3, -3, -2, -3, -3, -3, -1,  0,  0, -3,  0,  6, -4, -2, -2,  1,  3, -1, -3, -3, -1, -4},
+    {-1, -2, -2, -1, -3, -1, -1, -2, -2, -3, -3, -1, -2, -4,  7, -1, -1, -4, -3, -2, -2, -1, -2, -4},
+    { 1, -1,  1,  0, -1,  0,  0,  0, -1, -2, -2,  0, -1, -2, -1,  4,  1, -3, -2, -2,  0,  0,  0, -4},
+    { 0, -1,  0, -1, -1, -1, -1, -2, -2, -1, -1, -1, -1, -2, -1,  1,  5, -2, -2,  0, -1, -1,  0, -4},
+    {-3, -3, -4, -4, -2, -2, -3, -2, -2, -3, -2, -3, -1,  1, -4, -3, -2, 11,  2, -3, -4, -3, -2, -4},
+    {-2, -2, -2, -3, -2, -1, -2, -3,  2, -1, -1, -2, -1,  3, -3, -2, -2,  2,  7, -1, -3, -2, -1, -4},
+    { 0, -3, -3, -3, -1, -2, -2, -3, -3,  3,  1, -2,  1, -1, -2, -2,  0, -3, -1,  4, -3, -2, -1, -4},
+    {-2, -1,  3,  4, -3,  0,  1, -1,  0, -3, -4,  0, -3, -3, -2,  0, -1, -4, -3, -3,  4,  1, -1, -4},
+    {-1,  0,  0,  1, -3,  3,  4, -2,  0, -3, -3,  1, -1, -3, -1,  0, -1, -3, -2, -2,  1,  4, -1, -4},
+    { 0, -1, -1, -1, -2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -2,  0,  0, -2, -1, -1, -1, -1, -1, -4},
+    {-4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,  1}
 };
 
 double gettime() {
-	struct timeval t;
-	gettimeofday(&t,NULL);
-	return t.tv_sec+t.tv_usec*1e-6;
+    struct timeval t;
+    gettimeofday(&t,NULL);
+    return t.tv_sec+t.tv_usec*1e-6;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,14 +68,14 @@ double gettime() {
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv)
 {
-	runTest( argc, argv);
+    runTest( argc, argv);
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 void usage(int argc, char **argv)
 {
-	fprintf(stderr, "Usage: %s \n", argv[0]);
+    fprintf(stderr, "Usage: %s \n", argv[0]);
     fprintf(stderr, "Options:\n");
     fprintf(stderr, "    -n <size>             : Number of items to generate for each of the two sequences to be matched.\n");
     fprintf(stderr, "    -g <penalty_cost>     : Cost of introducing a gap instead of matching two elements.\n");
@@ -83,14 +83,14 @@ void usage(int argc, char **argv)
     fprintf(stderr, "    -v                    : Print input data and resulting aligned sequences. \n");
     fprintf(stderr, "    -i                    : Print intermediary results. Implies -v. \n");
     fprintf(stderr, "    -s                    : Compute the intermediary results line-by-line rather than diagonally. \n");
-	exit(1);
+    exit(1);
 }
 
 char to_char(int i) {
     char characters[26] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     if (i<-1 || i>=26) {
-        printf("ERROR: Invalid conversion to character value, integer '%d' out of range\n", i);
+        fprintf(stderr, "ERROR: Invalid conversion to character value, integer '%d' out of range\n", i);
         exit(1);
     }
 
@@ -105,7 +105,7 @@ int to_int(char c) {
         return -1;
     } else {
         if (c < 'A' || c > 'Z') {
-            printf("ERROR: Invalid conversion to int value, char '%c' out of range\n", c);
+            fprintf(stderr, "ERROR: Invalid conversion to int value, char '%c' out of range\n", c);
             exit(1);
         }
         return c - 'A';
@@ -118,23 +118,23 @@ int input_index(int row_index, int col_index) {
 #ifdef CHECK_ACCESS_BOUNDS
     if (row_index < 0 || row_index >= max_rows ||
         col_index < 0 || col_index >= max_cols) {
-        printf("ERROR: out of bounds access row_index: %d col_index: %d\n", row_index, col_index);
+        fprintf(stderr, "ERROR: out of bounds access row_index: %d col_index: %d\n", row_index, col_index);
         exit(1);
     }
 #endif
-    return row_index * max_cols + col_index; 
+    return row_index * max_cols + col_index;
 }
 
 int* to_int_values(char* s) {
     int length = strlen(s);
     int i;
-	int* int_values = (int *)malloc( length * sizeof(int) );
+    int* int_values = (int *)malloc( length * sizeof(int) );
 
     for (i=0; i<length; ++i) {
         int_values[i] = to_int(s[i]);
     }
 
-    return int_values; 
+    return int_values;
 }
 
 int seq_equal(int* seq_1, int* seq_2, int seq_1_size, int seq_2_size) {
@@ -152,14 +152,14 @@ int seq_equal(int* seq_1, int* seq_2, int seq_1_size, int seq_2_size) {
     return 1;
 }
 
-	void
+void
 runTest( int argc, char** argv)
 {
-	int penalty,idx, index;
-	int *input_itemsets, *output_itemsets, *reference;
-	int size;
-	double t1, t2;
-	int i,j,k,l,c;
+    int penalty,idx, index;
+    int *input_itemsets, *output_itemsets, *reference;
+    int size;
+    double t1, t2;
+    int i,j,k,l,c;
     int nw, n, w, traceback;
     int new_nw, new_w, new_n;
 
@@ -185,85 +185,85 @@ runTest( int argc, char** argv)
 
     penalty = 1;
 
-	while((c = getopt(argc, argv, "n:g:p:vsih")) != -1) {
+    while((c = getopt(argc, argv, "n:g:p:vsih")) != -1) {
         switch(c) {
-            case 'n':
-                // The rest of the implementation requires max_rows and max_cols to be equal
-                // Size of the first sequence to be generated
-                input_seq_1_size = atoi(optarg);
-                // Size of the second sequence to be generated
-                input_seq_2_size = atoi(optarg);
-                break;
-            case 'g':
-                // Penalty cost for introducing a gap instead of matching to another 
-                // item
-                penalty = atoi(optarg);
-                break;
-            case 'p':
-                // Number of different items to generate
-                nb_possible_seq_items = atoi(optarg);
-                if (nb_possible_seq_items < 1 || nb_possible_seq_items > 24) {
-                    printf("The number of different items to generate should be between 1 and 24.\n");
-                }
-                break;
-            case 'v':
-                // Verbose?
-                print_results = 1;
-                break;
-            case 'i':
-                print_intermediary_results = 1;
-                print_results = 1;
-                break;
-            case 's':
-                // Sequential version?
-                use_parallelizable_version = 0;
-                break;
-            case 'h':
-                // Help
-                usage(argc, argv);
-                break;
-            default:
-                usage(argc,argv);
-        } 
+        case 'n':
+            // The rest of the implementation requires max_rows and max_cols to be equal
+            // Size of the first sequence to be generated
+            input_seq_1_size = atoi(optarg);
+            // Size of the second sequence to be generated
+            input_seq_2_size = atoi(optarg);
+            break;
+        case 'g':
+            // Penalty cost for introducing a gap instead of matching to another
+            // item
+            penalty = atoi(optarg);
+            break;
+        case 'p':
+            // Number of different items to generate
+            nb_possible_seq_items = atoi(optarg);
+            if (nb_possible_seq_items < 1 || nb_possible_seq_items > 24) {
+                fprintf(stderr, "The number of different items to generate should be between 1 and 24.\n");
+            }
+            break;
+        case 'v':
+            // Verbose?
+            print_results = 1;
+            break;
+        case 'i':
+            print_intermediary_results = 1;
+            print_results = 1;
+            break;
+        case 's':
+            // Sequential version?
+            use_parallelizable_version = 0;
+            break;
+        case 'h':
+            // Help
+            usage(argc, argv);
+            break;
+        default:
+            usage(argc,argv);
+        }
     }
 
     // Increase size by one to reserve space for the dynamic programming
-    // base cases, where only gaps are used 
-	max_rows = input_seq_1_size + 1;
-	max_cols = input_seq_2_size + 1;
-    
-    // To precompute substition costs for every pair of items. 
+    // base cases, where only gaps are used
+    max_rows = input_seq_1_size + 1;
+    max_cols = input_seq_2_size + 1;
+
+    // To precompute substition costs for every pair of items.
     // Data is aligned with corresponding values in input_itemsets
-	reference = (int *)malloc( max_rows * max_cols * sizeof(int) );
+    reference = (int *)malloc( max_rows * max_cols * sizeof(int) );
 
     // To store the dynamic programming results
-	input_itemsets = (int *)malloc( max_rows * max_cols * sizeof(int) );
+    input_itemsets = (int *)malloc( max_rows * max_cols * sizeof(int) );
 
-    // To store the first and second sequences to be matched. Start at 1 to 
+    // To store the first and second sequences to be matched. Start at 1 to
     // align the data with input_itemsets
     input_seq_1 = (int *)malloc(max_rows * sizeof(int));
     input_seq_2 = (int *)malloc(max_cols * sizeof(int));
 
     // To store the aligned sequences after matching.The aligned sequences use up
     // to the sum of items of both individual sequence, with the worst
-    // case being when gaps are introduced for every item.    
+    // case being when gaps are introduced for every item.
     aligned_seq_size = input_seq_1_size + input_seq_2_size;
     aligned_seq_1 = (int *)malloc(aligned_seq_size * sizeof(int));
     aligned_seq_2 = (int *)malloc(aligned_seq_size * sizeof(int));
 
 
-	if (!input_itemsets || !input_seq_1 || !input_seq_2 ||
+    if (!input_itemsets || !input_seq_1 || !input_seq_2 ||
         !aligned_seq_1  || !aligned_seq_2) {
-		printf("ERROR: can not allocate memory");
+        fprintf(stderr, "ERROR: can not allocate memory");
         exit(1);
     }
 
     // Initialize memory to zero
-	for (i=0; i<max_rows; i++){
-		for (j=0; j<max_cols; j++){
-			input_itemsets[input_index(i,j)] = 0;
-		}
-	}
+    for (i=0; i<max_rows; i++){
+        for (j=0; j<max_cols; j++){
+            input_itemsets[input_index(i,j)] = 0;
+        }
+    }
 
     // Initialize the aligned data to be all gaps
     for (i=0; i<aligned_seq_size; ++i) {
@@ -272,31 +272,31 @@ runTest( int argc, char** argv)
     }
 
     // Generate two random sequences to align.
-	for(i=1; i<max_rows; i++){
+    for(i=1; i<max_rows; i++){
         input_seq_1[i] = abs(common_rand()) % nb_possible_seq_items;
-	}
-	for(j=1; j<max_cols; j++){
+    }
+    for(j=1; j<max_cols; j++){
         input_seq_2[j] = abs(common_rand()) % nb_possible_seq_items;
-	}
+    }
 
-    if (print_results) printf("Computing dynamic programming results\n");
-	t1 = gettime();
+    if (print_results) fprintf(stderr, "Computing dynamic programming results\n");
+    t1 = gettime();
     // Precompute substitution costs for every pair of sequence item.  Start
     // storing substitution costs at (1,1) to align the reference table values
     // with the corresponding dynamic programming results
-	for (i = 1 ; i < max_rows; i++){
-		for (j = 1 ; j < max_cols; j++){
-		    reference[input_index(i,j)] = blosum62[input_seq_1[i]][input_seq_2[j]];
-		}
-	}
+    for (i = 1 ; i < max_rows; i++){
+        for (j = 1 ; j < max_cols; j++){
+            reference[input_index(i,j)] = blosum62[input_seq_1[i]][input_seq_2[j]];
+        }
+    }
 
     // Set cost for dynamic programming base cases, when only gaps are used.
     // (0,0) has a cost of 0 (no gap),
     // all others incur a cost of 'penalty' for each skipped item.
-	for(i = 1; i< max_rows ; i++)
-		input_itemsets[input_index(i,0)] = -i * penalty;
-	for(j = 1; j< max_cols ; j++)
-		input_itemsets[input_index(0,j)] = -j * penalty;
+    for(i = 1; i< max_rows ; i++)
+        input_itemsets[input_index(i,0)] = -i * penalty;
+    for(j = 1; j< max_cols ; j++)
+        input_itemsets[input_index(0,j)] = -j * penalty;
 
     if (use_parallelizable_version) {
         // Compute results along the diagonals of the table to maximize
@@ -305,30 +305,30 @@ runTest( int argc, char** argv)
         // computation of the bottom-right was rewritten with a different
         // indexing scheme because the rodinia version did not compute the last
         // row and last column of the table.
-        
+
         // Compute top-left matrix
         for(i = 0 ; i < max_cols-2 ; i++){
             for( idx = 0 ; idx <= i ; idx++){
                 index = (idx + 1) * max_cols + (i + 1 - idx);
                 input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ reference[index],
-                        input_itemsets[index-1]         - penalty,
-                        input_itemsets[index-max_cols]  - penalty);
+                                                input_itemsets[index-1]         - penalty,
+                                                input_itemsets[index-max_cols]  - penalty);
             }
         }
-    
+
         // Compute bottom-right matrix
         for(k = max_rows ; k <= 2*(max_rows-1); ++k){
             for( l = 0; l < 2*(max_rows-1) - k + 1; ++l) {
                 index = input_index(max_rows-1-l,k-max_cols+1+l);
                 input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ reference[index],
-                        input_itemsets[index-1]         - penalty,
-                        input_itemsets[index-max_cols]  - penalty);
+                                                input_itemsets[index-1]         - penalty,
+                                                input_itemsets[index-max_cols]  - penalty);
             }
 
         }
     } else {
         // Compute the results line-by-line to maximize locality of access in memory
-        // in a single thread. 
+        // in a single thread.
         for (i=1; i<max_rows; ++i) {
             for (j=1; j<max_cols; ++j) {
                 index = input_index(i,j);
@@ -336,123 +336,124 @@ runTest( int argc, char** argv)
                     input_itemsets[index-1-max_cols]+reference[index],
                     input_itemsets[index-1]-penalty,
                     input_itemsets[index-max_cols]-penalty
-                );
+                    );
             }
         }
     }
-	t2 = gettime();
+    t2 = gettime();
 
     // Reconstruct the aligned sequences starting from the last items of each
-    // sequence.   
+    // sequence.
     aligned_index_1 = aligned_seq_size - 1;
     aligned_index_2 = aligned_seq_size - 1;
 
-    if (print_results) printf("Trace solution back\n");
+    if (print_results) fprintf(stderr, "Trace solution back\n");
     // Start tracing through the results from the last computed value, when all
     // items have been exhausted for both sequences (in the right bottom corner),
-    // up to the beginning of both sequences (on the top left corner). 
-	for (i = max_rows - 1,  j = max_cols - 1; !(i==0 && j==0);){
+    // up to the beginning of both sequences (on the top left corner).
+    for (i = max_rows - 1,  j = max_cols - 1; !(i==0 && j==0);){
         // Recompute which of the previous values, relative to the current position, led
         // to our current maximum value
-		if ( i > 0 && j > 0 ){
-			nw = input_itemsets[input_index(i-1,j-1)] + reference[input_index(i,j)];
-		    w  = input_itemsets[input_index(i,j-1)] - penalty;
+        if ( i > 0 && j > 0 ){
+            nw = input_itemsets[input_index(i-1,j-1)] + reference[input_index(i,j)];
+            w  = input_itemsets[input_index(i,j-1)] - penalty;
             n  = input_itemsets[input_index(i-1,j)] - penalty;
             n_limit = 0;
             w_limit = 0;
             traceback = maximum(nw, w, n);
-		} else if ( i == 0 ){
+        } else if ( i == 0 ){
             n_limit = 1;
             w_limit = 0;
-		} else if ( j == 0 ){
+        } else if ( j == 0 ){
             n_limit = 0;
             w_limit = 1;
-		} else{ printf("ERROR\n"); exit(1); } 
+        } else{ fprintf(stderr, "ERROR\n"); exit(1); }
 
-		if(n_limit == 0 && w_limit == 0 && traceback == nw) {
+        if(n_limit == 0 && w_limit == 0 && traceback == nw) {
             // Add the matching items to each of the aligned sequences
             // and move iterators to the previous items
             aligned_seq_1[aligned_index_1--] = input_seq_1[i--];
             aligned_seq_2[aligned_index_2--] = input_seq_2[j--];
         }
-		else if(n_limit == 1 || traceback == w) {
+        else if(n_limit == 1 || traceback == w) {
             // Introduce a gap in the first aligned sequence,
             // add the corresponding item in the second sequence,
             // and move the second iterator
             aligned_index_1--;
             aligned_seq_2[aligned_index_2--] = input_seq_2[j--];
         }
-		else if(w_limit == 1 || traceback == n) {
+        else if(w_limit == 1 || traceback == n) {
             // Introduce a gap in the second aligned sequence,
             // add the corresponding item in the first sequence,
             // and move the first iterator
             aligned_index_2--;
             aligned_seq_1[aligned_index_1--] = input_seq_1[i--];
-        } else { printf("ERROR\n"); exit(1); }
-	}
+        } else { fprintf(stderr, "ERROR\n"); exit(1); }
+    }
 
     if (print_results) {
         // Print the input sequences and the resulting aligned sequences.
         // Convert the integer values for items to characters for legibility.
-        printf("Input Seq 1  :");
+        fprintf(stderr, "Input Seq 1  :");
         for (i=1; i < max_rows; ++i) {
-            printf("%c", to_char(input_seq_1[i]));
+            fprintf(stderr, "%c", to_char(input_seq_1[i]));
         }
-        printf("\n");
+        fprintf(stderr, "\n");
 
-        printf("Input Seq 2  :");
+        fprintf(stderr, "Input Seq 2  :");
         for (j=1; j < max_cols; ++j) {
-            printf("%c", to_char(input_seq_2[j]));
+            fprintf(stderr, "%c", to_char(input_seq_2[j]));
         }
-        printf("\n");
+        fprintf(stderr, "\n");
 
-        printf("Aligned Seq 1:");
+        fprintf(stderr, "Aligned Seq 1:");
         for (i=0; i < aligned_seq_size; ++i) {
-            printf("%c", to_char(aligned_seq_1[i]));
+            fprintf(stderr, "%c", to_char(aligned_seq_1[i]));
         }
-        printf("\n");
-        printf("Aligned Seq 2:");
+        fprintf(stderr, "\n");
+        fprintf(stderr, "Aligned Seq 2:");
         for (j=0; j < aligned_seq_size; ++j) {
-            printf("%c", to_char(aligned_seq_2[j]));
+            fprintf(stderr, "%c", to_char(aligned_seq_2[j]));
         }
-        printf("\n");
+        fprintf(stderr, "\n");
 
         if (print_intermediary_results) {
             for (i=0; i<max_rows; ++i) {
                 for (j=0; j<max_cols; ++j) {
-                    printf("%c%.2d ", input_itemsets[input_index(i,j)] >= 0 ? '+' : '-', abs(input_itemsets[input_index(i,j)]));
+                    fprintf(stderr, "%c%.2d ", input_itemsets[input_index(i,j)] >= 0 ? '+' : '-', abs(input_itemsets[input_index(i,j)]));
                 }
-                printf("\n");
+                fprintf(stderr, "\n");
             }
         }
     }
 
     if (input_seq_1_size == 4096 && input_seq_2_size == 4096 && penalty == 1 && nb_possible_seq_items == 10) {
         if (!seq_equal(aligned_seq_1, expected_aligned_seq_1, aligned_seq_size, expected_aligned_seq_1_size)) {
-            printf("ERROR: the aligned sequence 1 is different from the values expected.\n");
+            fprintf(stderr, "ERROR: the aligned sequence 1 is different from the values expected.\n");
             exit(1);
         }
         if (!seq_equal(aligned_seq_2, expected_aligned_seq_2, aligned_seq_size, expected_aligned_seq_2_size)) {
-            printf("ERROR: the aligned sequence 2 is different from the values expected.\n");
+            fprintf(stderr, "ERROR: the aligned sequence 2 is different from the values expected.\n");
             exit(1);
         }
     } else {
-        printf(
+        fprintf(stderr,
             "WARNING: No self-checking for dimension '%d', penalty '%d', and number of possible items '%d'\n",
             input_seq_1_size,
             penalty,
             nb_possible_seq_items
-        ); 
+            );
     }
 
 
-	printf("The total time spent is %lf seconds\n", (t2-t1));
-	free(reference);
-	free(input_itemsets);
+    free(reference);
+    free(input_itemsets);
     free(input_seq_1);
     free(input_seq_2);
     free(aligned_seq_1);
     free(aligned_seq_2);
     free(expected_aligned_seq_1);
     free(expected_aligned_seq_2);
+
+    printf("{ \"status\": %d, \"options\": \"-n %d -g %d\", \"time\": %f }\n", 1, input_seq_1_size, penalty, t2-t1);
 }

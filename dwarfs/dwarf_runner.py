@@ -45,6 +45,7 @@ BENCHMARKS = [
     Benchmark("nqueens", "branch-and-bound/nqueens"),
     Benchmark("crc", "combinational-logic/crc"),
     Benchmark("lud", "dense-linear-algebra/lud"),
+    Benchmark("nw", "dynamic-programming/nw"),
 ]
 
 for b in BENCHMARKS:
