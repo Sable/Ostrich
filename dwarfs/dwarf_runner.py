@@ -41,16 +41,17 @@ class Benchmark(object):
 
 ITERS = 10
 BENCHMARKS = [
-    Benchmark("nqueens", "branch-and-bound/nqueens"),
-    Benchmark("crc", "combinational-logic/crc"),
-    Benchmark("lud", "dense-linear-algebra/lud"),
-    Benchmark("nw", "dynamic-programming/nw"),
-    Benchmark("hmm", "graphical-models/hmm"),
-    Benchmark("bfs", "graph-traversal/bfs"),
-    Benchmark("page-rank", "map-reduce/page-rank"),
-    Benchmark("lavamd", "n-body-methods/lavamd"),
-    Benchmark("spmv", "sparse-linear-algebra/spmv"),
-    Benchmark("fft", "spectral-methods/fft"),
+    # Benchmark("nqueens", "branch-and-bound/nqueens"),
+    # Benchmark("crc", "combinational-logic/crc"),
+    # Benchmark("lud", "dense-linear-algebra/lud"),
+    # Benchmark("nw", "dynamic-programming/nw"),
+    # Benchmark("hmm", "graphical-models/hmm"),
+    # Benchmark("bfs", "graph-traversal/bfs"),
+    # Benchmark("page-rank", "map-reduce/page-rank"),
+    # Benchmark("lavamd", "n-body-methods/lavamd"),
+    # Benchmark("spmv", "sparse-linear-algebra/spmv"),
+    # Benchmark("fft", "spectral-methods/fft"),
+    Benchmark("srad", "structured-grid/SRAD"),
 ]
 
 for b in BENCHMARKS:
