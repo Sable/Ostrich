@@ -50,6 +50,7 @@ BENCHMARKS = [
     Benchmark("page-rank", "map-reduce/page-rank"),
     Benchmark("lavamd", "n-body-methods/lavamd"),
     Benchmark("spmv", "sparse-linear-algebra/spmv"),
+    Benchmark("fft", "spectral-methods/fft"),
 ]
 
 for b in BENCHMARKS:
