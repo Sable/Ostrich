@@ -34,8 +34,8 @@ class Benchmark(object):
 
         prev_dir = os.getcwd()
         os.chdir(self.dir)
-        subprocess.call(["make", "clean"])
-        subprocess.call(["make"])
+        subprocess.call(["make", "clean"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         os.chdir(prev_dir)
 
 
@@ -43,6 +43,7 @@ ITERS = 10
 BENCHMARKS = [
     Benchmark("bfs", "graph-traversal/bfs"),
     Benchmark("nqueens", "branch-and-bound/nqueens"),
+    Benchmark("crc", "combinational-logic/crc"),
 ]
 
 for b in BENCHMARKS:
