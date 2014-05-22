@@ -5,10 +5,10 @@ include ../../common/options.mk
 NB_BOXES = "6"
 ASMJS_RUN_ARGUMENT = "'-boxes1d', '"$(NB_BOXES)"'"
 C_RUN_ARGUMENT = "-boxes1d "$(NB_BOXES)
-#JS_RUN_ARGUMENT = "runLavaMD("$(NB_BOXES)")" TODO once the hand-written version is complete
+JS_RUN_ARGUMENT = "runLavaMD("$(NB_BOXES)")"
 FILENAME = "lavamd"
 
-build: build/c/run.sh build/asmjs/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -58,9 +58,17 @@ build/asmjs/run.html: build/asmjs \
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html
 
-
 build/js:
 	mkdir -p build/js
+
+build/js/lavamd.js: build/js
+	cp js/lavamd.js build/js/lavamd.js
+
+build/js/run.html: build/js build/js/lavamd.js
+	cat ../../utils/js/run_template.html > build/js/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html 
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html 
+    
 
 build/opencl:
 	mkdir -p build/opencl
