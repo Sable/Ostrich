@@ -48,6 +48,7 @@ BENCHMARKS = [
     Benchmark("hmm", "graphical-models/hmm"),
     Benchmark("bfs", "graph-traversal/bfs"),
     Benchmark("page-rank", "map-reduce/page-rank"),
+    Benchmark("lavamd", "n-body-methods/lavamd"),
 ]
 
 for b in BENCHMARKS:
