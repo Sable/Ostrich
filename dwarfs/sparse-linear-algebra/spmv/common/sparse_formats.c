@@ -210,7 +210,7 @@ coo_matrix rand_coo(const unsigned int N,const unsigned long density, FILE* log)
 	coo.num_cols = N;
 	coo.density_ppm = density;
 	coo.num_nonzeros = (((double)(N*density))/1000000.0)*N;
-	printf("NUM_nonzeros: %d\n",coo.num_nonzeros);
+	fprintf(stderr, "NUM_nonzeros: %d\n",coo.num_nonzeros);
 
 	coo.non_zero = triplet_new_array(coo.num_nonzeros);
 	check(coo.non_zero != NULL,"sparse_formats.rand_coo_bin_insertion(): Heap Overflow - Cannot allocate memory for coo.non_zero\n");

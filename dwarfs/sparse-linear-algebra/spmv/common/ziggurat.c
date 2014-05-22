@@ -7,7 +7,7 @@
 
 /******************************************************************************/
 
-float r4_exp ( unsigned long int *jsr, int ke[256], float fe[256], 
+float r4_exp ( unsigned long int *jsr, int ke[256], float fe[256],
 		float we[256] )
 
 	/******************************************************************************/
@@ -25,7 +25,7 @@ float r4_exp ( unsigned long int *jsr, int ke[256], float fe[256],
 
 	   Licensing:
 
-	   This code is distributed under the GNU LGPL license. 
+	   This code is distributed under the GNU LGPL license.
 
 	   Modified:
 
@@ -107,7 +107,7 @@ void r4_exp_setup ( int ke[256], float fe[256], float we[256] )
 
 	   Licensing:
 
-	   This code is distributed under the GNU LGPL license. 
+	   This code is distributed under the GNU LGPL license.
 
 	   Modified:
 
@@ -161,7 +161,7 @@ void r4_exp_setup ( int ke[256], float fe[256], float we[256] )
 }
 /******************************************************************************/
 
-float r4_nor ( unsigned long int *jsr, int kn[128], float fn[128], 
+float r4_nor ( unsigned long int *jsr, int kn[128], float fn[128],
 		float wn[128] )
 
 	/******************************************************************************/
@@ -172,7 +172,7 @@ float r4_nor ( unsigned long int *jsr, int kn[128], float fn[128],
 
 	   Discussion:
 
-	   The value returned is generated from a distribution with mean 0 and 
+	   The value returned is generated from a distribution with mean 0 and
 	   variance 1.
 
 	   The underlying algorithm is the ziggurat method.
@@ -182,7 +182,7 @@ float r4_nor ( unsigned long int *jsr, int kn[128], float fn[128],
 
 	   Licensing:
 
-	   This code is distributed under the GNU LGPL license. 
+	   This code is distributed under the GNU LGPL license.
 
 	   Modified:
 
@@ -284,7 +284,7 @@ void r4_nor_setup ( int kn[128], float fn[128], float wn[128] )
 
 	   Licensing:
 
-	   This code is distributed under the GNU LGPL license. 
+	   This code is distributed under the GNU LGPL license.
 
 	   Modified:
 
@@ -348,7 +348,7 @@ float r4_uni ( unsigned long int *jsr )
 
 	   Licensing:
 
-	   This code is distributed under the GNU LGPL license. 
+	   This code is distributed under the GNU LGPL license.
 
 	   Modified:
 
@@ -398,7 +398,7 @@ unsigned long int shr3 ( unsigned long int *jsr )
 
 	   Licensing:
 
-	   This code is distributed under the GNU LGPL license. 
+	   This code is distributed under the GNU LGPL license.
 
 	   Modified:
 
@@ -417,7 +417,7 @@ unsigned long int shr3 ( unsigned long int *jsr )
 
 	   Parameters:
 
-	   Input/output, unsigned long int *JSR, the seed, which is updated 
+	   Input/output, unsigned long int *JSR, the seed, which is updated
 	   on each call.
 
 	   Output, unsigned long int SHR3, the new value.
@@ -451,7 +451,7 @@ void timestamp ( void )
 
 	   Licensing:
 
-	   This code is distributed under the GNU LGPL license. 
+	   This code is distributed under the GNU LGPL license.
 
 	   Modified:
 
@@ -478,7 +478,7 @@ void timestamp ( void )
 
 	len = strftime ( time_buffer, TIME_SIZE, "%d %B %Y %I:%M:%S %p", tm );
 
-	printf ( "%s\n", time_buffer );
+	fprintf(stderr, "%s\n", time_buffer );
 
 	return;
 # undef TIME_SIZE

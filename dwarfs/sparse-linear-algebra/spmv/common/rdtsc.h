@@ -114,7 +114,7 @@ extern struct timer_group_mem head; //sentinel
 extern struct timer_group_mem * tail;
 
 extern char rootStr[1];
-extern cl_ulong rootTimes[7]; 
+extern cl_ulong rootTimes[7];
 extern cl_ulong totalTimes[7];
 
 struct timer_name_tree_node {
@@ -128,7 +128,7 @@ struct timer_name_tree_node {
     int tcount;
     cl_ulong * times; //pointer to a 7-member array of cl_ulongs
     //one aggregator for each type, and another for all
-}; 
+};
 
 extern struct timer_name_tree_node root;
 
@@ -144,7 +144,7 @@ extern struct timer_name_tree_node * atail;
 //linear scan of the timer list, adds nodes to a names list as necessary
 //DO NOT USE AT THE SAME TIME AS THE TREE
 //this replaces the tree with a simple unordered list
-extern void simpleNameTally(); 
+extern void simpleNameTally();
 
 //assumes simpleNameTally was already called (once) to add up timers
 //now culls off zero-value timers
@@ -159,7 +159,7 @@ extern void destTimerList();
 extern void destNameList();
 
 //only returns the primary timer, not any composed timers
-extern void * getTimePtr(cl_event e); 
+extern void * getTimePtr(cl_event e);
 
 //only returns a composed timer with events matching both e1 and e2, in either order
 extern void * getDualTimePtr(cl_event e1, cl_event e2);
@@ -232,7 +232,7 @@ temp->endtime = 1000 * (t->timer.tv_sec*1000000L + t->timer.tv_usec);\
 #define TOTAL_KERNEL totalTimes[4]
 #define TOTAL_HOST totalTimes[5]
 #define TOTAL_DUAL totalTimes[6]
-#define OCD_PRINT_TIMERS {printf("********************************************************************************\n"\
+#define OCD_PRINT_TIMERS {fprintf(stderr, "********************************************************************************\n"\
 "OCD Core Timers (nanoseconds)\n"\
 "********************************************************************************\n"\
 "Total Execution Time:  \t[%llu]\n"\
@@ -318,8 +318,8 @@ TOTAL_DUAL = 0; \
 #endif
 
 #ifdef START_POWER
-#define START_KERNEL printf("Kernel Start\n");
-#define END_KERNEL printf("Kernel END\n");
+#define START_KERNEL fprintf(stderr, "Kernel Start\n");
+#define END_KERNEL fprintf(stderr, "Kernel END\n");
 #else
 #define START_KERNEL
 #define END_KERNEL
