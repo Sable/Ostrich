@@ -1,4 +1,4 @@
-#include <stdio.h> 
+#include <stdio.h>
 #include <stdlib.h>
 #include "nqueen_cpu.h"
 #include "../common/common.h"
@@ -9,19 +9,20 @@ static struct option long_options[] = {
       {"size", 1, NULL, 's'},
 };
 
-int main(int argc, char *argv[]){ 
-  int size = 18; 
-  long long us = 0; 
-  stopwatch sw; 
+int main(int argc, char *argv[]){
+  int size = 18;
+  long long us = 0;
+  stopwatch sw;
   int opt, option_index=0;
+  int status = 1;
 
   if(argc < 2){
     fprintf(stderr, "Usage: %s [-s board size\n", argv[0]);
     exit(EXIT_FAILURE);
   }
-  
 
-  while ((opt = getopt_long(argc, argv, "s:", 
+
+  while ((opt = getopt_long(argc, argv, "s:",
                             long_options, &option_index)) != -1 ) {
     if(opt == 's')size = atoi(optarg);
     else{
@@ -33,7 +34,16 @@ int main(int argc, char *argv[]){
   long long solutions = nqueen_cpu(size, &us);
   stopwatch_stop(&sw);
 
-  printf("The number of solution is %lld, the number of unique solutions is \
-      %lld and the total time it took is %lf seconds\n", solutions, us, 
-      get_interval_by_sec(&sw));
+  /* Verification for n = 16 */
+  if (size == 16) {
+      if (solutions != 14772512 || us != 1846955) {
+          status = 0;
+      }
+  }
+
+  fprintf(stderr, "The number of solution is %lld, the number of unique solutions is "
+          "%lld and the total time it took is %lf seconds\n", solutions, us,
+          get_interval_by_sec(&sw));
+  printf("{ \"status\": %d, \"options\": \"-s %d\", \"time\": %f }\n", status, size, get_interval_by_sec(&sw));
+  return 0;
 }

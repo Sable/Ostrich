@@ -26,7 +26,7 @@ class Benchmark(object):
             result = json.loads(stdout)
             results.append(result)
         os.chdir(prev_dir)
-        return scipy.mean([r['time'] for r in results])
+        return [r['time'] for r in results]
 
 
     def build(self):
@@ -42,8 +42,11 @@ class Benchmark(object):
 ITERS = 10
 BENCHMARKS = [
     Benchmark("bfs", "graph-traversal/bfs"),
+    Benchmark("nqueens", "branch-and-bound/nqueens"),
 ]
 
 for b in BENCHMARKS:
     b.build()
-    print "%s,%s" % (b.name, b.run_c_benchmark())
+
+for b in BENCHMARKS:
+    print "%s,%s" % (b.name, ','.join(str(x) for x in b.run_c_benchmark()))

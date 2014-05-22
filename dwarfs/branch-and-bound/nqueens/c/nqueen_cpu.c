@@ -21,7 +21,7 @@ inline int bit_scan(unsigned int x)
 
 inline void transform(const unsigned int* ns_array, int* board_array, int size)
 {
-  int i; 
+  int i;
 	for(i = 0; i < size; i++) {
 		board_array[i] = bit_scan(ns_array[i]);
 	}
@@ -33,12 +33,12 @@ void display_table(const int * board_array, int size)
   int i, j;
 	for(i = 0; i < size; i++) {
 		for(j = 0; j < size; j++) {
-			 if(board_array[i] == (size - j - 1)) printf("x "); 
-       else printf("- ");
+			 if(board_array[i] == (size - j - 1)) fprintf(stderr, "x ");
+       else fprintf(stderr, "- ");
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
-	printf("\n");
+	fprintf(stderr, "\n");
 }
 
 
@@ -47,12 +47,12 @@ void display_table2(const unsigned int * ns_array, int size)
   int i,j;
 	for(i = 0; i < size; i++) {
 		for(j = 0; j < size; j++) {
-			if(ns_array[i] == 1 << (size - j - 1)) printf("x "); 
-      else printf("- ");
+			if(ns_array[i] == 1 << (size - j - 1)) fprintf(stderr, "x ");
+      else fprintf(stderr, "- ");
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
-	printf("\n");
+	fprintf(stderr, "\n");
 }
 
 static long long nqueen_solver1(int size, int idx)
@@ -161,7 +161,7 @@ static long long nqueen_solver(int size, unsigned int board_mask, unsigned int m
 					int min_pos = size;
 					int relation = 0;
 					int j;
-						
+
 					// rotate cw
 					if(rotate1) {
 						equal = true;
@@ -172,13 +172,13 @@ static long long nqueen_solver(int size, unsigned int board_mask, unsigned int m
 								if(min_pos > size - board_array[j] - 1) {
 									relation = board_array[size - board_array[j] - 1] - j;
 									min_pos = size - board_array[j] - 1;
-								}							
+								}
 							}
 						}
 
 						repeat_times = equal ? 2 : repeat_times;
 					}
-						
+
 					if(relation >= 0 && rotate2) {
 						// rotate ccw
 						equal = true;
@@ -191,12 +191,12 @@ static long long nqueen_solver(int size, unsigned int board_mask, unsigned int m
 									relation = board_array[board_array[j]] - (size - j - 1);
 									min_pos = board_array[j];
 								}
-							}					
+							}
 						}
 
 						repeat_times = equal ? 2 : repeat_times;
 					}
-						
+
 					if(relation >= 0 && repeat_times == 8 && rotate3) {
 						// rotate 180
 						equal = true;
@@ -254,8 +254,8 @@ long long nqueen_cpu(int size, long long* unique_solutions)
 
 	*unique_solutions = solutions;
 	solutions *= 8;
-		
-  // accound for symmetries 
+
+  // accound for symmetries
 	for(i = 1; i < size / 2; i++) {
 		solutions += nqueen_solver(size, (1 << size) - 1, 1 << i, 1 << (i + 1), (1 << i) >> 1, &u_solutions);
 		*unique_solutions += u_solutions;
