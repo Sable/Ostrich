@@ -2,7 +2,6 @@
 
 import subprocess
 import json
-import scipy
 import os
 
 class Benchmark(object):
