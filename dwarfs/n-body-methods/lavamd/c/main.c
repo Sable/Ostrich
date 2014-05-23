@@ -296,6 +296,7 @@ main(   int argc,
         if(round(sum.v) != expectedAns[0] || round(sum.x) != expectedAns[1] || round(sum.y) != expectedAns[2] || round(sum.z) != expectedAns[3]) {
             fprintf(stderr, "Expected: [%.0f, %.0f, %.0f, %.0f]\n", expectedAns[0], expectedAns[1], expectedAns[2], expectedAns[3]);
             fprintf(stderr, "Got: [%.0f, %.0f, %.0f, %.0f]\n", sum.v, sum.x, sum.y, sum.z);
+            exit(1);
         }
     } else {
         fprintf(stderr, "WARNING: no self-checking for input size of '%d'\n", dim_cpu.boxes1d_arg);
