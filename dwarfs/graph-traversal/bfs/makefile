@@ -31,7 +31,7 @@ build/c/bfs:	build/c \
 
 build/c/run.sh: build/c/bfs build/c
 	echo 'build/c/bfs '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
-            
+
 build/asmjs:
 	mkdir -p build/asmjs
 
@@ -49,20 +49,19 @@ build/asmjs/bfs.js: build/asmjs \
 build/asmjs/run.html: build/asmjs \
             build/asmjs/bfs.js
 	cat ../../utils/asmjs/run_template.html > build/asmjs/run.html
-	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html 
-	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html 
-            
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html
 
 build/js:
 	mkdir -p build/js
 
 build/js/bfs.js:
 	cp js/bfs.js build/js/
- 
-build/js/run.html: build/js build/js/bfs.js 
+
+build/js/run.html: build/js build/js/bfs.js
 	cat ../../utils/js/run_template.html > build/js/run.html
-	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html 
-	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html 
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html
 
 build/opencl:
 	mkdir -p build/opencl

@@ -27,7 +27,7 @@ void _ocd_create_arguments()
                      OFLAG_NONE, &_settings.device_type, NULL, NULL, NULL, NULL},
 		{OTYPE_END, '\0', (char*)"", NULL,
                      OFLAG_NONE, NULL, NULL, NULL, NULL, NULL}};
-	
+
 	_options[0] = ops[0];
 	_options[1] = ops[1];
 	_options[2] = ops[2];
@@ -45,7 +45,7 @@ int ocd_parse(int* argc, char*** argv)
 {
 	if(!_options)
 		_ocd_create_arguments();
-	
+
 	int largc = *argc;
 	char** largv = *argv;
 
@@ -93,12 +93,12 @@ cl_device_id _ocd_get_device(int platform, int device, cl_int dev_type)
     CHECK_ERROR(err);
 
     if (nPlatforms <= 0) {
-        printf("No OpenCL platforms found. Exiting.\n");
+        fprintf(stderr, "No OpenCL platforms found. Exiting.\n");
         exit(0);
     }
     if (platform < 0 || platform >= nPlatforms) // platform ID out of range
     {
-        printf("Platform index %d is out of range. \n", platform);
+        fprintf(stderr, "Platform index %d is out of range. \n", platform);
         exit(-4);
     }
     cl_platform_id *platforms = (cl_platform_id *) malloc(sizeof (cl_platform_id) * nPlatforms);
@@ -109,20 +109,20 @@ cl_device_id _ocd_get_device(int platform, int device, cl_int dev_type)
     char platformName[100];
     err = clGetPlatformInfo(platforms[platform], CL_PLATFORM_VENDOR, sizeof (platformName), platformName, NULL);
     CHECK_ERROR(err);
-    printf("Platform Chosen : %s\n", platformName);
+    fprintf(stderr, "Platform Chosen : %s\n", platformName);
 
 
 	//IF given device ID, use this, and disregard -t parameter if given
 	if(device!=-1){
 		err = clGetDeviceIDs(platforms[platform], CL_DEVICE_TYPE_ALL, 0, NULL, &nDevices);
-		printf("Number of available devices: %d\n", nDevices);
+		fprintf(stderr, "Number of available devices: %d\n", nDevices);
     	if (nDevices <= 0) {
-        	printf("No OpenCL Device found. Exiting.\n");
+        	fprintf(stderr, "No OpenCL Device found. Exiting.\n");
         	exit(0);
     	}
 		if (device < 0 || device >= nDevices) // platform ID out of range
     	{
-        	printf("Device index %d is out of range. \n", device);
+        	fprintf(stderr, "Device index %d is out of range. \n", device);
         	exit(-4);
     	}
     	devices = (cl_device_id *) malloc(sizeof (cl_device_id) * nDevices);
@@ -140,19 +140,19 @@ cl_device_id _ocd_get_device(int platform, int device, cl_int dev_type)
 			dev_type = CL_DEVICE_TYPE_CPU;
 			err = clGetDeviceIDs(platforms[platform], dev_type, 0, NULL, &nDevices);
 			if(err == CL_DEVICE_NOT_FOUND){
-				fprintf(stderr, "No CPU device available in this platform. Please, check your available OpenCL devices.\n"); 
+				fprintf(stderr, "No CPU device available in this platform. Please, check your available OpenCL devices.\n");
 				exit(-4);
 			}
 		}
 		CHECK_ERROR(err);
-		printf("Number of available devices: %d\n", nDevices);
+		fprintf(stderr, "Number of available devices: %d\n", nDevices);
     	if (nDevices <= 0) {
-        	printf("No OpenCL Device found. Exiting.\n");
+        	fprintf(stderr, "No OpenCL Device found. Exiting.\n");
         	exit(0);
     	}
 		//if (device < 0 || device >= nDevices) // platform ID out of range
     	//{
-       	//	printf("Device index %d is out of range. \n", device);
+       	//	fprintf(stderr, "Device index %d is out of range. \n", device);
         //	exit(-4);
     	//}
     	devices = (cl_device_id *) malloc(sizeof (cl_device_id) * nDevices);
@@ -160,11 +160,11 @@ cl_device_id _ocd_get_device(int platform, int device, cl_int dev_type)
     	//Get the first available device of requested type
     	err = clGetDeviceInfo(devices[0], CL_DEVICE_NAME, sizeof (DeviceName), DeviceName, NULL);
     	device=0;
-    	CHECK_ERROR(err);	
+    	CHECK_ERROR(err);
 	}
-	    
+
     //Return
-    printf("Device Chosen : %s\n", DeviceName);
+    fprintf(stderr, "Device Chosen : %s\n", DeviceName);
     return devices[device];
 }
 
@@ -183,13 +183,13 @@ int ocd_check_requirements(ocd_requirements* reqs)
 	if(local_mem < reqs->local_mem_size)
 		pass = 0;
 	reqs->local_mem_size = local_mem;
-	
+
 	cl_ulong global_mem;
 	clGetDeviceInfo(d_id, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &global_mem, NULL);
 	if(global_mem < reqs->global_mem_size)
 		pass = 0;
 	reqs->global_mem_size = global_mem;
-	
+
 	size_t workgroup_size;
 	clGetDeviceInfo(d_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &workgroup_size, NULL);
 	if(workgroup_size < reqs->workgroup_size)
@@ -198,7 +198,7 @@ int ocd_check_requirements(ocd_requirements* reqs)
 
 	return pass;
 }
-	
+
 
 void _ocd_expand_list()
 {
@@ -213,28 +213,28 @@ void _ocd_add_arg(option o, int size)
 {
 	if(_options_size >= _options_length)
 		_ocd_expand_list();
-	
+
 	option end = _options[size-1];
 	_options[size-1] = o;
-	_options[size] = end;	
-	
+	_options[size] = end;
+
 	_options_size++;
 }
 
 int ocd_register_arg(int type, char abbr, char* name, char* desc, void* value, optsverify verify, optssettor settor)
 {
 	option o = {type, abbr, name, desc, OFLAG_NONE, value, 0, verify, settor, 0};
-	
+
 	if(!_options)
 		_ocd_create_arguments();
-	_ocd_add_arg(o, _options_size);	
+	_ocd_add_arg(o, _options_size);
 }
 
 void ocd_usage()
 {
 	option* op;
 	for (op = &_options[0]; op->type; ++op)
-		printf("%s\n", optsusage(op));
+		fprintf(stderr, "%s\n", optsusage(op));
 }
 
 void ocd_init(int* argc, char*** argv, ocd_requirements* reqs)
@@ -260,15 +260,15 @@ void checkDeviceChoice(int devType)
 {
 
 	if ( devType == 0)
-		printf("CPU was selected\n");
+		fprintf(stderr, "CPU was selected\n");
 	else if ( devType == 1)
-		printf("GPU was selected\n");
+		fprintf(stderr, "GPU was selected\n");
 	else if ( devType == 2)
-		printf("MIC was selected\n");
+		fprintf(stderr, "MIC was selected\n");
 	else if ( devType == 3)
-		printf("FPGA was selected\n");
+		fprintf(stderr, "FPGA was selected\n");
 	else
-		printf("Selection based on platform and device ID\n");
+		fprintf(stderr, "Selection based on platform and device ID\n");
 
 }
 
@@ -276,7 +276,7 @@ void ocd_initCL()
 {
 
 	cl_int err,dev_type;
-	
+
 	ocd_options opts = ocd_get_options();
     n_platform = opts.platform_id;
     n_device = opts.device_id;
@@ -298,7 +298,7 @@ void ocd_initCL()
 	checkDeviceChoice(_deviceType);//for debugging
 
 	device_id = _ocd_get_device(n_platform, n_device, dev_type);
-	
+
     // Create a compute context
     context = clCreateContext(0, 1, &device_id, NULL, NULL, &err);
     CHKERR(err, "Failed to create a compute context!");
@@ -306,7 +306,7 @@ void ocd_initCL()
     // Create a command queue
     commands = clCreateCommandQueue(context, device_id, CL_QUEUE_PROFILING_ENABLE, &err);
     CHKERR(err, "Failed to create a command queue!");
-    
+
 }
 
 //Below, from nz-ocl
@@ -367,7 +367,7 @@ cl_program ocdBuildProgramFromFile(cl_context context, cl_device_id device_id, c
 		err = clBuildProgram(program,1,&device_id,"-DOPENCL -I.",NULL,NULL);
 	else
 		err = clBuildProgram(program, 0, NULL, "-DOPENCL -I.", NULL, NULL);
-	
+
 	if (err == CL_BUILD_PROGRAM_FAILURE)
 	{
 		char *buildLog;

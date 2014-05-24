@@ -18,13 +18,13 @@ complex* random_complex_vector(int n){
 
 void print_complex_array(complex *x, int n){
     int i;
-    for(i = 0; i < n; ++i) printf("%.6f + %.6fi\n", x[i].re, x[i].im);
+    for(i = 0; i < n; ++i) fprintf(stderr, "%.6f + %.6fi\n", x[i].re, x[i].im);
 }
 
 void print_complex_matrix(complex **x, int n){
     int i;
-    for(i=0; i < n; ++i) { print_complex_array(x[i], n); printf("\n"); }
-    printf("\n");
+    for(i=0; i < n; ++i) { print_complex_array(x[i], n); fprintf(stderr, "\n"); }
+    fprintf(stderr, "\n");
 }
 
 int main(int argc, char** argv){
@@ -39,10 +39,10 @@ int main(int argc, char** argv){
         two_exp = atoi(argv[1]);
         n = 1 << two_exp;
         if (two_exp < 0 || two_exp > 30) {
-            printf("ERROR: invalid exponent of '%d' for input size\n",  n);
+            fprintf(stderr, "ERROR: invalid exponent of '%d' for input size\n",  n);
             exit(1);
         }
-    } 
+    }
 
 
     // Test 1D arrays
@@ -51,7 +51,7 @@ int main(int argc, char** argv){
     stopwatch_start(&sw);
     complex *results = FFT_simple(x,n);
     stopwatch_stop(&sw);
-    printf("The total 1D FFT time for %d size was %lf seconds!\n", n,
+    fprintf(stderr, "The total 1D FFT time for %d size was %lf seconds!\n", n,
       get_interval_by_sec(&sw));
     */
 
@@ -61,17 +61,17 @@ int main(int argc, char** argv){
     stopwatch_start(&sw);
     complex **results2D = FFT_2D(m,n);
     stopwatch_stop(&sw);
-    printf("The total 2D FFT time for %d x %d size was %lf seconds!\n", n, n,
-      get_interval_by_sec(&sw));
+
+    printf("{ \"status\": %d, \"options\": \"%d\", \"time\": %f }\n", 1, two_exp, get_interval_by_sec(&sw));
 
 
-    // printf("1D Input Array: \n");
+    // fprintf(stderr, "1D Input Array: \n");
     // print_complex_array(x, n);
-    // printf("2D Input Array \n");
+    // fprintf(stderr, "2D Input Array \n");
     // print_complex_matrix(m,n);
-    // printf("1D Output Array: \n");
+    // fprintf(stderr, "1D Output Array: \n");
     // print_complex_array(results, n);
-    // printf("2D Output Array: \n");
+    // fprintf(stderr, "2D Output Array: \n");
     // print_complex_matrix(results2D, n);
     //free(x);
     for(i=0; i<n; ++i) free(m[i]);

@@ -181,7 +181,7 @@ void  kernel_cpu(	par_str par,
 
     /*
     for (i = 0; i < NUMBER_PAR_PER_BOX; ++i) {
-        printf("%f %f %f %f\n", fA[i].v, fA[i].x, fA[i].y, fA[i].z);
+        fprintf(stderr, "%f %f %f %f\n", fA[i].v, fA[i].x, fA[i].y, fA[i].z);
     }
     */
 

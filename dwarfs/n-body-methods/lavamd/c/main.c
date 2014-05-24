@@ -93,20 +93,20 @@ main(   int argc,
                 if(isInteger(argv[dim_cpu.cur_arg+1])==1){
                     dim_cpu.cores_arg = atoi(argv[dim_cpu.cur_arg+1]);
                     if(dim_cpu.cores_arg<0){
-                        printf("ERROR: Wrong value to -cores parameter, cannot be <=0\n");
+                        fprintf(stderr, "ERROR: Wrong value to -cores parameter, cannot be <=0\n");
                         return 0;
                     }
                     dim_cpu.cur_arg = dim_cpu.cur_arg+1;
                 }
                 // value is not a number
                 else{
-                    printf("ERROR: Value to -cores parameter in not a number\n");
+                    fprintf(stderr, "ERROR: Value to -cores parameter in not a number\n");
                     return 0;
                 }
             }
             // value not provided
             else{
-                printf("ERROR: Missing value to -cores parameter\n");
+                fprintf(stderr, "ERROR: Missing value to -cores parameter\n");
                 return 0;
             }
         }
@@ -118,32 +118,32 @@ main(   int argc,
                 if(isInteger(argv[dim_cpu.cur_arg+1])==1){
                     dim_cpu.boxes1d_arg = atoi(argv[dim_cpu.cur_arg+1]);
                     if(dim_cpu.boxes1d_arg<0){
-                        printf("ERROR: Wrong value to -boxes1d parameter, cannot be <=0\n");
+                        fprintf(stderr, "ERROR: Wrong value to -boxes1d parameter, cannot be <=0\n");
                         return 0;
                     }
                     dim_cpu.cur_arg = dim_cpu.cur_arg+1;
                 }
                 // value is not a number
                 else{
-                    printf("ERROR: Value to -boxes1d parameter in not a number\n");
+                    fprintf(stderr, "ERROR: Value to -boxes1d parameter in not a number\n");
                     return 0;
                 }
             }
             // value not provided
             else{
-                printf("ERROR: Missing value to -boxes1d parameter\n");
+                fprintf(stderr, "ERROR: Missing value to -boxes1d parameter\n");
                 return 0;
             }
         }
         // unknown
         else{
-            printf("ERROR: Unknown parameter\n");
+            fprintf(stderr, "ERROR: Unknown parameter\n");
             return 0;
         }
     }
 
     // Print configuration
-    printf("Configuration used: cores = %d, boxes1d = %d\n", dim_cpu.cores_arg, dim_cpu.boxes1d_arg);
+    fprintf(stderr, "Configuration used: cores = %d, boxes1d = %d\n", dim_cpu.cores_arg, dim_cpu.boxes1d_arg);
 
     //======================================================================================================================================================150
     //  INPUTS
@@ -294,11 +294,12 @@ main(   int argc,
             sum.z += fv_cpu[i].z;
         }
         if(round(sum.v) != expectedAns[0] || round(sum.x) != expectedAns[1] || round(sum.y) != expectedAns[2] || round(sum.z) != expectedAns[3]) {
-            printf("Expected: [%.0f, %.0f, %.0f, %.0f]\n", expectedAns[0], expectedAns[1], expectedAns[2], expectedAns[3]);
-            printf("Got: [%.0f, %.0f, %.0f, %.0f]\n", sum.v, sum.x, sum.y, sum.z);
+            fprintf(stderr, "Expected: [%.0f, %.0f, %.0f, %.0f]\n", expectedAns[0], expectedAns[1], expectedAns[2], expectedAns[3]);
+            fprintf(stderr, "Got: [%.0f, %.0f, %.0f, %.0f]\n", sum.v, sum.x, sum.y, sum.z);
+            exit(1);
         }
     } else {
-        printf("WARNING: no self-checking for input size of '%d'\n", dim_cpu.boxes1d_arg);
+        fprintf(stderr, "WARNING: no self-checking for input size of '%d'\n", dim_cpu.boxes1d_arg);
     }
     // printf("\n");
     // for(i=0; i<dim_cpu.space_elem; i=i+1) {
@@ -326,8 +327,7 @@ main(   int argc,
 
     // printf("%15.12f s, %15.12f % : SYS MEM: FRE\n",                  (float) (time7-time6) / 1000000, (float) (time7-time6) / (float) (time7-time0) * 100);
 
-    printf("Time taken: ");
-    printf("%.12f s\n", (float) (time1-time0) / 1000000);
+    printf("{ \"status\": %d, \"options\": \"-boxes1d %d\", \"time\": %f }\n", 1, 6, (float) (time1-time0) / 1000000);
 
     //======================================================================================================================================================150
     //  RETURN

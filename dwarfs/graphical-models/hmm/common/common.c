@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "common.h"
+#include "common_rand.h"
 
 void stopwatch_start(stopwatch *sw){
     if (sw == NULL)
@@ -97,7 +98,7 @@ create_matrix_from_random(float **mp, int size){
   for (i = 0; i < size; i++) {
       for (j=0; j < size; j++) {
           if (i>j) {
-              l[i*size+j] = GET_RAND_FP;
+              l[i*size+j] = common_randJS();
           } else if (i == j) {
               l[i*size+j] = 1;
           } else {
@@ -111,7 +112,7 @@ create_matrix_from_random(float **mp, int size){
           if (i>j) {
               u[j*size+i] = 0;
           }else {
-              u[j*size+i] = GET_RAND_FP;
+              u[j*size+i] = common_randJS();
           }
       }
   }

@@ -4,11 +4,14 @@ include ../../common/options.mk
 
 # Original options used by Vince
 EMOPTIONS = -s TOTAL_MEMORY=400000000
-NB_NODES = "3000000"
+NB_PAGES = "8"
+NB_ITERATIONS = "10"
+THRESHOLD = "0.0"
+DIVISOR = "2"
 
-ASMJS_RUN_ARGUMENT = "'-n', '1000', '-i', '500', '-t', '0.00001'"
-C_RUN_ARGUMENT = "-n 1000 -i 500 -t 0.00001"
-JS_RUN_ARGUMENT = "runPageRank(1000, 500, 0.00001)"
+ASMJS_RUN_ARGUMENT = "'-n', '"$(NB_PAGES)"', '-i', '"$(NB_ITERATIONS)"', '-t', '"$(THRESHOLD)"', '-d', '"$(DIVISOR)"'"
+C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -i "$(NB_ITERATIONS)" -t "$(THRESHOLD)" -d "$(DIVISOR)
+JS_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)", "$(NB_ITERATIONS)", "$(THRESHOLD)", "$(DIVISOR)")"
 FILENAME = "pagerank"
 
 build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl

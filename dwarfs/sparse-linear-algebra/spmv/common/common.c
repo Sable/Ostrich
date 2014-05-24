@@ -23,21 +23,21 @@ void stopwatch_stop(stopwatch *sw){
 	gettimeofday(&sw->end, NULL);
 }
 
-double 
+double
 get_interval_by_sec(stopwatch *sw){
 	if (sw == NULL)
 		return 0;
 	return ((double)(sw->end.tv_sec-sw->begin.tv_sec)+(double)(sw->end.tv_usec-sw->begin.tv_usec)/1000000);
 }
 
-int 
+int
 get_interval_by_usec(stopwatch *sw){
 	if (sw == NULL)
 		return 0;
 	return ((sw->end.tv_sec-sw->begin.tv_sec)*1000000+(sw->end.tv_usec-sw->begin.tv_usec));
 }
 
-func_ret_t 
+func_ret_t
 create_matrix_from_file(float **mp, const char* filename, int *size_p){
 	int i, j, size;
 	float *m;
@@ -112,7 +112,7 @@ create_matrix_from_random(float **mp, int size){
 			if (i>j) {
 				u[j*size+i] = 0;
 			}else {
-				u[j*size+i] = GET_RAND_FP; 
+				u[j*size+i] = GET_RAND_FP;
 			}
 		}
 	}
@@ -134,21 +134,21 @@ create_matrix_from_random(float **mp, int size){
 
 func_ret_t
 create_vector_from_random(float **vp, int size){
-  float *v; 
+  float *v;
   int i;
 
   srand(time(NULL));
-    
-  v = malloc(size*sizeof(*v)); 
-  if( v == NULL){
-    return RET_FAILURE; 
-  } 
 
-  for(i = 0; i < size; ++i){
-    v[i] = GET_RAND_FP; 
+  v = malloc(size*sizeof(*v));
+  if( v == NULL){
+    return RET_FAILURE;
   }
 
-  *vp = v; 
+  for(i = 0; i < size; ++i){
+    v[i] = GET_RAND_FP;
+  }
+
+  *vp = v;
   return RET_SUCCESS;
 }
 void
@@ -181,32 +181,32 @@ lud_verify(float *m, float *lu, int matrix_dim){
 			}
 			tmp[i*matrix_dim+j] = sum;
 		}
-	printf(">>>>>LU<<<<<<<\n");
+	fprintf(stderr, ">>>>>LU<<<<<<<\n");
 	for (i=0; i<matrix_dim; i++){
 		for (j=0; j<matrix_dim;j++){
-			printf("%f ", lu[i*matrix_dim+j]);
+			fprintf(stderr, "%f ", lu[i*matrix_dim+j]);
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
-	printf(">>>>>result<<<<<<<\n");
+	fprintf(stderr, ">>>>>result<<<<<<<\n");
 	for (i=0; i<matrix_dim; i++){
 		for (j=0; j<matrix_dim;j++){
-			printf("%f ", tmp[i*matrix_dim+j]);
+			fprintf(stderr, "%f ", tmp[i*matrix_dim+j]);
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
-	printf(">>>>>input<<<<<<<\n");
+	fprintf(stderr, ">>>>>input<<<<<<<\n");
 	for (i=0; i<matrix_dim; i++){
 		for (j=0; j<matrix_dim;j++){
-			printf("%f ", m[i*matrix_dim+j]);
+			fprintf(stderr, "%f ", m[i*matrix_dim+j]);
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
 
 	for (i=0; i<matrix_dim; i++){
 		for (j=0; j<matrix_dim; j++){
 			if ( fabs(m[i*matrix_dim+j]-tmp[i*matrix_dim+j]) > 0.0001)
-				printf("dismatch at (%d, %d): (o)%f (n)%f\n", i, j, m[i*matrix_dim+j], tmp[i*matrix_dim+j]);
+				fprintf(stderr, "dismatch at (%d, %d): (o)%f (n)%f\n", i, j, m[i*matrix_dim+j], tmp[i*matrix_dim+j]);
 		}
 	}
 	free(tmp);
@@ -226,7 +226,7 @@ print_matrix(float *m, int matrix_dim) {
 	int i, j;
 	for (i=0; i<matrix_dim;i++) {
 		for (j=0; j<matrix_dim;j++)
-			printf("%f ", m[i*matrix_dim+j]);
-		printf("\n");
+			fprintf(stderr, "%f ", m[i*matrix_dim+j]);
+		fprintf(stderr, "\n");
 	}
 }
