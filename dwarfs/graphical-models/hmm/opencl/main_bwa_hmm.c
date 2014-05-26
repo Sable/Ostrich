@@ -733,6 +733,7 @@ int estimate_a()
 	errNum |= clSetKernelArg(_cl_kernel_est_a_dev, 7, sizeof(int), &length);
 	CHKERR(errNum, "setting kernel _cl_kernel_est_a_dev arguments");
 
+
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_est_a_dev, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
 	CHKERR(errNum, "queuing kernel _cl_kernel_est_a_dev for execution");
@@ -1005,7 +1006,7 @@ float run_hmm_bwa(  Hmm *hmm,
 
 
 	/* Run BWA for either max iterations or until threshold is reached */
-	// for (iter = 0; iter < iterations; iter++) {
+	for (iter = 0; iter < iterations; iter++) {
 
 		new_log_lik = calc_alpha();
 		if (new_log_lik == EXIT_ERROR) {
@@ -1022,14 +1023,16 @@ float run_hmm_bwa(  Hmm *hmm,
 			return EXIT_ERROR;
 		}
 
-    printMD(a_d, nstates, nstates);
 		if (estimate_a() == EXIT_ERROR) {
 			return EXIT_ERROR;
 		}
 
+
 		if (estimate_b() == EXIT_ERROR) {
 			return EXIT_ERROR;
 		}
+
+    printMD(b_d, nsymbols, nstates);
 
 		if (estimate_pi() == EXIT_ERROR) {
 			return EXIT_ERROR;
@@ -1043,8 +1046,7 @@ float run_hmm_bwa(  Hmm *hmm,
 		}
 
 		old_log_lik = new_log_lik;   
-
-	// }
+	}
 
 	/* Copy device variables back to host */
 	errNum = clEnqueueReadBuffer(commands, a_d, CL_TRUE, 0, sizeof(float) * nstates * nstates, a, 0, NULL, &ocdTempEvent);

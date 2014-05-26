@@ -542,17 +542,17 @@ function estimateB(){
                              beta_d, t * nstates);
         sumABA[0] = sumAB;
         obstA[0] = obs[t];
-        tA = t;
+        tA[0] = t;
 
-        clKernelAccBDev.setArg(0, b_d);
-        clKernelAccBDev.setArg(1, alpha_d);
-        clKernelAccBDev.setArg(2, beta_d);
-        clKernelAccBDev.setArg(3, sumABA);
-        clKernelAccBDev.setArg(4, nstatesA);
-        clKernelAccBDev.setArg(5, nsymbolsA);
-        clKernelAccBDev.setArg(6, obstA);
-        clKernelAccBDev.setArg(7, tA);
-        queue.enqueueNDRangeKernel(kernelACCBDev, 2, null, globalworkSize, localWorkSize);
+        kernelAccBDev.setArg(0, b_d);
+        kernelAccBDev.setArg(1, alpha_d);
+        kernelAccBDev.setArg(2, beta_d);
+        kernelAccBDev.setArg(3, sumABA);
+        kernelAccBDev.setArg(4, nstatesA);
+        kernelAccBDev.setArg(5, nsymbolsA);
+        kernelAccBDev.setArg(6, obstA);
+        kernelAccBDev.setArg(7, tA);
+        queue.enqueueNDRangeKernel(kernelAccBDev, 2, null, globalWorkSize, localWorkSize);
 
         queue.finish();
 
@@ -569,13 +569,12 @@ function estimateB(){
     matVecMul( 'n', nstates, nsymbols, b_d, nstates,
                  ones_s_d, 0, c_d, 0);
 
-
     /* Normalize B matrix */
-    kernelScaleBDevl.setArg(0, b_d);
-    kernelScaleBDevl.setArg(1, c_d);
-    kernelScaleBDevl.setArg(2, nstatesA);
-    kernelScaleBDevl.setArg(3, nsymbols);
-    queue.enqueueNDRangeKernel(kernelScaleBDEv, 2, null, globalWorkSize, localWorkSize);
+    kernelScaleBDev.setArg(0, b_d);
+    kernelScaleBDev.setArg(1, c_d);
+    kernelScaleBDev.setArg(2, nstatesA);
+    kernelScaleBDev.setArg(3, nsymbolsA);
+    queue.enqueueNDRangeKernel(kernelScaleBDev, 2, null, globalWorkSize, localWorkSize);
     queue.finish();
     
     return 0;
@@ -624,7 +623,6 @@ function printMD(a, m, n, type){
 
 // /* Runs the Baum-Welch Algorithm on the supplied HMM and observation sequence */
 function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold){
-
     /* Host-side variables */
     var a;
     var b;
@@ -674,7 +672,6 @@ function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold)
         kernelSGEMVTKernelNaive = kernel("mvm_trans_kernel_naive", prgm);
         kernelSGEMVNKernelNaive = kernel("mvm_non_kernel_naive", prgm);
 
-
         //============ Host Memory================
         scale = new Float32Array(length);
 
@@ -708,7 +705,7 @@ function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold)
         queue.finish();
 
         /* Run BWA for either max iterations or until threshold is reached */
-        // for (iter = 0; iter < iterations; iter++) {
+        for (iter = 0; iter < iterations; iter++) {
             newLogLik = calcAlpha();
 
             if (newLogLik == EXIT_ERROR) {
@@ -725,28 +722,32 @@ function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold)
                 return EXIT_ERROR;
             }
 
-            printMD(a_d, 25, 25);
             if (estimateA() == EXIT_ERROR) {
                 return EXIT_ERROR;
             }
 
-            // if (estimateB() == EXIT_ERROR) {
-            //     return EXIT_ERROR;
-            // }
+            if (estimateB() == EXIT_ERROR) {
+                return EXIT_ERROR;
+            }
 
-            // if (estimatePi() == EXIT_ERROR) {
-            //     return EXIT_ERROR;
-            // }
+            if (estimatePi() == EXIT_ERROR) {
+                return EXIT_ERROR;
+            }
 
-            // /* check log_lik vs. threshold */
-            // if (threshold > 0 && iter > 0) {
-            //     if (Math.abs(pow(10,newLogLik) - pow(10,oldLogLik)) < threshold) {
-            //         break;
-            //     }
-            // }
+            /* check log_lik vs. threshold */
+            if (threshold > 0 && iter > 0) {
+                if (Math.abs(pow(10,newLogLik) - pow(10,oldLogLik)) < threshold) {
+                    break;
+                }
+            }
 
             oldLogLik = newLogLik;
-        // }
+        }
+
+        queue.enqueueReadBuffer(a_d, true, 0, floatBytes*nstates*nstates, a); 
+        queue.enqueueReadBuffer(b_d, true, 0, floatBytes*nsymbols*nstates, b); 
+        queue.enqueueReadBuffer(pi_d, true, 0, floatBytes*nstates, pi);
+        queue.finish();
     }
     catch(e){
       alert(e);
@@ -912,4 +913,4 @@ function webclBWAHmm(platformIdx, deviceIdx, v_, n_, s_, t_){
     return 0;
 }
 
-webclBWAHmm(0, 1, 'n');
+webclBWAHmm(0, 0, 'n');

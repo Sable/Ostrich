@@ -12,7 +12,7 @@ PROFILE        := NO
 EXECUTABLE      := bwa_hmm 
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := main_bwa_hmm.c 
+SOURCES         := main_bwa_hmm.c  ../common/common.c ../../../common/common_rand.c
 
 # ------------  compiler  ------------------------------------------------------
 CC              := gcc
@@ -57,7 +57,7 @@ endif
 GLOBAL_INC_DIR  =
 
 # ------------  private include directories  -----------------------------------
-LOCAL_INC_DIR   = ../common
+LOCAL_INC_DIR   = ../common ../../../common
 
 # ------------  system libraries  (e.g. -lm )  ---------------------------------
 SYS_LIBS        = -lm 
