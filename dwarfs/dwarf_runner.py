@@ -3,6 +3,23 @@
 import subprocess
 import json
 import os
+import threading
+import time
+import sys
+from optparse import OptionParser
+
+class WebbenchThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.out = "[]"
+
+    def run(self):
+        webserver_script = ["python", "webbench.py"]
+        stdout, stderr = subprocess.Popen(webserver_script,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE).communicate()
+        self.out = stdout[:]
+
 
 class Benchmark(object):
     def __init__(self, name, dir):
@@ -28,6 +45,23 @@ class Benchmark(object):
         return [r['time'] for r in results]
 
 
+    def run_asmjs_benchmark(self, browser, browser_opts):
+        """Run the asm.js inside the browser with the specified opts."""
+        webserver_script = ["python", "webbench.py"]
+        browser_script = [browser] + browser_opts + \
+            ["http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs", "run.html")]
+
+        # Start webserver
+        thr = WebbenchThread()
+        thr.start()
+
+        # Start browser
+        time.sleep(1)
+        subprocess.call(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        thr.join()
+        return json.loads(thr.out)
+
+
     def build(self):
         """Move into the benchmark's directory and run make clean && make."""
 
@@ -36,7 +70,6 @@ class Benchmark(object):
         subprocess.call(["make", "clean"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         subprocess.call(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         os.chdir(prev_dir)
-
 
 ITERS = 10
 BENCHMARKS = [
@@ -48,14 +81,50 @@ BENCHMARKS = [
     Benchmark("bfs", "graph-traversal/bfs"),
     Benchmark("page-rank", "map-reduce/page-rank"),
     Benchmark("lavamd", "n-body-methods/lavamd"),
-    Benchmark("spmv", "sparse-linear-algebra/spmv"),
+    #Benchmark("spmv", "sparse-linear-algebra/spmv"),
     Benchmark("fft", "spectral-methods/fft"),
     Benchmark("srad", "structured-grid/SRAD"),
-    Benchmark("back-propagation", "unstructured-grid/back-propagation"),
+    Benchmark("back-prop", "unstructured-grid/back-propagation"),
 ]
 
-for b in BENCHMARKS:
-    b.build()
+benchmark_names = [b.name for b in BENCHMARKS]
+environments = ["c", "asmjs-chrome", "asmjs-firefox", "js-chrome", "js-firefox"]
+
+parser = OptionParser()
+parser.add_option("-b", "--benchmarks", dest="benchmark_csv",
+                  metavar="bench1,bench2,...",
+                  help="comma-separated list of benchmarks to run (" +
+                  ", ".join(benchmark_names) + ")")
+parser.add_option("-e", "--environments", dest="env_csv",
+                  metavar="env1,env2,...",
+                  help="comma-separated list of environments to use " +
+                  "(" + ", ".join(environments) + ")")
+(options, args) = parser.parse_args()
+
+if options.benchmark_csv is None:
+    benchmarks_to_run = benchmark_names
+else:
+    benchmarks_to_run = [b.strip() for b in options.benchmark_csv.split(",")]
+
+if options.env_csv is None:
+    environments_to_use = environments
+else:
+    environments_to_use = [b.strip() for b in options.env_csv.split(",")]
+
+print benchmarks_to_run, environments_to_use
+
+
 
 for b in BENCHMARKS:
-    print "%s,%s" % (b.name, ','.join(str(x) for x in b.run_c_benchmark()))
+    if b.name not in benchmarks_to_run:
+        continue
+    b.build()
+
+    if "c" in environments_to_use:
+        print "%s,C,N/A,%s" % (b.name, ','.join(str(x) for x in b.run_c_benchmark()))
+
+    if "asmjs-chrome" in environments_to_use:
+        print "%s,asmjs,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_asmjs_benchmark("google-chrome", [])))
+
+    if "asmjs-firefox" in environments_to_use:
+        print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_asmjs_benchmark("firefox", [])))

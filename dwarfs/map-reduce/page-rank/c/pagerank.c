@@ -18,7 +18,7 @@ const float threshold= 0.00001;
 int *random_pages(int n, unsigned int *noutlinks, int divisor){
     int i, j, k;
     int *pages = malloc(sizeof(*pages)*n*n); // matrix 1 means link from j->i
-    
+
     if (divisor <= 0) {
         printf("ERROR: Invalid divisor '%d' for random initialization, divisor should be greater or equal to 1\n", divisor);
         exit(1);
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
     int t;
     float max_diff;
     stopwatch sw;
-    
+
     int i = 0;
     int j;
     int n = 1000;
@@ -157,13 +157,13 @@ int main(int argc, char *argv[]){
         map_page_rank(pages, page_ranks, maps, noutlinks, n);
         max_diff = reduce_page_rank(page_ranks, maps, n);
 
-        printf("PageRanks(%.3d) [diff=%.10f]: ", t, max_diff);
+        fprintf(stderr, "PageRanks(%.3d) [diff=%.10f]: ", t, max_diff);
         sum = 0;
         for (i=0; i<n; ++i) {
-            //printf("%.4f ", page_ranks[i]); 
+            //printf("%.4f ", page_ranks[i]);
             sum += page_ranks[i];
         }
-        printf(" sum=%.3f \n",sum);
+        fprintf(stderr, " sum=%.3f \n",sum);
     }
     stopwatch_stop(&sw);
 
