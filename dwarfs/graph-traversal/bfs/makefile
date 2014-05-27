@@ -19,15 +19,8 @@ build/c:
 	mkdir -p build/c
 
 # link objects (binaries) together
-build/c/bfs:	build/c \
-                common/common.c \
-                c/bfs.cpp
-	$(CPPCOMP) -I../../common/ \
-             -Icommon/ \
-             ../../common/common_rand.c \
-             common/common.c \
-             c/bfs.cpp \
-			 -lm -o build/c/bfs
+build/c/bfs: build/c common/common.c c/bfs.cpp
+	$(CPPCOMP) -I../../common/ -Icommon/ ../../common/common_rand.c common/common.c c/bfs.cpp -lm -o build/c/bfs
 
 build/c/run.sh: build/c/bfs build/c
 	echo 'build/c/bfs '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
@@ -35,19 +28,10 @@ build/c/run.sh: build/c/bfs build/c
 build/asmjs:
 	mkdir -p build/asmjs
 
-build/asmjs/bfs.js: build/asmjs \
-                    common/common.c \
-                    c/bfs.cpp
-	$(EMCPP) -I../../common/ \
-             -Icommon/ \
-             ../../common/common_rand.c \
-             common/common.c \
-             c/bfs.cpp \
-             $(EMOPTIONS) \
-			 -lm -o build/asmjs/bfs.js
+build/asmjs/bfs.js: build/asmjs common/common.c c/bfs.cpp
+	$(EMCPP) -I../../common/ -Icommon/ ../../common/common_rand.c common/common.c c/bfs.cpp $(EMOPTIONS) -o build/asmjs/bfs.js
 
-build/asmjs/run.html: build/asmjs \
-            build/asmjs/bfs.js
+build/asmjs/run.html: build/asmjs build/asmjs/bfs.js
 	cat ../../utils/asmjs/run_template.html > build/asmjs/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html
