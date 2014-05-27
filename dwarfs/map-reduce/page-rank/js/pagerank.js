@@ -1,3 +1,6 @@
+if (typeof performance === "undefined")
+    performance = Date;
+
 var d_factor = 0.85; //damping factor
 
 // generates an array of random pages and their links
@@ -36,7 +39,7 @@ function map_page_rank(pages, page_ranks, maps, noutlinks, n){
     for(i=0; i<n; ++i){
         var outbound_rank = page_ranks[i]/noutlinks[i];
         for(j=0; j<n; ++j){
-            maps[i*n+j] = pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank; 
+            maps[i*n+j] = pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank;
         }
     }
 }
@@ -106,4 +109,8 @@ function runPageRank(n, iter, thresh, divisor){
     console.log("T reached "+ t+ " at max dif " + max_diff + "\n");
 
     console.log("The total time taken for a random web of" + n + "pages is " +(t2-t1)/1000 + " seconds\n");
+
+    return { status: 1,
+             options: "runPageRank(" + [n, iter, thresh, divisor].join(",") + ")",
+             time: (t2-t1)/1000 };
 }

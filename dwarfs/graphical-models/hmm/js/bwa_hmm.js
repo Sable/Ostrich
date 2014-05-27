@@ -632,5 +632,7 @@ function bwa_hmm(v_, n_, s_, t_)
         console.log(t + "\t");
         console.log(log_lik + "\n");
     }
-    return 0;
+    return { status: 1,
+             options: "bwa_hmm(" + [v_, n_, s_, t_].join(",") + ")",
+             time: (t2-t1)/1000 };
 }

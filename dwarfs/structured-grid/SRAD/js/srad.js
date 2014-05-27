@@ -11,7 +11,7 @@ r2     = Nr - 1;									// bottom row index of ROI
 c1     = 0;											// left column index of ROI
 c2     = Nc - 1;									// right column index of ROI
 
-// ROI image size    
+// ROI image size
 NeROI = (r2-r1+1)*(c2-c1+1);						// number of elements in ROI, ROI size
 
 // allocate variables for surrounding pixels
@@ -39,7 +39,7 @@ for (j=0; j<Nc; j++) {
 }
 // N/S/W/E boundary conditions, fix surrounding indices outside boundary of IMAGE
 iN[0]    = 0;										// changes IMAGE top row index from -1 to 0
-iS[Nr-1] = Nr-1;									// changes IMAGE bottom row index from Nr to Nr-1 
+iS[Nr-1] = Nr-1;									// changes IMAGE bottom row index from Nr to Nr-1
 jW[0]    = 0;										// changes IMAGE leftmost column index from -1 to 0
 jE[Nc-1] = Nc-1;									// changes IMAGE rightmost column index from Nc to Nc-1
 
@@ -80,7 +80,7 @@ function SRAD(niter,lambda) {
 
         // directional derivatives, ICOV, diffusion coefficent
         for (j=0; j<Nc; j++) {									// do for the range of columns in IMAGE
-            for (i=0; i<Nr; i++) {								// do for the range of rows in IMAGE 
+            for (i=0; i<Nr; i++) {								// do for the range of rows in IMAGE
                 // current index/pixel
                 k = i + Nr*j;									// get position of current element
                 Jc = image[k];									// get value of the current element
@@ -143,7 +143,7 @@ function runSRAD(niter,lambda) {
     SRAD(niter,lambda);
     time1 = performance.now();
     writeImage();
-    
+
     for (i=0; i<Nr; i++) {
         output = output + data[i];
     }
@@ -157,5 +157,7 @@ function runSRAD(niter,lambda) {
     }
 
     console.log("Time: " + ((time1-time0)/1000) + " s");
+    return { status: 1,
+             options: "runSRAD(" + [niter, lambda].join(",") + ")",
+             time: (time1 - time0) / 1000 };
 }
-

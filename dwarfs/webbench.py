@@ -19,8 +19,6 @@ def index(filename):
 
 @route("/asmjs/<json_string>")
 def asmjs(json_string):
-    global TIMES
-
     obj = json.loads(json_string)
     TIMES.append(obj["time"])
     #print >>stderr, len(TIMES)
