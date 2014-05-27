@@ -73,8 +73,7 @@ int main( int argc, char** argv)
     return EXIT_SUCCESS;
 }
 
-void usage(int argc, char **argv)
-{
+void usage(int argc, char **argv){
     fprintf(stderr, "Usage: %s \n", argv[0]);
     fprintf(stderr, "Options:\n");
     fprintf(stderr, "    -n <size>             : Number of items to generate for each of the two sequences to be matched.\n");
@@ -152,6 +151,15 @@ int seq_equal(int* seq_1, int* seq_2, int seq_1_size, int seq_2_size) {
     return 1;
 }
 
+void printM(int *mat, int m, int n){
+  int i,j;
+  for(i=0;i<m;++i){
+    for(j=0;j<n;++j){
+      printf("%.4d,", mat[i*n+j]); 
+    }
+    printf("\n");
+  }
+}
 void
 runTest( int argc, char** argv)
 {
