@@ -5,6 +5,8 @@ import json
 import os
 import threading
 import time
+import sys
+from optparse import OptionParser
 
 class WebbenchThread(threading.Thread):
     def __init__(self):
@@ -69,7 +71,6 @@ class Benchmark(object):
         subprocess.call(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         os.chdir(prev_dir)
 
-
 ITERS = 10
 BENCHMARKS = [
     Benchmark("nqueens", "branch-and-bound/nqueens"),
@@ -83,13 +84,47 @@ BENCHMARKS = [
     #Benchmark("spmv", "sparse-linear-algebra/spmv"),
     Benchmark("fft", "spectral-methods/fft"),
     Benchmark("srad", "structured-grid/SRAD"),
-    Benchmark("back-propagation", "unstructured-grid/back-propagation"),
+    Benchmark("back-prop", "unstructured-grid/back-propagation"),
 ]
 
-for b in BENCHMARKS:
-    b.build()
+benchmark_names = [b.name for b in BENCHMARKS]
+environments = ["c", "asmjs-chrome", "asmjs-firefox", "js-chrome", "js-firefox"]
+
+parser = OptionParser()
+parser.add_option("-b", "--benchmarks", dest="benchmark_csv",
+                  metavar="bench1,bench2,...",
+                  help="comma-separated list of benchmarks to run (" +
+                  ", ".join(benchmark_names) + ")")
+parser.add_option("-e", "--environments", dest="env_csv",
+                  metavar="env1,env2,...",
+                  help="comma-separated list of environments to use " +
+                  "(" + ", ".join(environments) + ")")
+(options, args) = parser.parse_args()
+
+if options.benchmark_csv is None:
+    benchmarks_to_run = benchmark_names
+else:
+    benchmarks_to_run = [b.strip() for b in options.benchmark_csv.split(",")]
+
+if options.env_csv is None:
+    environments_to_use = environments
+else:
+    environments_to_use = [b.strip() for b in options.env_csv.split(",")]
+
+print benchmarks_to_run, environments_to_use
+
+
 
 for b in BENCHMARKS:
-    print "%s,C,N/A,%s" % (b.name, ','.join(str(x) for x in b.run_c_benchmark()))
-    print "%s,asmjs,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_asmjs_benchmark("google-chrome", [])))
-    print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_asmjs_benchmark("firefox", [])))
+    if b.name not in benchmarks_to_run:
+        continue
+    b.build()
+
+    if "c" in environments_to_use:
+        print "%s,C,N/A,%s" % (b.name, ','.join(str(x) for x in b.run_c_benchmark()))
+
+    if "asmjs-chrome" in environments_to_use:
+        print "%s,asmjs,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_asmjs_benchmark("google-chrome", [])))
+
+    if "asmjs-firefox" in environments_to_use:
+        print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_asmjs_benchmark("firefox", [])))
