@@ -8,6 +8,21 @@ import time
 import sys
 from optparse import OptionParser
 
+
+def make_cmdline(browser, system, url):
+    if OS == "Darwin":
+        if browser == "google-chrome":
+            progname = "Google Chrome"
+        elif browser == "firefox":
+            progname = "Firefox"
+        elif browser == "safari":
+            progname = "Safari"
+
+        return ["open", url, "-a", progname]
+    else:
+        return [browser, url]
+
+
 class WebbenchThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -45,11 +60,11 @@ class Benchmark(object):
         return [r['time'] for r in results]
 
 
-    def run_js_benchmark(self, browser, browser_opts, asmjs=False):
+    def run_js_benchmark(self, browser, asmjs=False):
         """Run the asm.js inside the browser with the specified opts."""
         webserver_script = ["python", "webbench.py"]
-        browser_script = [browser] + browser_opts + \
-            ["http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs" if asmjs else "js", "run.html")]
+        url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs" if asmjs else "js", "run.html")
+        browser_script = make_cmdline(browser, OS, url)
 
         # Start webserver
         thr = WebbenchThread()
@@ -71,6 +86,7 @@ class Benchmark(object):
         subprocess.call(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         os.chdir(prev_dir)
 
+OS = os.uname()[0]
 ITERS = 10
 BENCHMARKS = [
     Benchmark("nqueens", "branch-and-bound/nqueens"),
@@ -112,6 +128,7 @@ else:
     environments_to_use = [b.strip() for b in options.env_csv.split(",")]
 
 
+
 print "benchmark,language,browser,%s" % ",".join("time" + str(i) for i in xrange(ITERS))
 
 for b in BENCHMARKS:
@@ -123,13 +140,13 @@ for b in BENCHMARKS:
         print "%s,C,N/A,%s" % (b.name, ','.join(str(x) for x in b.run_c_benchmark()))
 
     if "asmjs-chrome" in environments_to_use:
-        print "%s,asmjs,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("google-chrome", [], True)))
+        print "%s,asmjs,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("google-chrome", True)))
 
     if "asmjs-firefox" in environments_to_use:
-        print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox", [], True)))
+        print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox", True)))
 
     if "js-chrome" in environments_to_use:
-        print "%s,js,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("google-chrome", [])))
+        print "%s,js,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("google-chrome")))
 
     if "js-firefox" in environments_to_use:
-        print "%s,js,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox", [])))
+        print "%s,js,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox")))
