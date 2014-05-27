@@ -1,4 +1,4 @@
-<html> 
+<html>
 <head>
 	<meta charset='utf-8'>
 	<title></title>
@@ -8,7 +8,14 @@
 	<!--PREAMBLE-->
 	<script src='./FILENAME.js'></script>
 	<script type='text/javascript'>
-		RUN_ARGUMENT;
+		var result = JSON.stringify(RUN_ARGUMENT);
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET", "/asmjs/" + result, false);
+                xmlhttp.send();
+                var resp = xmlhttp.responseText;
+                if (resp == "1") {
+                    location.reload();
+                }
 	</script>
 </body>
 </html>

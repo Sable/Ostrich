@@ -49,10 +49,10 @@ build/asmjs/srad.js: build/asmjs \
 build/asmjs/run.html: build/asmjs \
             build/asmjs/data.js \
             build/asmjs/srad.js
-	cat asmjs/run_template.html > build/asmjs/run.html
+	cat ../../utils/asmjs/run_template.html > build/asmjs/run.html
 	sed -i.bak s/\<\!--PREAMBLE--\>/$(PREAMBLE)/g build/asmjs/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html
-	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html
+	sed -i.bak s/\\[RUN_ARGUMENT\\]/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html
 
 
 build/js:

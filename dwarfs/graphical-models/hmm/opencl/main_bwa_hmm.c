@@ -6,8 +6,8 @@
 #include <sys/time.h>
 #include <getopt.h>
 
-#include "../../include/rdtsc.h"
-#include "../../include/common_args.h"
+#include "common_args.h"
+#include "common.h"
 
 /*
 #ifdef __APPLE__
@@ -46,6 +46,8 @@ if ( err == NULL) \
 
 #define MVMUL_BLOCK_SIZE (128)
 #define MVMUL_BLOCK_NUM  (64)
+
+cl_event ocdTempEvent;
 
 cl_platform_id           _cl_firstPlatform;
 cl_device_id             _cl_firstDevice;
@@ -196,7 +198,7 @@ void toc(struct timeval *timer)
 
 	gettimeofday(&tv_end, NULL);
 	timeval_subtract(&tv_diff, &tv_end, timer);
-	printf("%ld.%06ld\t", tv_diff.tv_sec, tv_diff.tv_usec);
+	printf("%ld.%06ld seconds \t\n", tv_diff.tv_sec, tv_diff.tv_usec);
 }
 
 /* individual paramters of a Hidden Markov Model */
@@ -293,8 +295,6 @@ float dot_production(int n, cl_mem paramA, int offsetA, cl_mem paramB, int offse
 	/* set partialSum_d to all zeros */
 	errNum = clEnqueueWriteBuffer(commands, partialSum_d, CL_TRUE, 0,  sizeof(float) * n, partialSum, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "partialSum_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "writing buffer partialSum_d");
 
 	errNum  = clSetKernelArg(_cl_kernel_s_dot_kernel_naive, 0, sizeof(int), &n);
@@ -310,14 +310,10 @@ float dot_production(int n, cl_mem paramA, int offsetA, cl_mem paramB, int offse
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_s_dot_kernel_naive, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_s_dot_kernel_naive Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_s_dot_kernel_naive");
 
 	errNum = clEnqueueReadBuffer(commands, partialSum_d, CL_TRUE, 0,  sizeof(float) * n, partialSum, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "partialSum_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "reading buffer partialSum_d");
 
 	for(i = 0; i < n; i++)
@@ -375,8 +371,6 @@ void mat_vec_mul(char trans, int m, int n, cl_mem A, int lda, cl_mem x, int offs
 
 		errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_sgemvt_kernel_naive, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_sgemvt_kernel_naive Kernel", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errNum, "queuing kernel _cl_kernel_sgemvt_kernel_naive for execution");
 	} else
 	{
@@ -412,8 +406,6 @@ void mat_vec_mul(char trans, int m, int n, cl_mem A, int lda, cl_mem x, int offs
 
 		errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_sgemvn_kernel_naive, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_sgemvn_kernel_naive Kernel", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errNum, "queuing kernel _cl_kernel_sgemvn_kernel_naive for execution");
 	}
 
@@ -457,8 +449,6 @@ float calc_alpha()
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_init_alpha_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_init_alpha_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_init_alpha_dev for execution");
 
 	/* Sum alpha values to get scaling factor */
@@ -477,8 +467,6 @@ float calc_alpha()
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_scale_alpha_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_scale_alpha_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_scale_alpha_dev for execution");
 
 	/* Initilialize log likelihood */
@@ -498,6 +486,7 @@ float calc_alpha()
 		mat_vec_mul( 'n', nstates, nstates, a_d, nstates, 
 				alpha_d, offset_prev, alpha_d, offset_cur);
 
+
 		/* Calculate alpha(t) */
 		// calc_alpha_dev<<<nblocks, threads_per_block>>>( nstates, 
 		//                                                 alpha_d + offset_cur, 
@@ -511,10 +500,9 @@ float calc_alpha()
 		errNum |= clSetKernelArg(_cl_kernel_calc_alpha_dev, 4, sizeof(int), obs + t);
 		CHKERR(errNum, "setting kernel _cl_kernel_calc_alpha_dev arguments");
 
+
 		errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_calc_alpha_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_calc_alpha_dev Kernel", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errNum, "queuing kernel _cl_kernel_calc_alpha_dev for execution");
 
 		/* Sum alpha values to get scaling factor */
@@ -532,8 +520,6 @@ float calc_alpha()
 
 		errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_scale_alpha_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_scale_alpha_dev Kernel", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errNum, "queuing kernel _cl_kernel_scale_alpha_dev for execution");                                                
 		/* Update log likelihood */
 		log_lik += log10(scale[t]);
@@ -570,8 +556,6 @@ int calc_beta()
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_init_beta_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_init_beta_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_init_beta_dev for execution");
 
 
@@ -595,8 +579,6 @@ int calc_beta()
 
 		errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_calc_beta_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_calc_beta_dev Kernel", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errNum, "queuing kernel _cl_kernel_calc_beta_dev for execution");
 
 		/* Multiply transposed A matrix by beta(t) */
@@ -628,8 +610,6 @@ void calc_gamma_sum()
 	int *gamma_sum_zeros = (int*)calloc(nstates, sizeof(float));
 	errNum = clEnqueueWriteBuffer(commands, gamma_sum_d, CL_TRUE, 0, sizeof(float) * nstates, gamma_sum_zeros, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "gamma_sum_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "writing buffer gamma_sum_d");
 	free(gamma_sum_zeros);
 
@@ -650,8 +630,6 @@ void calc_gamma_sum()
 
 		errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_calc_gamma_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_calc_gamma_dev Kernel", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errNum, "queuing kernel _cl_kernel_calc_gamma_dev for execution");
 	}
 
@@ -670,8 +648,6 @@ int calc_xi_sum()
 	int *xi_sum_d_zeros = (int*)calloc(nstates * nstates, sizeof(float));
 	errNum = clEnqueueWriteBuffer(commands, xi_sum_d, CL_TRUE, 0, sizeof(float) * nstates * nstates, xi_sum_d_zeros, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "xi_sum_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "writing buffer xi_sum_d");
 	free(xi_sum_d_zeros);
 
@@ -713,8 +689,6 @@ int calc_xi_sum()
 
 		errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_calc_xi_dev, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_calc_xi_dev Kernel", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errNum, "queuing kernel _cl_kernel_calc_xi_dev for execution");
 	}
 
@@ -759,10 +733,9 @@ int estimate_a()
 	errNum |= clSetKernelArg(_cl_kernel_est_a_dev, 7, sizeof(int), &length);
 	CHKERR(errNum, "setting kernel _cl_kernel_est_a_dev arguments");
 
+
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_est_a_dev, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_est_a_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_est_a_dev for execution");
 
 	/* Sum rows of A to get scaling values */
@@ -770,7 +743,6 @@ int estimate_a()
 	// ones_n_d, 1, 0, c_d, 1 );
 	mat_vec_mul( 't', nstates, nstates, a_d, nstates, 
 			ones_n_d, 0, c_d, 0);
-
 
 	/* Normalize A matrix */
 	// scale_a_dev<<<grid, threads>>>( a_d,
@@ -783,8 +755,6 @@ int estimate_a()
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_scale_a_dev, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_scale_a_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_scale_a_dev for execution");
 
 	return 0;
@@ -804,8 +774,6 @@ int estimate_b()
 	int *b_d_zeros = (int*)calloc(nstates * nsymbols, sizeof(float));
 	errNum = clEnqueueWriteBuffer(commands, b_d, CL_TRUE, 0, sizeof(float) * nstates * nsymbols, b_d_zeros, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "b_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "writing buffer b_d");
 	free(b_d_zeros);
 
@@ -844,8 +812,6 @@ int estimate_b()
 
 		errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_acc_b_dev, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 		clFinish(commands);
-		START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_acc_b_dev Kernel", ocdTempTimer)
-		END_TIMER(ocdTempTimer)
 		CHKERR(errNum, "queuing kernel _cl_kernel_acc_b_dev for execution");
 
 	}
@@ -860,8 +826,6 @@ int estimate_b()
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_est_b_dev, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_est_b_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_est_b_dev for execution");
 
 
@@ -885,8 +849,6 @@ int estimate_b()
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_scale_b_dev, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_scale_b_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_scale_b_dev for execution");
 
 	return 0;
@@ -924,13 +886,29 @@ int estimate_pi()
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_est_pi_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_est_pi_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "queuing kernel _cl_kernel_est_pi_dev for execution");
 
 	return 0;
 }
 
+
+void printM(float *mat, int m, int n){
+  int i,j;
+  for(i=0;i<m;++i){
+    for(j=0;j<n;++j){
+      printf("%lf,", mat[i*n+j]); 
+    }
+    printf("\n");
+  }
+}
+
+void printMD(cl_mem *a, int m, int n){
+    float *x= malloc(sizeof(float)*m*n);
+    clEnqueueReadBuffer(commands, a, CL_TRUE, 0, sizeof(float)*m*n, x, 0, NULL, NULL); 
+    clFinish(commands);
+    printM(x, m, n);
+    free(x);
+}
 
 /*******************************************************************************
  * BWA function
@@ -1001,20 +979,14 @@ float run_hmm_bwa(  Hmm *hmm,
 	/* Transfer device data */
 	errNum = clEnqueueWriteBuffer(commands, a_d, CL_TRUE, 0, sizeof(float) * nstates * nstates, a, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "a_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "Error writing buffer a_d");
 
 	errNum = clEnqueueWriteBuffer(commands, b_d, CL_TRUE, 0, sizeof(float) * nstates * nsymbols, b, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "b_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "Error writing buffer b_d");
 
 	errNum = clEnqueueWriteBuffer(commands, pi_d, CL_TRUE, 0, sizeof(float) * nstates, pi, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "pi_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "Error writing buffer pi_d");
 
 	/* Initialize ones array */
@@ -1030,9 +1002,8 @@ float run_hmm_bwa(  Hmm *hmm,
 
 	errNum = clEnqueueNDRangeKernel(commands, _cl_kernel_init_ones_dev, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "_cl_kernel_init_ones_dev Kernel", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "Error queuing kernel _cl_kernel_init_ones_dev for execution");
+
 
 	/* Run BWA for either max iterations or until threshold is reached */
 	for (iter = 0; iter < iterations; iter++) {
@@ -1056,9 +1027,12 @@ float run_hmm_bwa(  Hmm *hmm,
 			return EXIT_ERROR;
 		}
 
+
 		if (estimate_b() == EXIT_ERROR) {
 			return EXIT_ERROR;
 		}
+
+    printMD(b_d, nsymbols, nstates);
 
 		if (estimate_pi() == EXIT_ERROR) {
 			return EXIT_ERROR;
@@ -1067,31 +1041,24 @@ float run_hmm_bwa(  Hmm *hmm,
 		/* check log_lik vs. threshold */
 		if (threshold > 0 && iter > 0) {
 			if (fabs(pow(10,new_log_lik) - pow(10,old_log_lik)) < threshold) {
-				break;
+				// break;
 			}
 		}
 
 		old_log_lik = new_log_lik;   
-
 	}
 
 	/* Copy device variables back to host */
 	errNum = clEnqueueReadBuffer(commands, a_d, CL_TRUE, 0, sizeof(float) * nstates * nstates, a, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "a_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "Error reading buffer a_d");
 
 	errNum = clEnqueueReadBuffer(commands, b_d, CL_TRUE, 0, sizeof(float) * nstates * nsymbols, b, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "b_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "Error reading buffer b_d");
 
 	errNum = clEnqueueReadBuffer(commands, pi_d, CL_TRUE, 0, sizeof(float) * nstates, pi, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
-	START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "pi_d Data Copy", ocdTempTimer)
-	END_TIMER(ocdTempTimer)
 	CHKERR(errNum, "Error reading buffer pi_d");
 
 	clFinish(commands);
@@ -1234,9 +1201,9 @@ int main(int argc, char *argv[])
 
 		tic(&timer);
 		log_lik = run_hmm_bwa(hmm, obs, ITERATIONS, 0);
+		toc(&timer);
 		printf("Observations\tTime (s)\tLog_likelihood\n");
 		printf("%i\t", n);
-		toc(&timer);
 		printf("%f\n", log_lik);
 
 		/* Free memory */

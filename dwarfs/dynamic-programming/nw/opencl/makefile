@@ -6,7 +6,7 @@ DEF = -DOPENCL_HEADER_CL_CL
 
 #C compiler
 CC = gcc
-CC_FLAGS = -g -O3 -Wall
+CC_FLAGS = -O3
 
 EXE = needle 
 

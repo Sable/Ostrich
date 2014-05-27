@@ -161,40 +161,41 @@ lud_verify(float *m, float *lu, int matrix_dim){
         }
         tmp[i*matrix_dim+j] = sum;
     }
-  fprintf(stderr, ">>>>>LU<<<<<<<\n");
+  printf(">>>>>LU<<<<<<<\n");
   for (i=0; i<matrix_dim; i++){
     for (j=0; j<matrix_dim;j++){
-        fprintf(stderr, "%f ", lu[i*matrix_dim+j]);
+        printf("%f ", lu[i*matrix_dim+j]);
     }
-    fprintf(stderr, "\n");
+    printf("\n");
   }
-  fprintf(stderr, ">>>>>result<<<<<<<\n");
+  printf(">>>>>result<<<<<<<\n");
   for (i=0; i<matrix_dim; i++){
     for (j=0; j<matrix_dim;j++){
-        fprintf(stderr, "%f ", tmp[i*matrix_dim+j]);
+        printf("%f ", tmp[i*matrix_dim+j]);
     }
-    fprintf(stderr, "\n");
+    printf("\n");
   }
-  fprintf(stderr, ">>>>>input<<<<<<<\n");
+  printf(">>>>>input<<<<<<<\n");
   for (i=0; i<matrix_dim; i++){
     for (j=0; j<matrix_dim;j++){
-        fprintf(stderr, "%f ", m[i*matrix_dim+j]);
+        printf("%f ", m[i*matrix_dim+j]);
     }
-    fprintf(stderr, "\n");
+    printf("\n");
   }
 
   int good = 1;
   for (i=0; i<matrix_dim; i++){
       for (j=0; j<matrix_dim; j++){
           if ( fabs(m[i*matrix_dim+j]-tmp[i*matrix_dim+j])/fabs(m[i*matrix_dim+j])> 0.00001){
-            fprintf(stderr, "dismatch at (%d, %d): (o)%f (n)%f\n", i, j, m[i*matrix_dim+j], tmp[i*matrix_dim+j]);
+            printf("dismatch at (%d, %d): (o)%f (n)%f\n", i, j, m[i*matrix_dim+j], tmp[i*matrix_dim+j]);
             good = 0;
           }
       }
   }
-  if(good) fprintf(stderr, "Good LUD!");
-  else fprintf(stderr, "Bad LUD!");
+  if(good) printf("Good LUD!");
+  else printf("Bad LUD!");
   free(tmp);
+  return RET_SUCCESS;
 }
 
 void
@@ -210,7 +211,7 @@ print_matrix(float *m, int matrix_dim) {
     int i, j;
     for (i=0; i<matrix_dim;i++) {
       for (j=0; j<matrix_dim;j++)
-        fprintf(stderr, "%f ", m[i*matrix_dim+j]);
-      fprintf(stderr, "\n");
+        printf("%f ", m[i*matrix_dim+j]);
+      printf("\n");
     }
 }

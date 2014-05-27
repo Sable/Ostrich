@@ -141,7 +141,7 @@ void BFSGraph( int argc, char** argv) {
 
     if (no_of_nodes == expected_no_of_nodes) {
         if (total_cost != expected_total_cost) {
-            fprintf(stderr, "ERROR: the total cost obtained for '%d' nodes  is '%lu' while the expected cost is '%lu'\n", no_of_nodes, total_cost, expected_total_cost);
+          fprintf(stdout, "ERROR: the total cost obtained for '%d' nodes  is '%lu' while the expected cost is '%lu'\n", no_of_nodes, total_cost, expected_total_cost);
             exit(1);
         }
     } else {

@@ -167,8 +167,8 @@ __kernel void est_a_dev(  __global float *a_d,          /* dim = nstates x nstat
 	{
 		a_d[(idy * nstates) + idx] = xi_sum_d[(idy * nstates) + idx] /
 			(gamma_sum_d[idy] -
-			 alpha_d[(length * nstates) + idy] *
-			 beta_d[(length * nstates) + idy] /
+			 alpha_d[(idy * nstates) + idx] *
+			 beta_d[(idy * nstates) + idx] /
 			 sum_ab);
 	}
 }
