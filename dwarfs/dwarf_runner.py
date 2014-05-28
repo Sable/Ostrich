@@ -3,7 +3,6 @@
 import subprocess
 import json
 import os
-import threading
 import time
 import sys
 import signal
@@ -156,7 +155,7 @@ for b in BENCHMARKS:
     if "asmjs-firefox" in environments_to_use:
         print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox", True)))
 
-    if "asmjs-safari" in environments_to_use:
+    if "asmjs-safari" in environments_to_use and OS == "Darwin":
         print "%s,asmjs,Safari,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("safari", True)))
 
     if "js-chrome" in environments_to_use:
@@ -165,5 +164,5 @@ for b in BENCHMARKS:
     if "js-firefox" in environments_to_use:
         print "%s,js,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox")))
 
-    if "js-safari" in environments_to_use:
+    if "js-safari" in environments_to_use and OS == "Darwin":
         print "%s,js,Safari,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("safari")))
