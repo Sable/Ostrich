@@ -6,21 +6,15 @@ import os
 import threading
 import time
 import sys
+import signal
 from optparse import OptionParser
 
 
-def make_cmdline(browser, system, url):
-    if OS == "Darwin":
-        if browser == "google-chrome":
-            progname = "Google Chrome"
-        elif browser == "firefox":
-            progname = "Firefox"
-        elif browser == "safari":
-            progname = "Safari"
-
-        return ["open", url, "-a", progname]
+def make_cmdline(browser, system):
+    if browser == "google-chrome":
+        return [browser, "--incognito"]
     else:
-        return [browser, url]
+        return [browser, "--private"]
 
 
 class WebbenchThread(threading.Thread):
@@ -61,6 +55,28 @@ class Benchmark(object):
 
 
     def run_js_benchmark(self, browser, asmjs=False):
+        httpd = subprocess.Popen(["python", "webbench.py"], stdout=subprocess.PIPE)
+        url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs" if asmjs else "js", "run.html")
+        browser_script = make_cmdline(browser, OS)
+        results = []
+
+        for _ in xrange(ITERS):
+            br = subprocess.Popen(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(5)
+            subprocess.call(browser_script + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            line = httpd.stdout.readline()
+            obj = json.loads(line)
+            results.append(obj)
+            br.kill()
+
+        httpd.kill()
+        return [r['time'] for r in results]
+
+
+
+
+    '''
+    def run_js_benchmark(self, browser, asmjs=False):
         """Run the asm.js inside the browser with the specified opts."""
         webserver_script = ["python", "webbench.py"]
         url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs" if asmjs else "js", "run.html")
@@ -75,7 +91,7 @@ class Benchmark(object):
         subprocess.call(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         thr.join()
         return json.loads(thr.out)
-
+    '''
 
     def build(self):
         """Move into the benchmark's directory and run make clean && make."""
@@ -104,7 +120,13 @@ BENCHMARKS = [
 ]
 
 benchmark_names = [b.name for b in BENCHMARKS]
-environments = ["c", "asmjs-chrome", "asmjs-firefox", "js-chrome", "js-firefox"]
+environments = ["c",
+                "asmjs-chrome",
+                "asmjs-firefox",
+                "js-chrome",
+                "js-firefox",
+                "asmjs-safari",
+                "js-safari"]
 
 parser = OptionParser()
 parser.add_option("-b", "--benchmarks", dest="benchmark_csv",

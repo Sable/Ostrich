@@ -301,6 +301,6 @@ function runNeedle(dimensions, penalty, options)
 
     console.log("The total time spent is "+ (t2-t1)/1000+ " seconds\n" );
     return { status: 1,
-             options: "runNeedle(" + [dimensions, penalty, options].join(",") + ")",
+             options: "runNeedle(" + [dimensions, penalty].join(",") + ")",
              time: (t2-t1)/1000 };
 }
