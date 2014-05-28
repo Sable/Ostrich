@@ -11,10 +11,15 @@ from optparse import OptionParser
 
 
 def make_cmdline(browser, system):
-    if browser == "google-chrome":
-        return [browser, "--incognito"]
-    else:
-        return [browser, "--private"]
+    if OS == "Darwin":
+        if browser == "google-chrome":
+            return ["open", "/Applications/Google Chrome.app", "--args", "--incognito"]
+        elif browser == "firefox":
+            return ["open", "/Applications/Firefox.app", "--args", "--private"]
+        else:
+            return  ["open", "/Applications/Safari.app"]
+    elif OS == "Linux":
+        return [browser, "--incognito" if browser == "google-chrome" else "--private"]
 
 
 class WebbenchThread(threading.Thread):
@@ -63,7 +68,11 @@ class Benchmark(object):
         for _ in xrange(ITERS):
             br = subprocess.Popen(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             time.sleep(5)
-            subprocess.call(browser_script + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if OS == "Darwin":
+                browser_script = browser_script[0] + ["-a", url] + browser_script[1:]
+                subprocess.call(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            else:
+                subprocess.call(browser_script + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             line = httpd.stdout.readline()
             obj = json.loads(line)
             results.append(obj)
@@ -72,26 +81,6 @@ class Benchmark(object):
         httpd.kill()
         return [r['time'] for r in results]
 
-
-
-
-    '''
-    def run_js_benchmark(self, browser, asmjs=False):
-        """Run the asm.js inside the browser with the specified opts."""
-        webserver_script = ["python", "webbench.py"]
-        url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs" if asmjs else "js", "run.html")
-        browser_script = make_cmdline(browser, OS, url)
-
-        # Start webserver
-        thr = WebbenchThread()
-        thr.start()
-
-        # Start browser
-        time.sleep(1)
-        subprocess.call(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        thr.join()
-        return json.loads(thr.out)
-    '''
 
     def build(self):
         """Move into the benchmark's directory and run make clean && make."""
@@ -167,8 +156,14 @@ for b in BENCHMARKS:
     if "asmjs-firefox" in environments_to_use:
         print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox", True)))
 
+    if "asmjs-safari" in environments_to_use:
+        print "%s,asmjs,Safari,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("safari", True)))
+
     if "js-chrome" in environments_to_use:
         print "%s,js,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("google-chrome")))
 
     if "js-firefox" in environments_to_use:
         print "%s,js,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox")))
+
+    if "js-safari" in environments_to_use:
+        print "%s,js,Safari,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("safari")))
