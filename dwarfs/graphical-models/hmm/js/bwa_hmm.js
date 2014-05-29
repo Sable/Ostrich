@@ -1,3 +1,7 @@
+if (typeof performance === "undefined") {
+    performance = Date;
+}
+
 var T =  1000;        /* Number of static observations */
 var S = 2;           /* Number of static symbols */
 var N = 60;          /* Number of static states */
