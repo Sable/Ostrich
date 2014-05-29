@@ -7,17 +7,18 @@ import time
 import sys
 import signal
 import threading
+import psutil
 from optparse import OptionParser
 
 
 def make_cmdline(browser, system):
     if OS == "Darwin":
         if browser == "google-chrome":
-            return ["open", "/Applications/Google Chrome.app", "--args", "--incognito"]
+            return ["open", "--background", "-a", "/Applications/Google Chrome.app", "--args", "--incognito"]
         elif browser == "firefox":
-            return ["open", "/Applications/Firefox.app", "--args", "--private"]
+            return ["open", "--background", "-a", "/Applications/Firefox.app", "--args", "--private"]
         else:
-            return  ["open", "/Applications/Safari.app"]
+            return  ["open", "--background", "-a", "/Applications/Safari.app"]
     elif OS == "Linux":
         return [browser, "--incognito" if browser == "google-chrome" else "--private"]
 
@@ -69,14 +70,19 @@ class Benchmark(object):
             br = subprocess.Popen(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             time.sleep(5)
             if OS == "Darwin":
-                browser_script = browser_script[0] + ["-a", url] + browser_script[1:]
-                subprocess.call(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                browser_script2 = [browser_script[0]] + [url] + browser_script[1:]
+                subprocess.call(browser_script2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             else:
                 subprocess.call(browser_script + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             line = httpd.stdout.readline()
             obj = json.loads(line)
             results.append(obj)
-            br.kill()
+            if OS == "Darwin":
+                browsers = { "google-chrome": "Google Chrome", "firefox": "firefox", "safari": "Safari" }
+                pids = [p.pid for p in psutil.get_process_list() if p.name == browsers[browser]]
+                os.kill(pids[0], signal.SIGKILL)
+            else:
+                br.kill()
 
         httpd.kill()
         return [r['time'] for r in results]
@@ -126,6 +132,9 @@ parser.add_option("-e", "--environments", dest="env_csv",
                   metavar="env1,env2,...",
                   help="comma-separated list of environments to use " +
                   "(" + ", ".join(environments) + ")")
+parser.add_option("-i", "--iterations", dest="iters",
+                  metavar="iter_nb",
+                  help="number of iteration for each benchmark")
 (options, args) = parser.parse_args()
 
 if options.benchmark_csv is None:
@@ -137,6 +146,11 @@ if options.env_csv is None:
     environments_to_use = environments
 else:
     environments_to_use = [b.strip() for b in options.env_csv.split(",")]
+
+if options.iters is None:
+    ITERS = 10
+else:
+    ITERS = int(options.iters) 
 
 
 
