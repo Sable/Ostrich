@@ -7,8 +7,13 @@ import time
 import sys
 import signal
 import threading
-import psutil
 from optparse import OptionParser
+
+# Needed only on OSX
+try:
+    import psutil
+except ImportError:
+    pass
 
 
 def make_cmdline(browser, system):
@@ -133,7 +138,7 @@ parser.add_option("-e", "--environments", dest="env_csv",
                   help="comma-separated list of environments to use " +
                   "(" + ", ".join(environments) + ")")
 parser.add_option("-i", "--iterations", dest="iters",
-                  metavar="iter_nb",
+                  action="store", type="int",
                   help="number of iteration for each benchmark")
 (options, args) = parser.parse_args()
 
@@ -147,12 +152,7 @@ if options.env_csv is None:
 else:
     environments_to_use = [b.strip() for b in options.env_csv.split(",")]
 
-if options.iters is None:
-    ITERS = 10
-else:
-    ITERS = int(options.iters) 
-
-
+ITERS = options.iters or 10
 
 print "benchmark,language,browser,%s" % ",".join("time" + str(i) for i in xrange(ITERS))
 
