@@ -73,7 +73,7 @@ class Benchmark(object):
 
         for _ in xrange(ITERS):
             br = subprocess.Popen(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            time.sleep(5)
+            time.sleep(SLEEP_TIME)
             if OS == "Darwin":
                 browser_script2 = [browser_script[0]] + [url] + browser_script[1:]
                 subprocess.call(browser_script2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -140,6 +140,9 @@ parser.add_option("-e", "--environments", dest="env_csv",
 parser.add_option("-i", "--iterations", dest="iters",
                   action="store", type="int",
                   help="number of iteration for each benchmark")
+parser.add_option("-w", "--wait-before-load", dest="wait",
+                  action="store", type="int",
+                  help="number of seconds to wait after having started the browser before sending the load command")
 (options, args) = parser.parse_args()
 
 if options.benchmark_csv is None:
@@ -153,6 +156,7 @@ else:
     environments_to_use = [b.strip() for b in options.env_csv.split(",")]
 
 ITERS = options.iters or 10
+SLEEP_TIME = options.wait or 6
 
 print "benchmark,language,browser,%s" % ",".join("time" + str(i) for i in xrange(ITERS))
 
