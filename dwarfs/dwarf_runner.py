@@ -43,7 +43,7 @@ class OsxEnvironment(object):
         time.sleep(self.sleep_time)
         subprocess.call([invocation[0], url] + invocation[1:], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         yield
-        browsers = {"google-chrome": "Google Chrome", "firefox": "Firefox", "safari": "Safari"}
+        browsers = {"google-chrome": "Google Chrome", "firefox": "firefox", "safari": "Safari"}
         for p in psutil.get_process_list():
             if p.name == browsers[browser]:
                 os.kill(p.pid, signal.SIGKILL)
