@@ -221,7 +221,7 @@ function download(strData, strFileName, strMimeType) {
 	return true;
 } /* end download() */
 
-function webclLUD(platformIdx, deviceIdx, boardSize){
+function webclNQ(platformIdx, deviceIdx, boardSize){
     var programSourceId = "clNQueens";        
     var blockSize = 0; 
     var workItems;
@@ -634,4 +634,4 @@ function webclLUD(platformIdx, deviceIdx, boardSize){
     console.log("Solutions: " + solutionsFinal + " unique solutions: " + uniqueSolutionsFinal); 
     console.log("Total time elapsed is "+ (t2-t1)/1000+ " seconds");
 }
- // webclLUD(0, 0, 15);
+ // webclNQ(0, 0, 15);
