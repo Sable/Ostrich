@@ -23,7 +23,11 @@ class LinuxEnvironment(object):
 
     @contextlib.contextmanager
     def provision_browser(self, browser, url):
-        invocation = [browser, "--incognito" if browser == "google-chrome" else "--private"]
+        if browser == "google-chrome":
+            browser_opts = ["--incognito", "--disable-extensions"]
+        else:
+            browser_opts = ["--private"]
+        invocation = [browser] + browser_opts
         browser = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(self.sleep_time)
         subprocess.call(invocation + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -42,7 +46,7 @@ class OsxEnvironment(object):
     @contextlib.contextmanager
     def provision_browser(self, browser, url):
         browser_args = {
-            "google-chrome": ["/Applications/Google Chrome.app", "--args", "--incognito"],
+            "google-chrome": ["/Applications/Google Chrome.app", "--args", "--incognito", "--disable-extensions"],
             "firefox": ["/Applications/Firefox.app", "--args", "--private"],
             "safari": ["/Applications/Safari.app"]
         }
