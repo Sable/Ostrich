@@ -7,7 +7,12 @@ import time
 import signal
 import contextlib
 from optparse import OptionParser
-import psutil
+
+if os.uname()[0] == "Darwin":
+    try:
+        import psutil
+    except ImportError:
+        print >>sys.stderr, "error: %s: module 'psutil' required for OSX" % sys.argv[0]
 
 
 @contextlib.contextmanager
@@ -67,7 +72,7 @@ class OsxEnvironment(object):
         yield
         if browser == "safari":
             subprocess.call(["osascript", "utils/stop-safari.scpt"])
-        else: 
+        else:
             browsers = {"google-chrome": "Google Chrome", "firefox": "firefox", "safari": "Safari"}
             for p in psutil.get_process_list():
                 if p.name == browsers[browser]:
@@ -116,7 +121,7 @@ BENCHMARK_INFO = {
     "bfs": "graph-traversal/bfs",
     "page-rank": "map-reduce/page-rank",
     "lavamd": "n-body-methods/lavamd",
-    "spmv": "sparse-linear-algebra/spmv",
+    #"spmv": "sparse-linear-algebra/spmv",
     "fft": "spectral-methods/fft",
     "srad": "structured-grid/SRAD",
     "back-prop": "unstructured-grid/back-propagation",
