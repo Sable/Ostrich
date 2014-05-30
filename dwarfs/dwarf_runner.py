@@ -21,12 +21,16 @@ class LinuxEnvironment(object):
     def __init__(self, sleep_time):
         self.sleep_time = sleep_time
 
+    def can_use(self, browser):
+        return browser != "Safari"
+
     @contextlib.contextmanager
     def provision_browser(self, browser, url):
         if browser == "google-chrome":
             browser_opts = ["--incognito", "--disable-extensions"]
-        else:
+        elif browser == "firefox":
             browser_opts = ["--private"]
+
         invocation = [browser] + browser_opts
         browser = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(self.sleep_time)
@@ -42,6 +46,9 @@ class OsxEnvironment(object):
         except ImportError:
             print >>sys.stderr, "%s: error: module 'psutil' required for OS X." % sys.argv[0]
         self.sleep_time = sleep_time
+
+    def can_use(self, browser):
+        return True
 
     @contextlib.contextmanager
     def provision_browser(self, browser, url):
@@ -153,7 +160,8 @@ def main():
     for b in benchmarks_to_run:
         b.build()
         for env in environments_to_use:
-            print ",".join([b.name, env[0], env[1], ",".join(map(str, env[2](b)))])
+            if b.env.can_use(env[1]):
+                print ",".join([b.name, env[0], env[1], ",".join(map(str, env[2](b)))])
 
 if __name__ == "__main__":
     main()
