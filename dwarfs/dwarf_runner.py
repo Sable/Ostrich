@@ -87,7 +87,7 @@ class Benchmark(object):
 
     def build(self):
         """Move into the benchmark's directory and run make clean && make."""
-        with self.cd():
+        with cd(self.dir):
             subprocess.call(["make", "clean"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             subprocess.call(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
