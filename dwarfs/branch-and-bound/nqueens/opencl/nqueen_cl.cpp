@@ -307,14 +307,39 @@ inline int bit_scan(unsigned int x)
 	return res;
 }
 
+void printM(int *mat, int m, int n){
+  int i,j;
+  for(i=0;i<m;++i){
+    for(j=0;j<n;++j){
+      printf("%.4d,", mat[i*n+j]); 
+    }
+    printf("\n");
+  }
+}
 
-long long NQueenSolver::Compute(int board_size, long long* unique)
-{
+void printMD(cl_mem a, int m, int n, cl_command_queue queue){
+    int *x = (int *)malloc(sizeof(int)*m*n);
+    clEnqueueReadBuffer(queue, a, CL_TRUE, 0, sizeof(int)*m*n, x, 0, NULL, NULL); 
+    clFinish(queue);
+    printM(x, m, n);
+    free(x);
+}
+
+long long NQueenSolver::Compute(int board_size, long long* unique){
 	// estimate amount of levels need to be computed on the device
-	long long total = 10000000000LL;
-	total /= 10;	// for atomics
+	long long total = 1000000000LL;
 	int level = 0;
 	int i = board_size;
+  bool enable_atomics = m_SolverInfo[0].m_bEnableAtomics; 
+  cl_mem param_d, result_d, forbidden_d, global_index_d; 
+  cl_kernel nqueen =  m_SolverInfo[0].m_NQueen ;
+  cl_kernel nqueen1 =  m_SolverInfo[0].m_NQueen1;
+  cl_command_queue queue = m_SolverInfo[0].m_Queue;
+  bool enable_vectorize = m_SolverInfo[0].m_bEnableVectorize;
+  int mn_threads = m_SolverInfo[0].m_nThreads;
+  int last_total_size =  0;
+  size_t n_max_work_items = m_SolverInfo[0].m_nMaxWorkItems;
+
 	while(total > 0 && i > 0) {
 		total /= ((i + 1) / 2);
 		i--;
@@ -328,75 +353,48 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 	if(level > 11) {
 		level = 11;
 	}
-
-
-//	std::cerr << "start: " << clock() << "\n";
-
-//	if(m_bCPU) {
-//		level = board_size - 2;
-//	}
-
-	std::vector<int> threads(m_SolverInfo.size()); //Will be always 1 in OpenDwarfs
+  int threads = 0; 
 	int max_threads = 0;
 	int max_pitch;
 	cl_int err;
-	for(int i = 0; i < threads.size(); i++) {
-		if(m_SolverInfo[i].m_bEnableAtomics) {
-			threads[i] = m_SolverInfo[i].m_nThreads * 16;
-		}
-		else {
-			threads[i] = m_SolverInfo[i].m_nThreads;
-		}
 
-		if(max_threads < threads[i]) {
-			max_threads = threads[i];
-		}
-	}
+  if(enable_atomics) {
+    threads = mn_threads * 16;
+  }
+  else {
+    threads = mn_threads;
+  }
+
+  if(max_threads < threads) {
+    max_threads = threads;
+  }
 
 	max_pitch = (max_threads + 15) & ~0xf;
 
-	for(int i = 0; i < threads.size(); i++) { //Will be always 1 in OpenDwarfs
-		// create data buffer
-		if(m_SolverInfo[i].m_ParamBuffer != 0) clReleaseMemObject(m_SolverInfo[i].m_ParamBuffer);
-		m_SolverInfo[i].m_ParamBuffer = clCreateBuffer(m_Context, CL_MEM_READ_ONLY, max_pitch * sizeof(int) * (4 + 32), 0, &err);
-		CHECK_ERROR(err);
+  // create data buffer
+  param_d = clCreateBuffer(m_Context, CL_MEM_READ_ONLY, max_pitch * sizeof(int) * (4 + 32), 0, &err);
+  CHECK_ERROR(err);
 
-		if(m_SolverInfo[i].m_ResultBuffer != 0) clReleaseMemObject(m_SolverInfo[i].m_ResultBuffer);
-		m_SolverInfo[i].m_ResultBuffer = clCreateBuffer(m_Context, CL_MEM_WRITE_ONLY, max_pitch * sizeof(int) * 4, 0, &err);
-		CHECK_ERROR(err);
+  result_d = clCreateBuffer(m_Context, CL_MEM_WRITE_ONLY, max_pitch * sizeof(int) * 4, 0, &err);
+  CHECK_ERROR(err);
 
-		if(m_SolverInfo[i].m_ForbiddenBuffer != 0) clReleaseMemObject(m_SolverInfo[i].m_ForbiddenBuffer);
-		m_SolverInfo[i].m_ForbiddenBuffer = clCreateBuffer(m_Context, CL_MEM_READ_ONLY, 32 * sizeof(int), 0, &err);
-		CHECK_ERROR(err);
+  forbidden_d = clCreateBuffer(m_Context, CL_MEM_READ_ONLY, 32 * sizeof(int), 0, &err);
+  CHECK_ERROR(err);
 
-		if(m_SolverInfo[i].m_GlobalIndex != 0) clReleaseMemObject(m_SolverInfo[i].m_GlobalIndex);
-		m_SolverInfo[i].m_GlobalIndex = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(int), 0, &err);
-		CHECK_ERROR(err);
-
-		m_SolverInfo[i].m_TotalTime = 0;
-	}
+  global_index_d = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(int), 0, &err);
+  CHECK_ERROR(err);
 
 	std::vector<unsigned int> mask_vector(max_pitch * (4 + 32));
 	std::vector<unsigned int> results(max_pitch * 4);
-	std::vector<bool> forbidden_written(threads.size());
-
-
+  bool forbidden_written = false;
 	long long solutions = 0;
 	long long unique_solutions = 0;
-	bool has_data = false;
-
 	int vec_size = m_bForceVec4 ? 4 : 2;
 
 	unsigned int board_mask = (1 << board_size) - 1;
 	int total_size = 0;
-	int last_total_size = 0;
-	int device_idx = 0;
 
 	for(int j = 0; j < board_size / 2; j++) {
-	// only do nqueen1
-//	int j = 1;
-//	{
-
 		unsigned int masks[32];
 		unsigned int left_masks[32];
 		unsigned int right_masks[32];
@@ -417,8 +415,6 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 		ms[0] = masks[0] | left_masks[0] | right_masks[0];
 		ns[0] = (1 << j);
 
-		//cl_kernel queen = (j == 0 ? m_NQueen1 : m_NQueen);
-
 		for(int k = 0; k < j; k++) {
 			border_mask |= (1 << k);
 			border_mask |= (1 << (board_size - k - 1));
@@ -436,10 +432,8 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			}
 		}
 		forbidden[board_size - 1] = 0xffffffff;
+    forbidden_written = false;
 
-		for(int k = 0; k < threads.size(); k++) {
-			forbidden_written[k] = false;
-		}
 		while(i >= 0) {
 			if(j == 0) {
 				if(i >= 1) {
@@ -474,139 +468,78 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 				}
 				total_size++;
 				if(total_size == max_threads) {
-					// wait for available device
-					int last_device_idx = device_idx;
-					
-					device_idx = -1;
-					while(device_idx == -1) {
-						for(int k = 0; k < m_SolverInfo.size(); k++) {
-							if(ocdTempEvent == 0) {
-								device_idx = k;
-								break;
-							}
-							else {
-								cl_int status;
-								err = clGetEventInfo(ocdTempEvent, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, 0);
-								CHECK_ERROR(err);
-
-								if(status == CL_COMPLETE) {
-									device_idx = k;
-									if(device_idx != last_device_idx) {
-										break;
-									}
-								}
-								else if(status < 0) {
-									CHECK_ERROR(status);
-								}
-							}
-						}
-
-						// Sleep(1);
-					}
-					
-					
-					if(ocdTempEvent != 0) {
-//						std::cerr << "get data from device[" << device_idx << "]: " << clock() << "\n";
-
-						// get data from the device
-						err = clEnqueueReadBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ResultBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * 4, &results[0], 0, NULL, &ocdTempEvent);
-						clFinish(m_SolverInfo[device_idx].m_Queue);
-                				CHKERR(err, "Error in reading m_ResultsBuffer");
-						//CHECK_ERROR(err);
-
-						//if(m_bProfiling) {
-						//	cl_ulong start, end;
-						//	clGetEventProfilingInfo(m_SolverInfo[device_idx].m_Event, CL_PROFILING_COMMAND_START, sizeof(start), &start, 0);
-						//	clGetEventProfilingInfo(m_SolverInfo[device_idx].m_Event, CL_PROFILING_COMMAND_END, sizeof(end), &end, 0);
-
-						//	m_SolverInfo[device_idx].m_TotalTime += end - start;
-//							std::cerr << "device time: " << end - start << "\n";
-						//}
-
-						clReleaseEvent(ocdTempEvent);
-						ocdTempEvent = 0;
-
-						for(int k = 0; k < m_SolverInfo[device_idx].m_nLastTotalSize; k++) {
-							if(results[k + max_pitch * 2] != results[k + max_pitch * 3]) {
-								throw CLError(1);
-							}
-
-							solutions += results[k];
-							unique_solutions += results[k + max_pitch];
-						}
-					}
-
-//					std::cerr << "device [" << device_idx << "]: " << " prepare launch: " << clock() << "\n";
-
-					cl_kernel queen = (j == 0 ? m_SolverInfo[device_idx].m_NQueen1 : m_SolverInfo[device_idx].m_NQueen);
+					cl_kernel queen = (j == 0 ? nqueen1: nqueen);
 					
 					cl_int arg_board_size = board_size;
 					cl_int arg_level = level;
-					cl_int arg_threads = m_SolverInfo[device_idx].m_bEnableVectorize ? (threads[device_idx] + vec_size - 1) / vec_size : threads[device_idx];
-					cl_int arg_pitch = m_SolverInfo[device_idx].m_bEnableVectorize ? max_pitch / vec_size : max_pitch;
+					cl_int arg_threads = enable_vectorize ? (threads + vec_size - 1) / vec_size : threads;
+					cl_int arg_pitch = enable_vectorize ? max_pitch / vec_size : max_pitch;
 					err = clSetKernelArg(queen, 0, sizeof(cl_int), &arg_board_size);
 					err |= clSetKernelArg(queen, 1, sizeof(cl_int), &arg_level);
 					err |= clSetKernelArg(queen, 2, sizeof(cl_int), &arg_threads);
 					err |= clSetKernelArg(queen, 3, sizeof(cl_int), &arg_pitch);
-					err |= clSetKernelArg(queen, 4, sizeof(cl_mem), &m_SolverInfo[device_idx].m_ParamBuffer);
-					err |= clSetKernelArg(queen, 5, sizeof(cl_mem), &m_SolverInfo[device_idx].m_ResultBuffer);
-					err |= clSetKernelArg(queen, 6, sizeof(cl_mem), &m_SolverInfo[device_idx].m_ForbiddenBuffer);
-					if(m_SolverInfo[device_idx].m_bEnableAtomics) {
-						err |= clSetKernelArg(queen, 7, sizeof(cl_mem), &m_SolverInfo[device_idx].m_GlobalIndex);
+					err |= clSetKernelArg(queen, 4, sizeof(cl_mem), &param_d);
+					err |= clSetKernelArg(queen, 5, sizeof(cl_mem), &result_d);
+					err |= clSetKernelArg(queen, 6, sizeof(cl_mem), &forbidden_d);
+					if(enable_atomics) {
+						err |= clSetKernelArg(queen, 7, sizeof(cl_mem), &global_index_d);
 					}
 					CHECK_ERROR(err);
 
-					if(!forbidden_written[device_idx]) {
-						err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ForbiddenBuffer, CL_FALSE, 0, (level + 1) * sizeof(int), forbidden + board_size - level - 1, 0, 0, &ocdTempEvent);
-						clFinish(m_SolverInfo[device_idx].m_Queue);
+					if(!forbidden_written) {
+						err = clEnqueueWriteBuffer(queue, forbidden_d, CL_TRUE, 0, (level + 1) * sizeof(int), forbidden + board_size - level - 1, 0, 0, NULL);
+						clFinish(queue);
 						CHKERR(err, "Error in writing m_ForbiddenBuffer");
-						//CHECK_ERROR(err);
-						forbidden_written[device_idx] = true;
+						forbidden_written = true;
 					}
 
-					err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ParamBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * (4 + 32), &mask_vector[0], 0, 0, &ocdTempEvent);
-					clFinish(m_SolverInfo[device_idx].m_Queue);
+					err = clEnqueueWriteBuffer(queue, param_d, CL_TRUE, 0, max_pitch * sizeof(int) * (4 + 32), &mask_vector[0], 0, 0, NULL);
+					clFinish(queue);
 					CHKERR(err, "Error in writing m_ParamBuffer");
-					//CHECK_ERROR(err);
 
-					size_t work_dim[1] = { m_SolverInfo[device_idx].m_bEnableVectorize ? m_SolverInfo[device_idx].m_nThreads / vec_size : m_SolverInfo[device_idx].m_nThreads };
+					size_t work_dim[1] = { enable_vectorize ? mn_threads / vec_size : mn_threads };
 					size_t* group_dim = 0;
-					size_t n = m_SolverInfo[device_idx].m_nMaxWorkItems / vec_size;
-//					if(m_bForceLocal) {
-					group_dim = m_SolverInfo[device_idx].m_bEnableVectorize ? &n : &m_SolverInfo[device_idx].m_nMaxWorkItems;
-//					}
+					size_t n = n_max_work_items / vec_size;
+					group_dim = enable_vectorize ? &n : &n_max_work_items;
 
 					int num_threads = work_dim[0];
-					if(m_SolverInfo[device_idx].m_bEnableAtomics) {
-						err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_GlobalIndex, CL_FALSE, 0, sizeof(int), &num_threads, 0, 0, &ocdTempEvent);
-						clFinish(m_SolverInfo[device_idx].m_Queue);
+					if(enable_atomics) {
+						err = clEnqueueWriteBuffer(queue, global_index_d, CL_TRUE, 0, sizeof(int), &num_threads, 0, 0, NULL);
+						clFinish(queue);
 						CHKERR(err, "Error in writing m_GlobalIndex");
-						//CHECK_ERROR(err);
 					}
 
-					if(ocdTempEvent != 0) clReleaseEvent(ocdTempEvent);
-					err = clEnqueueNDRangeKernel(m_SolverInfo[device_idx].m_Queue, queen, 1, 0, work_dim, group_dim, 0, 0, &ocdTempEvent);
-                			clFinish(m_SolverInfo[device_idx].m_Queue);
+					err = clEnqueueNDRangeKernel(queue, queen, 1, 0, work_dim, group_dim, 0, 0, NULL);
+                			clFinish(queue);
 					CHKERR(err, "Launch kernel error");
-					//CHECK_ERROR(err);
 
-					err = clFlush(m_SolverInfo[device_idx].m_Queue);
+					err = clFlush(queue);
 					CHECK_ERROR(err);
 
-//					has_data = true;
-//					last_total_size = total_size;
-					m_SolverInfo[device_idx].m_nLastTotalSize = threads[device_idx];
+					last_total_size = threads;
 
-//					std::cerr << "device [" << device_idx << "]: " << " launch: " << clock() << "\n";
-
-					if(total_size > threads[device_idx]) {
+					if(total_size > threads) {
 						// adjust the data array
 						for(int k = 0; k < 4 + board_size - level; k++) {
-							memcpy(&mask_vector[max_pitch * k], &mask_vector[threads[device_idx] + max_pitch * k], (total_size - threads[device_idx]) * sizeof(int));
+							memcpy(&mask_vector[max_pitch * k], &mask_vector[threads+ max_pitch * k], (total_size - threads) * sizeof(int));
 						}
 					}
 
-					total_size -= threads[device_idx];
+					total_size -= threads;
+          // get data from the device
+          err = clEnqueueReadBuffer(queue, result_d, CL_TRUE, 0, max_pitch * sizeof(int) * 4, &results[0], 0, NULL, NULL);
+          clFinish(queue);
+          CHKERR(err, "Error in reading m_ResultsBuffer");
+
+
+          for(int k = 0; k < last_total_size; k++) {
+            if(results[k + max_pitch * 2] != results[k + max_pitch * 3]) {
+              throw CLError(1);
+            }
+
+            solutions += results[k];
+            unique_solutions += results[k + max_pitch];
+          }
 				}
 
 				i--;
@@ -624,35 +557,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			}
 		}
 
-//		if(has_data) {
-//			err = clEnqueueReadBuffer(m_Queue, result_buffer, CL_TRUE, 0, threads * sizeof(int) * 2, &results[0], 0, 0, 0);
-//			CHECK_ERROR(err);
-//
-//			if(m_bProfiling) {
-//				cl_ulong start, end;
-//				clGetEventProfilingInfo(profile_event, CL_PROFILING_COMMAND_START, sizeof(start), &start, 0);
-//				clGetEventProfilingInfo(profile_event, CL_PROFILING_COMMAND_END, sizeof(end), &end, 0);
-//
-//				m_TotalTime += end - start;
-//
-//				clReleaseEvent(profile_event);
-//				profile_event = 0;
-//			}
-//
-//			for(int k = 0; k < last_total_size; k++) {
-//				solutions += results[k];
-//				unique_solutions += results[k + threads];
-//			}
-//
-//			std::cout << solutions << "\n";
-//			std::cout << unique_solutions << "\n";
-//
-//			has_data = false;
-//		}
-
 		while(total_size > 0) {
-//			std::cerr << "device B[" << device_idx << "]: " << clock() << "\n";
-
 			for(int k = total_size; k < max_threads; k++) {
 				mask_vector[k] = 0xffffffff;
 				mask_vector[k + max_pitch] = 0xffffffff;
@@ -660,144 +565,67 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 				mask_vector[k + max_pitch * 3] = 0;
 				mask_vector[k + max_pitch * 4] = 0;
 			}
-      
 
-			// wait for available device
-			int last_device_idx = device_idx;
-			
-			device_idx = -1;
-			while(device_idx == -1) {
-				for(int k = 0; k < m_SolverInfo.size(); k++) {
-					if(ocdTempEvent == 0) {
-						device_idx = k;
-						break;
-					}
-					else {
-						cl_int status;
-						err = clGetEventInfo(ocdTempEvent, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, 0);
-						CHECK_ERROR(err);
-
-						if(status == CL_COMPLETE) {
-							device_idx = k;
-							if(device_idx != last_device_idx) {
-								break;
-							}
-						}
-						else if(status < 0) {
-							CHECK_ERROR(status);
-						}
-					}
-				}
-
-	//			Sleep(1);
-			}
-			
-			
-			if(ocdTempEvent != 0) {
-//				std::cerr << "get data from device[" << device_idx << "]: " << clock() << "\n";
-
-				// get data from the device
-				err = clEnqueueReadBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ResultBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * 4, &results[0], 0, NULL, &ocdTempEvent);
-				clFinish(m_SolverInfo[device_idx].m_Queue);
-				CHKERR(err, "Error in reading m_ResultsBuffer");
-				//CHECK_ERROR(err);
-
-				//if(m_bProfiling) {
-				//	cl_ulong start, end;
-				//	clGetEventProfilingInfo(m_SolverInfo[device_idx].m_Event, CL_PROFILING_COMMAND_START, sizeof(start), &start, 0);
-				//	clGetEventProfilingInfo(m_SolverInfo[device_idx].m_Event, CL_PROFILING_COMMAND_END, sizeof(end), &end, 0);
-
-				//	m_SolverInfo[device_idx].m_TotalTime += end - start;
-//					std::cerr << "device time: " << end - start << "\n";
-				//}
-
-				clReleaseEvent(ocdTempEvent);
-				ocdTempEvent = 0;
-
-				for(int k = 0; k < m_SolverInfo[device_idx].m_nLastTotalSize; k++) {
-					if(results[k + max_pitch * 2] != results[k + max_pitch * 3]) {
-            printf("k=%d, max_pitch=%d results[%d]=%d results[%d]=%d\n", k, max_pitch, k+max_pitch*2, k+max_pitch*3);
-						throw CLError(2);
-					}
-
-					solutions += results[k];
-					unique_solutions += results[k + max_pitch];
-				}
-			}
-
-//			std::cerr << "device [" << device_idx << "]: " << " prepare launch: " << clock() << "\n";
-
-			cl_kernel queen = (j == 0 ? m_SolverInfo[device_idx].m_NQueen1 : m_SolverInfo[device_idx].m_NQueen);
+			cl_kernel queen = (j == 0 ? nqueen1: nqueen);
 
 			cl_int arg_board_size = board_size;
 			cl_int arg_level = level;
-			int t_size = total_size > threads[device_idx] ? threads[device_idx] : total_size;
-			cl_int arg_threads = m_SolverInfo[device_idx].m_bEnableVectorize ? (t_size + vec_size - 1) / vec_size : t_size;
-			cl_int arg_pitch = m_SolverInfo[device_idx].m_bEnableVectorize ? max_pitch / vec_size : max_pitch;
+			int t_size = total_size > threads? threads : total_size;
+			cl_int arg_threads = enable_vectorize ? (t_size + vec_size - 1) / vec_size : t_size;
+			cl_int arg_pitch = enable_vectorize ? max_pitch / vec_size : max_pitch;
 
 			err = clSetKernelArg(queen, 0, sizeof(cl_int), &arg_board_size);
 			err |= clSetKernelArg(queen, 1, sizeof(cl_int), &arg_level);
 			err |= clSetKernelArg(queen, 2, sizeof(cl_int), &arg_threads);
 			err |= clSetKernelArg(queen, 3, sizeof(cl_int), &arg_pitch);
-			err |= clSetKernelArg(queen, 4, sizeof(cl_mem), &m_SolverInfo[device_idx].m_ParamBuffer);
-			err |= clSetKernelArg(queen, 5, sizeof(cl_mem), &m_SolverInfo[device_idx].m_ResultBuffer);
-			err |= clSetKernelArg(queen, 6, sizeof(cl_mem), &m_SolverInfo[device_idx].m_ForbiddenBuffer);
-			if(m_SolverInfo[device_idx].m_bEnableAtomics) {
-				err |= clSetKernelArg(queen, 7, sizeof(cl_mem), &m_SolverInfo[device_idx].m_GlobalIndex);
+			err |= clSetKernelArg(queen, 4, sizeof(cl_mem), &param_d);
+			err |= clSetKernelArg(queen, 5, sizeof(cl_mem), &result_d);
+			err |= clSetKernelArg(queen, 6, sizeof(cl_mem), &forbidden_d);
+			if(enable_atomics) {
+				err |= clSetKernelArg(queen, 7, sizeof(cl_mem), &global_index_d);
 			}
 			CHECK_ERROR(err);
 
-			if(!forbidden_written[device_idx]) {
-				err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ForbiddenBuffer, CL_FALSE, 0, (level + 1) * sizeof(int), forbidden + board_size - level - 1, 0, 0, &ocdTempEvent);
-				clFinish(m_SolverInfo[device_idx].m_Queue);
+			if(!forbidden_written) {
+				err = clEnqueueWriteBuffer(queue, forbidden_d, CL_TRUE, 0, (level + 1) * sizeof(int), forbidden + board_size - level - 1, 0, 0, NULL);
+				clFinish(queue);
 				CHKERR(err, "Error in writing m_ForbiddenBuffer");
-				//CHECK_ERROR(err);
-				forbidden_written[device_idx] = true;
+				forbidden_written = true;
 			}
 
-			err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_ParamBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * (4 + 32), &mask_vector[0], 0, 0, &ocdTempEvent);
-			clFinish(m_SolverInfo[device_idx].m_Queue);
+			err = clEnqueueWriteBuffer(queue, param_d, CL_TRUE, 0, max_pitch * sizeof(int) * (4 + 32), &mask_vector[0], 0, 0, NULL);
+			clFinish(queue);
 			CHKERR(err, "Error in writing m_ParamBuffer");
-			//CHECK_ERROR(err);
 
 			size_t work_dim[1];
-			if(t_size < m_SolverInfo[device_idx].m_nThreads) {
-				work_dim[0] = m_SolverInfo[device_idx].m_bEnableVectorize ? (t_size + vec_size - 1) / vec_size : t_size;
+			if(t_size < mn_threads) {
+				work_dim[0] = enable_vectorize ? (t_size + vec_size - 1) / vec_size : t_size;
 			}
 			else {
-				work_dim[0] = m_SolverInfo[device_idx].m_bEnableVectorize ? m_SolverInfo[device_idx].m_nThreads / vec_size : m_SolverInfo[device_idx].m_nThreads;
+				work_dim[0] = enable_vectorize ? mn_threads / vec_size : mn_threads;
 			}
-
 			size_t* group_dim = 0;
-			size_t n = m_SolverInfo[device_idx].m_bEnableVectorize ? m_SolverInfo[device_idx].m_nMaxWorkItems / vec_size : m_SolverInfo[device_idx].m_nMaxWorkItems;
-//			if(m_bForceLocal) {
+			size_t n = enable_vectorize ? n_max_work_items / vec_size : n_max_work_items;
 			group_dim = &n;
 			if(work_dim[0] % n != 0) {
 				work_dim[0] += n - work_dim[0] % n;
 			}
-//			}
 
 			int num_thread = work_dim[0];
-			if(m_SolverInfo[device_idx].m_bEnableAtomics) {
-				err = clEnqueueWriteBuffer(m_SolverInfo[device_idx].m_Queue, m_SolverInfo[device_idx].m_GlobalIndex, CL_FALSE, 0, sizeof(int), &num_thread, 0, 0, &ocdTempEvent);
-				clFinish(m_SolverInfo[device_idx].m_Queue);
+			if(enable_atomics) {
+				err = clEnqueueWriteBuffer(queue, global_index_d, CL_TRUE, 0, sizeof(int), &num_thread, 0, 0, NULL);
+				clFinish(queue);
 				CHKERR(err, "Error in writing m_GlobalIndex");
-				//CHECK_ERROR(err);
 			}
 
-			if(ocdTempEvent != 0) clReleaseEvent(ocdTempEvent);
-			err = clEnqueueNDRangeKernel(m_SolverInfo[device_idx].m_Queue, queen, 1, 0, work_dim, group_dim, 0, 0, &ocdTempEvent);
-            		clFinish(m_SolverInfo[device_idx].m_Queue);
+			err = clEnqueueNDRangeKernel(queue, queen, 1, 0, work_dim, group_dim, 0, 0, NULL);
+      clFinish(queue);
 			CHKERR(err, "Launch kernel error");
 
-			err = clFlush(m_SolverInfo[device_idx].m_Queue);
+			err = clFlush(queue);
 			CHECK_ERROR(err);
 
-//			std::cerr << "device [" << device_idx << "]: " << " launch: " << clock() << "\n";
-
-//			has_data = true;
-      m_SolverInfo[device_idx].m_nLastTotalSize = t_size;
-			//total_size = 0;
+      last_total_size = t_size;
 
 			if(total_size > t_size) {
 				// adjust the data array
@@ -807,122 +635,31 @@ long long NQueenSolver::Compute(int board_size, long long* unique)
 			}
 
 			total_size -= t_size;
+
+				// get data from the device
+				err = clEnqueueReadBuffer(queue, result_d, CL_TRUE, 0, max_pitch * sizeof(int) * 4, &results[0], 0, NULL, NULL);
+				clFinish(queue);
+				CHKERR(err, "Error in reading m_ResultsBuffer");
+
+				for(int k = 0; k < last_total_size; k++) {
+					if(results[k + max_pitch * 2] != results[k + max_pitch * 3]) {
+            printf("k=%d, max_pitch=%d results[%d]=%d results[%d]=%d\n", k, max_pitch, k+max_pitch*2, k+max_pitch*3);
+						throw CLError(2);
+					}
+
+					solutions += results[k];
+					unique_solutions += results[k + max_pitch];
+				}
 		}
 	}
 
-//	if(has_data) {
-//		err = clEnqueueReadBuffer(m_Queue, result_buffer, CL_TRUE, 0, threads * sizeof(int) * 2, &results[0], 0, 0, 0);
-//		CHECK_ERROR(err);
-//
-//		if(m_bProfiling) {
-//			cl_ulong start, end;
-//			clGetEventProfilingInfo(profile_event, CL_PROFILING_COMMAND_START, sizeof(start), &start, 0);
-//			clGetEventProfilingInfo(profile_event, CL_PROFILING_COMMAND_END, sizeof(end), &end, 0);
-//
-//			m_TotalTime += end - start;
-//
-//			clReleaseEvent(profile_event);
-//			profile_event = 0;
-//		}
-//
-//		for(int k = 0; k < last_total_size; k++) {
-//			solutions += results[k];
-//			unique_solutions += results[k + threads];
-//		}
-//
-//		std::cout << solutions << "\n";
-//		std::cout << unique_solutions << "\n";
-//	}
-
-//	std::cerr << "final gathering: " << clock() << "\n";
-
-	// gather data from all devices
-
-//	for(int i = 0; i< m_Devices.size(); i++) {
-//		err = clFlush(m_SolverInfo[i].m_Queue);
-//		CHECK_ERROR(err);
-//	}
-
- //Only one device a time for OpenDwarfs
-	bool running = true;
-	while(running) {
-		running = false;
-		for(int i = 0; i < m_SolverInfo.size(); i++) {
-			if(ocdTempEvent != 0) {
-				running = true;
-				break;
-			}
-		}
-
-		if(!running) {
-			break;
-		}
-
-		int idx = -1;
-		for(int i = 0; i < m_SolverInfo.size(); i++) {
-			if(ocdTempEvent != 0) {
-				cl_int status;
-				err = clGetEventInfo(ocdTempEvent, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, 0);
-				CHECK_ERROR(err);
-
-				if(status == CL_COMPLETE) {
-					idx = i;
-					break;
-				}
-				else if(status < 0) {
-					CHECK_ERROR(status);
-				}
-			}
-		}
-
-		if(idx == -1) {
-//			Sleep(1);
-		}
-		else {
-		
-		
-
-			int idx=0;
-			// get data from the device
-			err = clEnqueueReadBuffer(m_SolverInfo[idx].m_Queue, m_SolverInfo[idx].m_ResultBuffer, CL_FALSE, 0, max_pitch * sizeof(int) * 4, &results[0], 0, NULL, &ocdTempEvent);
-			clFinish(m_SolverInfo[device_idx].m_Queue);
-			CHKERR(err, "Error in reading m_ResultsBuffer");
-			//CHECK_ERROR(err);
-
-			//if(m_bProfiling) {
-			//	cl_ulong start, end;
-			//	clGetEventProfilingInfo(m_SolverInfo[idx].m_Event, CL_PROFILING_COMMAND_START, sizeof(start), &start, 0);
-			//	clGetEventProfilingInfo(m_SolverInfo[idx].m_Event, CL_PROFILING_COMMAND_END, sizeof(end), &end, 0);
-
-			//	m_SolverInfo[idx].m_TotalTime += end - start;
-			//}
-
-			clReleaseEvent(ocdTempEvent);
-			ocdTempEvent = 0;
-
-			for(int k = 0; k < m_SolverInfo[idx].m_nLastTotalSize; k++) {
-				if(results[k + max_pitch * 2] != results[k + max_pitch * 3]) {
-					throw CLError(3);
-				}
-
-				solutions += results[k];
-				unique_solutions += results[k + max_pitch];
-			}
-		}
-	}
-
-	for(int i = 0; i < m_SolverInfo.size(); i++) {
-		if(m_SolverInfo[i].m_ParamBuffer != 0) { clReleaseMemObject(m_SolverInfo[i].m_ParamBuffer); m_SolverInfo[i].m_ParamBuffer = 0; }
-		if(m_SolverInfo[i].m_ResultBuffer != 0) { clReleaseMemObject(m_SolverInfo[i].m_ResultBuffer); m_SolverInfo[i].m_ResultBuffer = 0; }
-		if(m_SolverInfo[i].m_ForbiddenBuffer != 0) { clReleaseMemObject(m_SolverInfo[i].m_ForbiddenBuffer); m_SolverInfo[i].m_ForbiddenBuffer = 0; }
-		if(m_SolverInfo[i].m_GlobalIndex != 0) { clReleaseMemObject(m_SolverInfo[i].m_GlobalIndex); m_SolverInfo[i].m_GlobalIndex = 0; }
-	}
+  if(param_d != 0) { clReleaseMemObject(param_d); param_d = 0; }
+  if(result_d != 0) { clReleaseMemObject(result_d); result_d = 0; }
+  if(forbidden_d != 0) { clReleaseMemObject(forbidden_d); forbidden_d = 0; }
+  if(global_index_d != 0) { clReleaseMemObject(global_index_d); global_index_d = 0; }
 
 	if(unique != 0) {
 		*unique = unique_solutions;
 	}
-
-//	std::cerr << "complete: " << clock() << "\n";
-
 	return solutions;
 }

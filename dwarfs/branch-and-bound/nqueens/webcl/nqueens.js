@@ -134,7 +134,7 @@ function enableVectorization(device, solverInfo, forceNoVectorize){
 function buildOpts(solverInfo, workItems){
   var settings = ""; 
 
-  settings += " -D WORK_ITEMS=" + workItems;
+  settings += "-D WORK_ITEMS=" + workItems;
 
   if(solverInfo.cpu){
     settings += " -D FORCE_CPU";
@@ -179,20 +179,61 @@ function printArray(a){
   console.log("\n");
 }
 
-function webclLUD(boardSize, platformIdx, deviceIdx){
+
+function download(strData, strFileName, strMimeType) {
+	var D = document,
+		a = D.createElement("a");
+		strMimeType= strMimeType || "application/octet-stream";
+
+	if (navigator.msSaveBlob) { // IE10+
+		return navigator.msSaveBlob(new Blob([strData], {type: strMimeType}), strFileName);
+	} /* end if(navigator.msSaveBlob) */
+
+
+
+	if ('download' in a) { //html5 A[download]
+		if(window.URL){
+			a.href= window.URL.createObjectURL(new Blob([strData]));
+			
+ 		}else{
+			a.href = "data:" + strMimeType + "," + encodeURIComponent(strData);
+		}
+		a.setAttribute("download", strFileName);
+		a.innerHTML = "downloading...";
+		D.body.appendChild(a);
+		setTimeout(function() {
+			a.click();
+			D.body.removeChild(a);
+			if(window.URL){setTimeout(function(){ window.URL.revokeObjectURL(a.href);}, 250 );}
+		}, 66);
+		return true;
+	} /* end if('download' in a) */
+
+	
+	//do iframe dataURL download (old ch+FF):
+	var f = D.createElement("iframe");
+	D.body.appendChild(f);
+	f.src = "data:" +  strMimeType   + "," + encodeURIComponent(strData);
+
+	setTimeout(function() {
+		D.body.removeChild(f);
+	}, 333);
+	return true;
+} /* end download() */
+
+function webclLUD(platformIdx, deviceIdx, boardSize){
     var programSourceId = "clNQueens";        
     var blockSize = 0; 
     var workItems;
     var maxSize; 
-    var solutions = 0; 
-    var uniqueSolutions = 0;
+    var solutionsFinal = 0; 
+    var uniqueSolutionsFinal = 0;
     var maxPitch; 
     var blockMultiplier;
     var units;
     var lastTotalSize=0;
     var forceNoVectorize = false;
     var t1 = performance.now();
-    var taxi = 100;
     try {      
         //============ Setup WebCL Program ================
         isWebCL();         
@@ -201,7 +242,6 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
         var src = source(programSourceId);
         var prgm = program(ctx, src);
         var queue = ctx.createCommandQueue(pd.device);
-        var tempEvent =null;
 
         var solverInfo = solverInformation(pd.device, queue);
 
@@ -261,12 +301,20 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
         }
 
         //========= NQUEENS COMPUTE =======================
-           
-        var total = 10000000000; 
-        total /= 10;
+        var total = 1000000000; 
         var level = 0;
-        for(var i = boardSize; i > 0 && total > 0; --i){
-          total = Math.floor(total / Math.floor((i + 1) / 2));
+        var i = boardSize;
+        var enableAtomics = solverInfo.enableAtomics;
+        var enableVectorize = solverInfo.enableVectorize;
+        var mnThreads = solverInfo.maxThreads;
+        var lastTotalSize = 0; 
+        var nMaxWorkItems = solverInfo.maxWorkItems;
+        var nqueen = solverInfo["nqueen"];
+        var nqueen1 = solverInfo["nqueen1"];
+
+        while(total > 0 && i > 0){
+          total = Math.floor(total / Math.floor((i + 1)/ 2));
+          i--;
           level++;
         }
           
@@ -283,10 +331,10 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
         var maxPitch;
 
         if(solverInfo.enableAtomics) {
-          threads = solverInfo.maxThreads * 16;
+          threads = mnThreads * 16;
         }
         else {
-          threads = solverInfo.maxThreads;
+          threads = mnThreads;
         }
 
         if(maxThreads < threads) {
@@ -302,20 +350,17 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
         var resultBuffer = ctx.createBuffer(WebCL.MEM_WRITE_ONLY , maxPitch*intBytes*4 );
         var forbiddenBuffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, intBytes*32);
         var globalIndex = ctx.createBuffer(WebCL.MEM_READ_WRITE, intBytes);
-        solverInfo["totalTime"] = 0;
-
 
         // ============= NQueen Masks =======================
         var maskVector = new Uint32Array(maxPitch*(4+32)); 
         var results = new Uint32Array(maxPitch*4);
         var forbiddenWritten = false;
-        var hasData = false;
+        var solutions = 0;
+        var uniqueSolutions = 0;
         var vecSize = solverInfo.forceVec4 ? 4 : 2;
 
         var boardMask = (1 << boardSize) - 1;
         var totalSize = 0; 
-        var lastTotalSize = 0;
-        var deviceIndex = 0;
 
         for(var j = 0; j < Math.floor(boardSize / 2); j++) {
           var masks = new Uint32Array(32);
@@ -338,7 +383,6 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
             borderMask |= (1 << k);
             borderMask |= (1 << (boardSize - k - 1));
           }
-
 
           for(var k = 0; k < boardSize; k++) {
             if(k == boardSize - 2) {
@@ -391,44 +435,8 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
               totalSize++;
 
               if(totalSize == maxThreads) {
-                console.log("HERE FUCKER");
-                var lastDevice = deviceIndex;
-                deviceIndex = -1;
-                while(deviceIndex === -1){
-                  if(tempEvent === null){
-                    deviceIndex = 0; 
-                    break;
-                  }
-                  else {
-                    var stats = tempEvent.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS);
-                    if(stats === WebCL.COMPLETE){
-                      deviceIndex = 0; 
-                      if(deviceIndex != lastDevice) break;
-                    }
-                    else if(stats < 0){
-                      throw "Something is wrong with event status";
-                    }
-                  }
-                }
-
-                if(tempEvent != null){
-                  queue.enqueueReadBuffer(resultBuffer, false, 0, maxPitch*intBytes*4, results); 
-                  queue.finish();
-
-                  tempEvent.release(); 
-                  tempEvent = null;
-
-                  for(var k = 0; k < lastTotalSize; k++) {
-                   if(results[k + maxPitch * 2] != results[k + maxPitch * 3]) {
-                      throw "results don't match";
-                    }
-                    solutions += results[k];
-                    uniqueSolutions += results[k + maxPitch];
-                  }
-                }
-
                 //need to take care of read belwo 
-                var nqueenKernel = j==0 ? solverInfo.nqueen1 : solverInfo.nqueen; 
+                var nqueenKernel = j==0 ? nqueen1 : nqueen; 
 
                 var argThreads = solverInfo.enableVectorize ? Math.floor((threads + vecSize - 1) / vecSize) : threads;
                 var argPitch = solverInfo.enableVectorize ? Math.floor(maxPitch / vecSize) : maxPitch;
@@ -444,29 +452,38 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
                 }
 
                 if(!forbiddenWritten){              
-                  queue.enqueueWriteBuffer(forbiddenBuffer, false, 0, (level +1) *intBytes, forbidden.subarray(boardSize-level-1));
+                  var forbidden_sub = new Uint32Array(level + 1);
+                  for(var l = 0; l < level + 1; ++l){
+                    forbidden_sub[l] = forbidden[boardSize-level-1 + l];
+                  }
+                  
+                  queue.enqueueWriteBuffer(forbiddenBuffer, true, 0, (level +1) *intBytes, forbidden_sub);
                   queue.finish();
                   forbiddenWritten = true;
                 }
 
-                queue.enqueueWriteBuffer(paramBuffer, false, 0, maxPitch*intBytes*(4 + 32), maskVector);
+                queue.enqueueWriteBuffer(paramBuffer, true, 0, maxPitch*intBytes*(4 + 32), maskVector);
                 queue.finish();
 
-                var workDim = [(solverInfo.enableVectorize ? Math.floor(solverInfo.maxThreads / vecSize) : solverInfo.maxThreads) ];
+                var workDim = [enableVectorize ? Math.floor(mnThreads / vecSize) : mnThreads];
                 var groupDim = [0];
-                var n =  Math.floor(solverInfo.maxWorkItems / vecSize); 
-                groupDim[0] = solverInfo.enableVectorize ? n : solverInfo.maxWorkItems;
+                var n =  Math.floor(nMaxWorkItems / vecSize); 
+                groupDim[0] = enableVectorize ? n : nMaxWorkItems;
                 var numThreads = workDim[0];
+                var nt = new Int32Array([numThreads]);
 
-                tempEvent = new WebCLEvent();
-                queue.enqueueNDRangeKernel(nqueenKernel, 1, null, workDim, groupDim, null, tempEvent);  
+                if(enableAtomics){
+                  queue.enqueueWriteBuffer(globalIndex, true, 0, intBytes, nt);
+                  queue.finish();
+                }
+
+                queue.enqueueNDRangeKernel(nqueenKernel, 1, null, workDim, groupDim);  
                 queue.finish();
                 queue.flush();
 
                 lastTotalSize = maxThreads;
 
                 if(totalSize > maxThreads){ 
-
                   // adjust the data array
                   for(var k = 0; k < 4 + boardSize - level; k++) {
                     for(var ii = 0; ii < (totalSize - maxThreads); ++ii){
@@ -475,6 +492,16 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
                   }
                 }
                 totalSize -= threads;
+                queue.enqueueReadBuffer(resultBuffer, true, 0, maxPitch*intBytes*4, results); 
+                queue.finish();
+
+                for(var k = 0; k < lastTotalSize; k++) {
+                 if(results[k + maxPitch * 2] != results[k + maxPitch * 3]) {
+                    throw "results don't match";
+                  }
+                  solutions += results[k];
+                  uniqueSolutions += results[k + maxPitch];
+                }
               }
               i--;
             }
@@ -500,49 +527,15 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
               maskVector[k + maxPitch * 4] = 0;
             }
 
-            var lastDevice = deviceIndex;
-            deviceIndex = -1;
-            while(deviceIndex === -1){
-              if(tempEvent === null){
-                deviceIndex = 0; 
-                break;
-              }
-              else {
-                var stats = tempEvent.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS);
-                if(stats === WebCL.COMPLETE){
-                  deviceIndex = 0; 
-                  if(deviceIndex != lastDevice) break;
-                }
-                else if(stats < 0){
-                  throw "Something is wrong with event status";
-                }
-              }
-            }
-
-            if(tempEvent != null){
-              queue.enqueueReadBuffer(resultBuffer, false, 0, maxPitch*intBytes*4, results); 
-              queue.finish();
-
-              tempEvent.release(); 
-              tempEvent = null;
-
-              for(var k = 0; k < lastTotalSize; k++) {
-               if(results[k + maxPitch * 2] != results[k + maxPitch * 3]) {
-                  throw "results don't match";
-                }
-                solutions += results[k];
-                uniqueSolutions += results[k + maxPitch];
-              }
-            }
-            var nqueenKernel = j === 0 ? solverInfo.nqueen1 : solverInfo.nqueen; 
-
+            var nqueenKernel = j === 0 ? nqueen1 : nqueen; 
+            
             var tSize = totalSize > threads ? threads : totalSize;
             var argThreads = solverInfo.enableVectorize ? Math.floor((tSize + vecSize - 1) / vecSize) : tSize;
             var argPitch = solverInfo.enableVectorize ? Math.floor(maxPitch / vecSize) : maxPitch;
-            nqueenKernel.setArg(0, new Uint32Array([boardSize]));
-            nqueenKernel.setArg(1, new Uint32Array([level]));
-            nqueenKernel.setArg(2, new Uint32Array([argThreads]));
-            nqueenKernel.setArg(3, new Uint32Array([argPitch]));
+            nqueenKernel.setArg(0, new Int32Array([boardSize]));
+            nqueenKernel.setArg(1, new Int32Array([level]));
+            nqueenKernel.setArg(2, new Int32Array([argThreads]));
+            nqueenKernel.setArg(3, new Int32Array([argPitch]));
             nqueenKernel.setArg(4, paramBuffer); 
             nqueenKernel.setArg(5, resultBuffer);
             nqueenKernel.setArg(6, forbiddenBuffer);
@@ -551,42 +544,47 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
             }
 
             if(!forbiddenWritten){              
-              queue.enqueueWriteBuffer(forbiddenBuffer, false, 0, (level +1) *intBytes, forbidden.subarray(boardSize-level-1));
+              var forbidden_sub = new Uint32Array(level + 1);
+              for(var l = 0; l < level + 1; ++l){
+                forbidden_sub[l] = forbidden[boardSize-level-1 + l];
+              }
+              
+              queue.enqueueWriteBuffer(forbiddenBuffer, true, 0, (level +1) *intBytes, forbidden_sub);
+              //  this doesn't work for anyone with bright ideas :
+              //  queue.enqueueWriteBuffer(forbiddenBuffer, true, 0, (level +1) *intBytes, forbidden.subarray(boardSize-level-1));
               queue.finish();
               forbiddenWritten = true;
             }
 
-            queue.enqueueWriteBuffer(paramBuffer, false, 0, maxPitch*intBytes*(4 + 32), maskVector);
+            queue.enqueueWriteBuffer(paramBuffer, true, 0, maxPitch*intBytes*(4 + 32), maskVector);
             queue.finish();
 
             var workDim= [0];
            
-            if(tSize < solverInfo.maxThreads){
-              workDim[0] = (solverInfo.enableVectorize ? Math.floor((tSize + vecSize -1)/ vecSize) : tSize);
+            if(tSize < mnThreads){
+              workDim[0] = (enableVectorize ? Math.floor((tSize + vecSize -1)/ vecSize) : tSize);
             }
             else {
-              workDim[0] = (solverInfo.enableVectorize ? Math.floor(solverInfo.maxThreads / vecSize) : solverInfo.maxThreads);
-
+              workDim[0] = (enableVectorize ? Math.floor(mnThreads / vecSize) : mnThreads);
             }
+
             var groupDim = [0];
-            var n =  solverInfo.enableVectorize ? Math.floor(solverInfo.maxWorkItems / vecSize) : solverInfo.maxWorkItems;            
+            var n =  enableVectorize ? Math.floor(nMaxWorkItems / vecSize) : nMaxWorkItems;            
             groupDim[0] = n;
 
             if(workDim[0] % n != 0){
               workDim[0] += n - workDim[0] % n;
             }
+
             var numThreads = workDim[0];
-            var nt= new Int32Array(1);
-            nt[0] =  numThreads;
+            var nt= new Int32Array([numThreads]);
 
             if(solverInfo.enableAtomics){
-              queue.enqueueWriteBuffer(globalIndex, false, 0, intBytes, nt); 
+              queue.enqueueWriteBuffer(globalIndex, true, 0, intBytes, nt); 
               queue.finish();
             }
 
-            if(tempEvent != null) tempEvent.release();
-            tempEvent = new WebCLEvent();
-            queue.enqueueNDRangeKernel(nqueenKernel, 1, null, workDim, groupDim, null, tempEvent);  
+            queue.enqueueNDRangeKernel(nqueenKernel, 1, null, workDim, groupDim);  
             queue.finish();
             queue.flush();
 
@@ -596,38 +594,13 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
               // adjust the data array
               for(var k = 0; k < 4 + boardSize - level; k++) {
                 for(var ii = 0; ii < (totalSize - maxThreads); ++ii){
-                  maskVector[maxPitch*k + i]= maskVector[maxThreads + maxPitch*k + i] ; 
+                  maskVector[maxPitch*k + ii]= maskVector[maxThreads + maxPitch*k + ii] ; 
                 }
               }
             }
             totalSize -= tSize;
-          }
-        }
-        var running = true;
-        while(running){
-          running = false; 
-          if(tempEvent == null){
-            running = true;
-          }
-
-          if(!running) break;
-
-          var idx = -1;
-          if(tempEvent != null){
-            var stats = tempEvent.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS);
-            if(stats === WebCL.COMPLETE){
-              idx = 0;
-            }
-            else if(stats < 0){
-              throw "Something is wrong with event status";
-            }
-          }
-          if(idx != -1){
-            queue.enqueueReadBuffer(resultBuffer, false, 0, maxPitch*intBytes*4, results); 
+            queue.enqueueReadBuffer(resultBuffer, true, 0, maxPitch*intBytes*4, results); 
             queue.finish();
-
-            tempEvent.release(); 
-            tempEvent = null;
 
             for(var k = 0; k < lastTotalSize; k++) {
              if(results[k + maxPitch * 2] != results[k + maxPitch * 3]) {
@@ -649,13 +622,16 @@ function webclLUD(boardSize, platformIdx, deviceIdx){
         prgm.release(); 
         queue.release(); 
         ctx.release();    
+
+        uniqueSolutionsFinal = uniqueSolutions; 
+        solutionsFinal = solutions; 
     }
     catch(e){
         alert(e);
     }
     var t2 = performance.now();
 
-    console.log("Solutions: " + solutions + " unique solutions: " + uniqueSolutions); 
+    console.log("Solutions: " + solutionsFinal + " unique solutions: " + uniqueSolutionsFinal); 
     console.log("Total time elapsed is "+ (t2-t1)/1000+ " seconds");
 }
-webclLUD(15, 0, 0);
+ // webclLUD(0, 0, 15);
