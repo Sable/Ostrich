@@ -1,3 +1,7 @@
+if (typeof performance === "undefined") {
+    performance = Date;
+}
+
 var crc32Lookup=[
   [ 0x00000000,0x77073096,0xEE0E612C,0x990951BA,0x076DC419,0x706AF48F,0xE963A535,0x9E6495A3,
     0x0EDB8832,0x79DCB8A4,0xE0D5E91E,0x97D2D988,0x09B64C2B,0x7EB17CBD,0xE7B82D07,0x90BF1D91,
@@ -259,6 +263,9 @@ var crc32Lookup=[
     0x2C8E0FFF,0xE0240F61,0x6EAB0882,0xA201081C,0xA8C40105,0x646E019B,0xEAE10678,0x264B06E6 ]
 ];
 
+if (typeof performance === "undefined")
+    performance = Date;
+
 function crc32_8bytes(data, i, length){
     var current = data; // data is already a Uint32Array
     var crc = 0xFFFFFFFF;
@@ -282,7 +289,7 @@ function crc32_8bytes(data, i, length){
         if (length != 4) {
             throw new Error("Unaligned data, please use a page size that is a multiple of 4");
         }
-        
+
         // No need to loop through the bytes, we know there is exactly one word remaining
         one = current[i++];
 		crc = (crc >>> 8) ^ crc32Lookup[0][(crc & 0xFF) ^ (one & 0xFF)];
@@ -294,14 +301,14 @@ function crc32_8bytes(data, i, length){
 }
 
 function randCRC(numPages, pageSize){
-    var numWords = pageSize/4; 
-    var page = new Uint32Array(numPages*numWords); 
-  
-    Array.prototype.forEach.call(page, function(v, i, a) { 
+    var numWords = pageSize/4;
+    var page = new Uint32Array(numPages*numWords);
+
+    Array.prototype.forEach.call(page, function(v, i, a) {
         a[i] = Math.commonRandom();
     });
 
-    return page; 
+    return page;
 }
 
 function runCRC(numPages, pageSize, numExecs){
@@ -309,7 +316,7 @@ function runCRC(numPages, pageSize, numExecs){
     var numWords = pageSize / 4;
 
     if ((pageSize % 4) !== 0) {
-        throw new Error("Unsupported page size of '" + pageSize + 
+        throw new Error("Unsupported page size of '" + pageSize +
         "' please choose a page size that is a multiple of 4");
     }
 
@@ -317,14 +324,14 @@ function runCRC(numPages, pageSize, numExecs){
     var cumulativeTime = 0;
 
     var expectedCrc = 2231263667;
-    var t1 = Date.now(); 
+    var t1 = performance.now();
     for (var j=0; j<numExecs; ++j) {
         for(var i=0; i<numPages; ++i){
             crcs[i] = crc32_8bytes(data, i*numWords, pageSize);
         }
-        
+
         // crc32_8bytes is expecting the length in bytes
-        var finalCrc = crc32_8bytes(crcs, 0, numPages*4); 
+        var finalCrc = crc32_8bytes(crcs, 0, numPages*4);
         // Convert expectedCrc to signed 32 bit using implicit integer
         // coercion because JS does not have an unsigned 32 bit data type
         // to compare against
@@ -332,9 +339,11 @@ function runCRC(numPages, pageSize, numExecs){
             throw new Error("Invalid crc check, received '" + finalCrc + "' while expecting '" + (expectedCrc|0)  + "'(signed) [or '" + (expectedCrc) + "'(unsigned)]");
         }
     }
-    cumulativeTime += Date.now() - t1;
+    cumulativeTime += performance.now() - t1;
 
 
     console.log("Total time was " + cumulativeTime/1000 + " s");
+    return { status: 1,
+             options: "runCRC(" + [numPages, pageSize, numExecs].join(",") + ")",
+             time: cumulativeTime / 1000 };
 }
-

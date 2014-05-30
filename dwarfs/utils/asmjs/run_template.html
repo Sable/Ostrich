@@ -12,12 +12,8 @@
                 Module["print"] = function print(x) {
                     console.log(x + "\n");
                     var xmlhttp = new XMLHttpRequest();
-                    xmlhttp.open("GET", "/asmjs/"+x, false);
+                    xmlhttp.open("GET", "/asmjs/"+x, true);
                     xmlhttp.send();
-                    var resp = xmlhttp.responseText;
-                    if (resp == "1") {
-                        location.reload();
-                    }
                 };
 	</script>
 	<script src="./FILENAME.js"></script>

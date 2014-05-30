@@ -1,3 +1,7 @@
+if (typeof performance === "undefined") {
+    performance = Date;
+}
+
 var T =  1000;        /* Number of static observations */
 var S = 2;           /* Number of static symbols */
 var N = 60;          /* Number of static states */
@@ -632,5 +636,7 @@ function bwa_hmm(v_, n_, s_, t_)
         console.log(t + "\t");
         console.log(log_lik + "\n");
     }
-    return 0;
+    return { status: 1,
+             options: "bwa_hmm(" + [v_, n_, s_, t_].join(",") + ")",
+             time: (t2-t1)/1000 };
 }

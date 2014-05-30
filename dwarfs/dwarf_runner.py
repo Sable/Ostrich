@@ -3,10 +3,30 @@
 import subprocess
 import json
 import os
-import threading
 import time
 import sys
+import signal
+import threading
 from optparse import OptionParser
+
+# Needed only on OSX
+try:
+    import psutil
+except ImportError:
+    pass
+
+
+def make_cmdline(browser, system):
+    if OS == "Darwin":
+        if browser == "google-chrome":
+            return ["open", "--background", "-a", "/Applications/Google Chrome.app", "--args", "--incognito"]
+        elif browser == "firefox":
+            return ["open", "--background", "-a", "/Applications/Firefox.app", "--args", "--private"]
+        else:
+            return  ["open", "--background", "-a", "/Applications/Safari.app"]
+    elif OS == "Linux":
+        return [browser, "--incognito" if browser == "google-chrome" else "--private"]
+
 
 class WebbenchThread(threading.Thread):
     def __init__(self):
@@ -45,21 +65,32 @@ class Benchmark(object):
         return [r['time'] for r in results]
 
 
-    def run_asmjs_benchmark(self, browser, browser_opts):
-        """Run the asm.js inside the browser with the specified opts."""
-        webserver_script = ["python", "webbench.py"]
-        browser_script = [browser] + browser_opts + \
-            ["http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs", "run.html")]
+    def run_js_benchmark(self, browser, asmjs=False):
+        httpd = subprocess.Popen(["python", "webbench.py"], stdout=subprocess.PIPE)
+        url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs" if asmjs else "js", "run.html")
+        browser_script = make_cmdline(browser, OS)
+        results = []
 
-        # Start webserver
-        thr = WebbenchThread()
-        thr.start()
+        for _ in xrange(ITERS):
+            br = subprocess.Popen(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(SLEEP_TIME)
+            if OS == "Darwin":
+                browser_script2 = [browser_script[0]] + [url] + browser_script[1:]
+                subprocess.call(browser_script2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            else:
+                subprocess.call(browser_script + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            line = httpd.stdout.readline()
+            obj = json.loads(line)
+            results.append(obj)
+            if OS == "Darwin":
+                browsers = { "google-chrome": "Google Chrome", "firefox": "firefox", "safari": "Safari" }
+                pids = [p.pid for p in psutil.get_process_list() if p.name == browsers[browser]]
+                os.kill(pids[0], signal.SIGKILL)
+            else:
+                br.kill()
 
-        # Start browser
-        time.sleep(1)
-        subprocess.call(browser_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        thr.join()
-        return json.loads(thr.out)
+        httpd.kill()
+        return [r['time'] for r in results]
 
 
     def build(self):
@@ -71,6 +102,7 @@ class Benchmark(object):
         subprocess.call(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         os.chdir(prev_dir)
 
+OS = os.uname()[0]
 ITERS = 10
 BENCHMARKS = [
     Benchmark("nqueens", "branch-and-bound/nqueens"),
@@ -88,7 +120,13 @@ BENCHMARKS = [
 ]
 
 benchmark_names = [b.name for b in BENCHMARKS]
-environments = ["c", "asmjs-chrome", "asmjs-firefox", "js-chrome", "js-firefox"]
+environments = ["c",
+                "asmjs-chrome",
+                "asmjs-firefox",
+                "js-chrome",
+                "js-firefox",
+                "asmjs-safari",
+                "js-safari"]
 
 parser = OptionParser()
 parser.add_option("-b", "--benchmarks", dest="benchmark_csv",
@@ -99,6 +137,12 @@ parser.add_option("-e", "--environments", dest="env_csv",
                   metavar="env1,env2,...",
                   help="comma-separated list of environments to use " +
                   "(" + ", ".join(environments) + ")")
+parser.add_option("-i", "--iterations", dest="iters",
+                  action="store", type="int",
+                  help="number of iteration for each benchmark")
+parser.add_option("-w", "--wait-before-load", dest="wait",
+                  action="store", type="int",
+                  help="number of seconds to wait after having started the browser before sending the load command")
 (options, args) = parser.parse_args()
 
 if options.benchmark_csv is None:
@@ -111,9 +155,10 @@ if options.env_csv is None:
 else:
     environments_to_use = [b.strip() for b in options.env_csv.split(",")]
 
-print benchmarks_to_run, environments_to_use
+ITERS = options.iters or 10
+SLEEP_TIME = options.wait or 6
 
-
+print "benchmark,language,browser,%s" % ",".join("time" + str(i) for i in xrange(ITERS))
 
 for b in BENCHMARKS:
     if b.name not in benchmarks_to_run:
@@ -124,7 +169,19 @@ for b in BENCHMARKS:
         print "%s,C,N/A,%s" % (b.name, ','.join(str(x) for x in b.run_c_benchmark()))
 
     if "asmjs-chrome" in environments_to_use:
-        print "%s,asmjs,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_asmjs_benchmark("google-chrome", [])))
+        print "%s,asmjs,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("google-chrome", True)))
 
     if "asmjs-firefox" in environments_to_use:
-        print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_asmjs_benchmark("firefox", [])))
+        print "%s,asmjs,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox", True)))
+
+    if "asmjs-safari" in environments_to_use and OS == "Darwin":
+        print "%s,asmjs,Safari,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("safari", True)))
+
+    if "js-chrome" in environments_to_use:
+        print "%s,js,Chrome,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("google-chrome")))
+
+    if "js-firefox" in environments_to_use:
+        print "%s,js,Firefox,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("firefox")))
+
+    if "js-safari" in environments_to_use and OS == "Darwin":
+        print "%s,js,Safari,%s" % (b.name, ','.join(str(x) for x in b.run_js_benchmark("safari")))

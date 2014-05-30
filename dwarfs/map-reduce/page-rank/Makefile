@@ -4,10 +4,10 @@ include ../../common/options.mk
 
 # Original options used by Vince
 EMOPTIONS = -s TOTAL_MEMORY=400000000
-NB_PAGES = "8"
+NB_PAGES = "5000"
 NB_ITERATIONS = "10"
-THRESHOLD = "0.0"
-DIVISOR = "2"
+THRESHOLD = "0.00000001"
+DIVISOR = "100000"
 
 ASMJS_RUN_ARGUMENT = "'-n', '"$(NB_PAGES)"', '-i', '"$(NB_ITERATIONS)"', '-t', '"$(THRESHOLD)"', '-d', '"$(DIVISOR)"'"
 C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -i "$(NB_ITERATIONS)" -t "$(THRESHOLD)" -d "$(DIVISOR)

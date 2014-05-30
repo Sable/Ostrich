@@ -140,4 +140,7 @@ function runFFT(twoExp){
     var results2D = fft2D(data2D);
     t2 = performance.now();
     console.log("The total 2D FFT time for " + n + " x " + n + " was " + (t2-t1)/1000 + " s");
+    return { status: 1,
+             options: "runFFT(" + twoExp + ")",
+             time: (t2 - t1) / 1000 };
 }

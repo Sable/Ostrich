@@ -72,7 +72,7 @@ function lavamd(boxes1d) {
 
     // how many particles space has in each direction
     dim_cpu.space_elem = dim_cpu.number_boxes * NUMBER_PAR_PER_BOX;
-    
+
     // BOX
     box_cpu = createArray(box_str, dim_cpu.number_boxes);   // allocate boxes
     // initialize number of home boxes
@@ -167,6 +167,9 @@ function lavamd(boxes1d) {
 
     time1 = performance.now();
     console.log("Total time: " + (time1-time0) / 1000 + " s");
+    return { status: 1,
+             options: "lavamd(" + boxes1d + ")",
+             time: (time1 - time0) / 1000 };
 }
 
 function kernel_cpu(par, dim, box, rv, qv, fv) {
@@ -181,7 +184,7 @@ function kernel_cpu(par, dim, box, rv, qv, fv) {
     alpha = par.alpha;
     a2 = 2.0*alpha*alpha;
     // PROCESS INTERACTIONS
-    
+
     for(l=0; l<dim.number_boxes; l=l+1) {
         // home box - box parameters
         first_i = box[l].offset;
@@ -222,5 +225,5 @@ function kernel_cpu(par, dim, box, rv, qv, fv) {
 }
 
 function runLavaMD(boxes1d) {
-    lavamd(boxes1d);
+    return lavamd(boxes1d);
 }

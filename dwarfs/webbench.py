@@ -11,7 +11,6 @@ ITER     = 10
 HOST     = "0.0.0.0"
 PORT     = 8080
 ROOT_DIR = os.getcwd()
-TIMES    = []
 
 @route("/static/<filename:path>")
 def index(filename):
@@ -19,18 +18,14 @@ def index(filename):
 
 @route("/asmjs/<json_string>")
 def asmjs(json_string):
-    global TIMES
-
-    obj = json.loads(json_string)
-    TIMES.append(obj["time"])
-    #print >>stderr, len(TIMES)
-    if len(TIMES) < ITER:
-        return "1"
-    else:
-        res = json.dumps(TIMES)
-        sys.stdout.write(res + "\n")
+    try:
+        obj = json.loads(json_string)
+        print json_string
         sys.stdout.flush()
-        # Quitting with sys.exit(0) fails and the app keeps running.
-        os.kill(os.getpid(), signal.SIGTERM)
+        return "OK"
+    except ValueError:
+        print json.dumps({ "status": 0, "options": "", "time": -1 })
+        sys.stdout.flush()
+        return "FAIL"
 
 run(host=HOST, port=PORT, quiet=True)

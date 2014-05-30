@@ -67,7 +67,7 @@ function to_int(c) {
     if (c == "-") {
         return -1;
     } else {
-        var index = characters.indexOf(c); 
+        var index = characters.indexOf(c);
         if (c < 0 || c > 26) {
             throw new Error("ERROR: Invalid conversion to int value, char '" + c + "' out of range");
         }
@@ -214,7 +214,7 @@ function runNeedle(dimensions, penalty, options)
                 input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ reference[index],
                         input_itemsets[index-1]         - penalty,
                         input_itemsets[index-max_cols]  - penalty);
-            } 
+            }
         }
     } else {
         for (i = 1; i < max_rows; ++i) {
@@ -226,7 +226,7 @@ function runNeedle(dimensions, penalty, options)
                     input_itemsets[index-max_cols]-penalty
                 );
             }
-        }  
+        }
     }
     var t2 = performance.now();
 
@@ -254,20 +254,20 @@ function runNeedle(dimensions, penalty, options)
 
         if (n_limit === false && w_limit === false && traceback === nw) {
             aligned_seq_1[aligned_index_1--] = input_seq_1[i--];
-            aligned_seq_2[aligned_index_2--] = input_seq_2[j--];        
+            aligned_seq_2[aligned_index_2--] = input_seq_2[j--];
         } else if (n_limit === true || traceback === w) {
-            aligned_index_1--; 
+            aligned_index_1--;
             aligned_seq_2[aligned_index_2--] = input_seq_2[j--];
         } else if (w_limit === true || traceback === n) {
             aligned_index_2--;
-            aligned_seq_1[aligned_index_1--] = input_seq_1[i--]; 
+            aligned_seq_1[aligned_index_1--] = input_seq_1[i--];
         } else { throw new Error("ERROR n_limit: " + n_limit + " w_limit: " + w_limit + " traceback: " + traceback); }
     }
 
     if (options.print_results) {
         console.log(input_seq_1);
         console.log(input_seq_2);
-        console.log("Input Seq 1  :" + Array.prototype.map.call(input_seq_1, to_char).slice(1).join(""));     
+        console.log("Input Seq 1  :" + Array.prototype.map.call(input_seq_1, to_char).slice(1).join(""));
         console.log("Input Seq 2  :" + Array.prototype.map.call(input_seq_2, to_char).slice(1).join(""));
         console.log("Aligned Seq 1:" + Array.prototype.map.call(aligned_seq_1, to_char).join(""));
         console.log("Aligned Seq 2:" + Array.prototype.map.call(aligned_seq_2, to_char).join(""));
@@ -300,4 +300,7 @@ function runNeedle(dimensions, penalty, options)
     }
 
     console.log("The total time spent is "+ (t2-t1)/1000+ " seconds\n" );
+    return { status: 1,
+             options: "runNeedle(" + [dimensions, penalty].join(",") + ")",
+             time: (t2-t1)/1000 };
 }

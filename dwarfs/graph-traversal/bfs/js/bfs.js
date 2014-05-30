@@ -29,7 +29,7 @@ function BFSGraph(no_of_nodes, verbose) {
         verbose = false;
     }
     var expected_no_of_nodes = 3000000;
-    var expected_total_cost = 26321966; 
+    var expected_total_cost = 26321966;
     var t1 = performance.now();
     var inits = InitializeGraph(no_of_nodes);
     var h_graph_nodes = inits.h_graph_nodes;
@@ -97,6 +97,10 @@ function BFSGraph(no_of_nodes, verbose) {
             console.log(i + ") cost: " + h_cost[i]);
         }
     }
+
+    return { status: 1,
+             options: "BFSGraph(" + no_of_nodes + ")",
+             time: traversal_time / 1000 };
 }
 
 
