@@ -9,6 +9,14 @@ import contextlib
 from optparse import OptionParser
 
 
+@contextlib.contextmanager
+def cd(dir):
+    cwd = os.getcwd()
+    os.chdir(dir)
+    yield
+    os.chdir(cwd)
+
+
 class LinuxEnvironment(object):
     def __init__(self, sleep_time):
         self.sleep_time = sleep_time
@@ -56,18 +64,11 @@ class Benchmark(object):
         self.env = env
         self.iters = iters
 
-    @contextlib.contextmanager
-    def cd(self):
-        cwd = os.getcwd()
-        os.chdir(self.dir)
-        yield
-        os.chdir(cwd)
-
     def run_c_benchmark(self):
         """Run the C benchmark.  Assume that there is a build/c/run.sh script
            that will feed all the correct parameters."""
         runner_script = ["sh", os.path.join("build", "c", "run.sh")]
-        with self.cd():
+        with cd(self.dir):
             for _ in xrange(self.iters):
                 stdout, _ = subprocess.Popen(runner_script,
                                              stdout=subprocess.PIPE,
