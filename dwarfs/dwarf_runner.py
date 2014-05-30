@@ -7,6 +7,7 @@ import time
 import signal
 import contextlib
 from optparse import OptionParser
+import psutil
 
 
 @contextlib.contextmanager
@@ -37,10 +38,6 @@ class LinuxEnvironment(object):
 
 class OsxEnvironment(object):
     def __init__(self, sleep_time):
-        try:
-            import psutil
-        except ImportError:
-            print >>sys.stderr, "%s: error: module 'psutil' required for OS X." % sys.argv[0]
         self.sleep_time = sleep_time
 
     @contextlib.contextmanager
@@ -50,15 +47,24 @@ class OsxEnvironment(object):
             "firefox": ["/Applications/Firefox.app", "--args", "--private"],
             "safari": ["/Applications/Safari.app"]
         }
+
         invocation = ["open", "--background", "-a"] + browser_args[browser]
-        browser = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        if browser == "safari":
+            browser_process = subprocess.call(["osascript", "utils/start-safari.scpt"])
+        else:
+            browser_process = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
         time.sleep(self.sleep_time)
         subprocess.call([invocation[0], url] + invocation[1:], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         yield
-        browsers = {"google-chrome": "Google Chrome", "firefox": "firefox", "safari": "Safari"}
-        for p in psutil.get_process_list():
-            if p.name == browsers[browser]:
-                os.kill(p.pid, signal.SIGKILL)
+        if browser == "safari":
+            subprocess.call(["osascript", "utils/stop-safari.scpt"])
+        else: 
+            browsers = {"google-chrome": "Google Chrome", "firefox": "firefox", "safari": "Safari"}
+            for p in psutil.get_process_list():
+                if p.name == browsers[browser]:
+                    os.kill(p.pid, signal.SIGKILL)
 
 
 class Benchmark(object):
@@ -82,11 +88,9 @@ class Benchmark(object):
     def run_js_benchmark(self, browser, asmjs=False):
         httpd = subprocess.Popen(["python", "webbench.py"], stdout=subprocess.PIPE)
         url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs" if asmjs else "js", "run.html")
-
         for _ in xrange(self.iters):
             with self.env.provision_browser(browser, url):
                 yield json.loads(httpd.stdout.readline())["time"]
-
         httpd.kill()
 
     def build(self):
@@ -147,7 +151,7 @@ def main():
         Benchmark(name, BENCHMARK_INFO[name], OS, options.iters)
         for name in options.benchmark_csv.strip().split(",")
     ]
-    environments_to_use = map(ENVIRONMENTS.get, options.env_csv.strip().split(","))
+    environments_to_use = sorted(map(ENVIRONMENTS.get, options.env_csv.strip().split(",")))
 
     print "benchmark,language,browser,%s" % ",".join("time" + str(i) for i in xrange(options.iters))
     for b in benchmarks_to_run:
