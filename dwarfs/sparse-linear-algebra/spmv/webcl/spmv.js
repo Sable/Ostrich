@@ -166,7 +166,7 @@ function generateRandomCSR(dim, density, stddev) {
      // no realloc in javascript typed arrays
      if(m.Arow[i+1] > m.num_nonzeros) {
          var temp =  m.Acol;
-         m.Acol = new Int32Array(m.Arow[i+1]);
+         m.Acol = new Uint32Array(m.Arow[i+1]);
          m.Acol.set(temp, 0);
      }
 
@@ -210,36 +210,145 @@ function generateRandomCSR(dim, density, stddev) {
     return m;
 }
 
-function spmv_csr(matrix, dim, rowv, colv, v, y, out) {
-    var row, row_start, row_end, jj;
-    var sum = 0;
+function source(id){
+    var programElement = document.getElementById(id);
+    var programSource = programElement.text;
+    if (programElement.src != "") {
+        var mHttpReq = new XMLHttpRequest();
+        mHttpReq.open("GET", programElement.src, false);
+        mHttpReq.send(null);
+        programSource = mHttpReq.responseText;
+    } 
+    return programSource;
+}
+function program(ctx, src){ return ctx.createProgram(src);}
 
-    for(row=0; row< dim; ++row){
-        sum = y[row];
-        row_start = rowv[row];
-        row_end = rowv[row+1];
-
-        for(jj = row_start; jj<row_end; ++jj){
-            sum += matrix[jj] * v[colv[jj]];
-        }
-
-        out[row] = sum;
+function build(prgm, device){
+    try {        
+      prgm.build ([device], "");
+    } catch(e) {
+      alert ("Failed to build WebCL program. Error "
+             + prgm.getBuildInfo (device, 
+                                            WebCL.PROGRAM_BUILD_STATUS)
+             + ":  " 
+             + prgm.getBuildInfo (device, 
+                                            WebCL.PROGRAM_BUILD_LOG));
+      throw e;
     }
 }
 
-function spmvRun(dim, density, stddev) {
-    var m = generateRandomCSR(dim, density, stddev);
-    var v = new Float32Array(dim);
+function webCLPlatformDevice(platformIdx, deviceIdx){
+    var p = webcl.getPlatforms()[platformIdx];
+    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];    
+    return {"platform": p, "device": d};
+}
+
+function webCLContext(device){
+    return webcl.createContext(device);
+}
+
+function isWebCL(){
+    if (window.webcl == undefined) {
+          alert("Unfortunately your system does not support WebCL. " +
+                "Make sure that you have both the OpenCL driver " +
+                "and the WebCL browser extension installed.");
+          return false;
+      }
+      return true; 
+}
+
+function kernel(kernel, program){ return program.createKernel(kernel);}
+
+function default_wg_sizes(num_wg_sizes, max_wg_size, global_size) {
+    var num_wg;
+    var wg_sizes;
+    num_wg_sizes=1;
+    wg_sizes = [1];
+    wg_sizes[0] = max_wg_size;
+    num_wg = global_size[0] / wg_sizes[0];
+    while(global_size[0] % wg_sizes[0] != 0) {
+        num_wg++;
+        wg_sizes[0] = global_size[0] / (num_wg);
+    }
+    return wg_sizes;
+}
+
+function spmvRun(dim, density, stddev, platformIdx, deviceIdx) {
+    var programSourceId = "clLUD";
+    var csr = generateRandomCSR(dim, density, stddev);
+    var x = new Float32Array(dim);
     var y = new Float32Array(dim);
     var out = new Float32Array(dim);
-    Array.prototype.forEach.call(v, function(n, i, a) { a[i] = randf(); });
+    Array.prototype.forEach.call(x, function(n, i, a) { a[i] = randf(); });
 
     var t1 =  performance.now();
-    spmv_csr(m.Ax, dim, m.Arow, m.Acol, v, y, out);
+
+    try {      
+        //============ Setup WebCL Program ================
+        isWebCL();         
+        var pd = webCLPlatformDevice(platformIdx, deviceIdx);        
+        var ctx = webCLContext(pd.device);           
+        var src = source(programSourceId);
+        var prgm = program(ctx, src);
+        build(prgm, pd.device);            
+        var queue = ctx.createCommandQueue(pd.device);
+
+        // ============== Initialize Kernels ================
+        var kernel_csr = kernel("csr_ocl", prgm);
+
+        // ============== Setup Kernel Memory ================
+        var float_bytes = int_bytes = 4;
+
+        var memAp = ctx.createBuffer(WebCL.MEM_READ_ONLY, int_bytes*(csr.num_rows+1));
+        var memAj = ctx.createBuffer(WebCL.MEM_READ_ONLY, int_bytes*csr.num_nonzeros);
+        var memAx = ctx.createBuffer(WebCL.MEM_READ_ONLY, float_bytes*csr.num_nonzeros);
+        var memx = ctx.createBuffer(WebCL.MEM_READ_ONLY, float_bytes*csr.num_cols);
+        var memy = ctx.createBuffer(WebCL.MEM_READ_WRITE, float_bytes*csr.num_rows);
+
+        // write buffers
+        queue.enqueueWriteBuffer(memAp, false, 0, int_bytes*csr.num_rows+1, csr.Ap);
+        queue.enqueueWriteBuffer(memAj, false, 0, int_bytes*csr.num_nonzeros, csr.Aj);
+        queue.enqueueWriteBuffer(memAx, false, 0, float_bytes*csr.num_nonzeros, csr.Ax);
+        queue.enqueueWriteBuffer(memx, false, 0, float_bytes*csr.num_cols, x);
+        queue.enqueueWriteBuffer(memy, false, 0, float_bytes*csr.num_rows, y);
+
+        // ============== Set Args and Run Kernels ================
+        kernel_csr.setArg(0, new Uint32Array([csr.num_rows]));
+        kernel_csr.setArg(1, memAp);
+        kernel_csr.setArg(2, memAj);
+        kernel_csr.setArg(3, memAx);
+        kernel_csr.setArg(2, memx);
+        kernel_csr.setArg(3, memy);
+
+        var global_size = [csr.num_rows];
+        var wg_sizes;
+        var num_wg_sizes=0;
+        var max_wg_size = kernel_csr.getWorkGroupInfo(pd.device, WebCL.KERNEL_WORK_GROUP_SIZE);
+        // all kernels have same max workgroup size
+        wg_sizes = default_wg_sizes(num_wg_sizes,max_wg_size,global_size);
+
+        queue.enqueueNDRangeKernel(kernel_csr, 1, null, global_size, wg_sizes);
+        
+        queue.enqueueReadBuffer(memy, 1, 0, float_bytes*csr.num_rows, out);
+        // ============== Free Memory ================ 
+        queue.finish();
+
+        memAp.release();
+        memAj.release();
+        memAx.release();
+        memx.release();
+        memy.release();
+        prgm.release();
+        kernel_csr.release();
+        queue.release();
+        ctx.release();
+    }
+    catch(e) {
+        alert(e);
+    }
     var t2 = performance.now();
 
+
+    console.log("first result of output is: " + out[0]);
     console.log("The total time for the spmv is " + (t2-t1)/1000 + " seconds");
-    return { status: 1,
--             options: "spmvRun(" + [dim, density, stddev].join(",") + ")",
--             time: (t2 - t1) / 1000 };
 }

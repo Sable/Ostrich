@@ -57,7 +57,7 @@ build/js:
 	mkdir -p build/js
 
 build/js/lud.js:
-	cp js/lud_typed.js build/js/$(FILENAME).js
+	cp js/lud.js build/js/$(FILENAME).js
 
 build/js/run.html: build/js build/js/lud.js
 	cat ../../utils/js/run_template.html > build/js/run.html

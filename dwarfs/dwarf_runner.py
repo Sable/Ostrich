@@ -154,7 +154,6 @@ def parse_options():
                       help="number of seconds to wait after having started the browser before sending the load command")
     return parser.parse_args()[0]
 
-
 def main():
     options = parse_options()
     OS = (OsxEnvironment if os.uname()[0] == "Darwin" else LinuxEnvironment)(options.wait)

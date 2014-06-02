@@ -46,15 +46,13 @@ typedef struct csr_matrix
     unsigned int * Ap;  //row pointer
     unsigned int * Aj;  //column indices
     float * Ax;  //nonzeros
-}
-csr_matrix;
+} csr_matrix;
 
 typedef struct triplet
 {
 	unsigned int i,j;
 	float v;
-}
-triplet;
+} triplet;
 
 typedef struct coo_matrix
 {
@@ -64,25 +62,11 @@ typedef struct coo_matrix
 	unsigned int num_rows,num_cols,num_nonzeros;
 
 	triplet* non_zero;
-}
-coo_matrix;
+} coo_matrix;
 
 void chck(int b, const char* msg);
 
-triplet* triplet_new_array(const size_t N);
-
-/*
- * Comparator function implemented for use with qsort
- */
-int triplet_comparator(const void *v1, const void *v2);
-
 int unsigned_int_comparator(const void* v1, const void* v2);
-
-void write_csr(const csr_matrix* csr,const unsigned int num_csr,const char* file_path);
-
-csr_matrix* read_csr(unsigned int* num_csr,const char* file_path);
-
-void print_timestamp(FILE* stream);
 
 /*
  * Generate random integer between high_bound & low_bound, inclusive.
@@ -93,45 +77,6 @@ void print_timestamp(FILE* stream);
  * Returns: random int within [LB,HB] otherwise.
  */
 unsigned long gen_rand(const long LB, const long HB);
-
-/*
- * The standard 5-point finite difference approximation
- * to the Laplacian operator on a regular N-by-N grid.
- */
-csr_matrix laplacian_5pt(const unsigned int N);
-
-int bin_search(const triplet* data, int size, const triplet* key);
-
-/*
- * Method to generate a random matrix in COO form of given size and density
- *
- * Binary Insertion sort is used to maintain sorted order and eliminate any
- * elements that are generated with duplicate indices.
- *
- * The inner for loop of insertion sort is replaced with a call to memmmove
- * so the asymptotic runtime of this function is O(NNZ*(lg(NNZ)+O(memmove))
- * which should fall between O(NNZlgNNZ) and O(NNZ^2)
- *
- * N = L&W of square matrix
- * density = density (fraction of NZ elements) expressed in parts per million (ppm)
- *
- * returns coo_matrix struct
- */
-coo_matrix rand_coo(const unsigned int N,const unsigned long density, FILE* log);
-
-void print_coo_metadata(const coo_matrix* coo, FILE* stream);
-
-void print_csr_metadata(const csr_matrix* csr, FILE* stream);
-
-void print_coo(const coo_matrix* coo, FILE* stream);
-
-void print_coo_std(const coo_matrix* coo, FILE* stream);
-
-void print_csr_arr_std(const csr_matrix* csr,const unsigned int num_csr, FILE* stream);
-
-void print_csr_std(const csr_matrix* csr, FILE* stream);
-
-csr_matrix coo_to_csr(const coo_matrix* coo, FILE* log);
 
 /*
  * Method to generate random matrix of given size and density in compressed sparse row (CSR) form.
@@ -147,7 +92,5 @@ csr_matrix coo_to_csr(const coo_matrix* coo, FILE* log);
  * indices is then randomly generated from a normal distribution.
  */
 csr_matrix rand_csr(const unsigned int N,const unsigned int density,const double normal_stddev,unsigned long* seed,FILE* log);
-
-void free_csr(csr_matrix* csr,const unsigned int num_csr);
 
 #endif

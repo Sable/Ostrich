@@ -1,3 +1,4 @@
+/*
 Math.commonRandom = (function() {
     var seed = 49734321;
     return function() {
@@ -15,6 +16,7 @@ Math.commonRandom = (function() {
 Math.commonRandomJS = function () {
     return Math.abs(Math.commonRandom() / 0x7fffffff);
 }
+*/
 
 if (typeof performance === "undefined") {
     performance = Date;
@@ -64,7 +66,7 @@ function lud(size) {
 var matrix;
 
 function ludRun(size) {
-    matrix = new Float32Array(size*size);
+    matrix = new Float64Array(size*size);
     randomMatrix(matrix, 0, 10000);
     console.log("Matrix of size: " + size);
     var t1 = performance.now();

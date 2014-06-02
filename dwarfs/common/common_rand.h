@@ -3,6 +3,6 @@
 
 void common_srand(unsigned int seed);
 int common_rand();
-float common_randJS();
+double common_randJS();
 
 #endif
