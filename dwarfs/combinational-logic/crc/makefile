@@ -12,66 +12,52 @@ C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -s "$(PAGE_SIZE)" -r "$(NB_REPETITIONS)
 JS_RUN_ARGUMENT = "runCRC("$(NB_PAGES)","$(PAGE_SIZE)","$(NB_REPETITIONS)")"
 FILENAME = "crc"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
 
 build/c:
 	mkdir -p build/c
 
 # link objects (binaries) together
-build/c/crc:	build/c \
-            c/crc_serial.c \
-            common/common.c \
-			common/crc_formats.c \
-            common/common_args_serial.c
-	$(CCOMP) -I./common/ \
-             -I../../common/ \
-             ../../common/common_rand.c \
-             c/crc_serial.c \
-			 common/common.c \
-			 common/crc_formats.c \
-             common/common_args_serial.c \
-			 -lm -o build/c/crc
+build/c/crc: build/c c/crc_serial.c common/common.c common/crc_formats.c common/common_args_serial.c
+	$(CCOMP) -I./common/ -I../../common/ ../../common/common_rand.c c/crc_serial.c common/common.c common/crc_formats.c common/common_args_serial.c -lm -o build/c/crc
 
 build/c/run.sh: build/c/crc build/c
 	echo 'build/c/crc '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
-            
+
 build/asmjs:
 	mkdir -p build/asmjs
 
-build/asmjs/crc.js: build/asmjs \
-            c/crc_serial.c \
-            common/common.c \
-			common/crc_formats.c \
-            common/common_args_serial.c
-	$(EMCC) -I./common/ \
-             -I../../common/ \
-             ../../common/common_rand.c \
-             c/crc_serial.c \
-			 common/common.c \
-			 common/crc_formats.c \
-             common/common_args_serial.c \
-			 -lm -o build/asmjs/crc.js
+build/asmjs/crc.js: build/asmjs c/crc_serial.c common/common.c common/crc_formats.c common/common_args_serial.c
+	$(EMCC) -I./common/ -I../../common/ ../../common/common_rand.c c/crc_serial.c common/common.c common/crc_formats.c common/common_args_serial.c -lm -o build/asmjs/crc.js
 
-build/asmjs/run.html: build/asmjs \
-            build/asmjs/crc.js
+build/asmjs/run.html: build/asmjs build/asmjs/crc.js
 	cat ../../utils/asmjs/run_template.html > build/asmjs/run.html
-	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html 
-	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html 
-            
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html
+
 
 build/js:
 	mkdir -p build/js
 
 build/js/crc.js:
 	cp js/crc.js build/js/
- 
-build/js/run.html: build/js build/js/crc.js 
+
+build/js/run.html: build/js build/js/crc.js
 	cat ../../utils/js/run_template.html > build/js/run.html
-	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html 
-	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html 
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html
 
 build/opencl:
 	mkdir -p build/opencl
+
+build/opencl/crc:
+	$(CCOMP) -o build/opencl/crc opencl/crc_algo.c common/crc_formats.c common/opts/opts.c common/common.c  ../../common/common_args.c  ../../common/common_rand.c -Icommon -I../../common -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lm -lstdc++ -DOPENCL_HEADER_CL_CL
+	cp opencl/*.cl build/opencl/
+
+build/opencl/run.sh: build/opencl build/opencl/crc
+	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
+	echo "./crc -p 0 -d 0 -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl

@@ -46,8 +46,8 @@ build/js/run.html: build/js build/js/nqueens.js
 build/opencl:
 	mkdir -p build/opencl
 
-build/opencl/nqueens: build/opencl opencl/main.cpp opencl/nqueen_cpu.cpp opencl/nqueen_cl.cpp common/opts/opts.c common/common.c common/common_args.c
-	$(CCOMP) -o build/opencl/nqueens opencl/nqueen_cpu.cpp opencl/main.cpp opencl/nqueen_cl.cpp common/opts/opts.c common/common.c common/common_args.c  -Icommon -I../../common -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lstdc++ -DOPENCL_HEADER_CL_CL
+build/opencl/nqueens: build/opencl opencl/main.cpp opencl/nqueen_cpu.cpp opencl/nqueen_cl.cpp common/opts/opts.c common/common.c
+	$(CCOMP) -o build/opencl/nqueens opencl/nqueen_cpu.cpp opencl/main.cpp opencl/nqueen_cl.cpp common/opts/opts.c common/common.c ../../common/common_args.c  -Icommon -I../../common -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lstdc++ -DOPENCL_HEADER_CL_CL
 	cp opencl/kernels_nqueens.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/nqueens
