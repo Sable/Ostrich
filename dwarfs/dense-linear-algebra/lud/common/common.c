@@ -105,6 +105,73 @@ create_matrix_from_random(double **mp, int size){
 }
 
 func_ret_t
+create_matrix_from_random_float(float **mp, int size){
+    float *l, *u, *m;
+    int i,j,k;
+    float sum;
+
+
+    l = (float*)malloc(size*size*sizeof(float));
+    if ( l == NULL)
+       return RET_FAILURE;
+
+    u = (float*)malloc(size*size*sizeof(float));
+    if ( u == NULL) {
+       free(l);
+       return RET_FAILURE;
+    }
+
+    m = (float *)malloc(size*size*sizeof(float));
+    if ( m == NULL) {
+        free(l);
+        free(u);
+        return RET_FAILURE;
+    }
+
+    for (i = 0; i < size; i++) {
+        for (j=0; j < size; j++) {
+            if (i>j) {
+                l[i*size+j] = common_randJS();
+            } else if (i == j) {
+                l[i*size+j] = 1;
+            } else {
+                l[i*size+j] = 0;
+            }
+        }
+    }
+
+    // The u matrix is transposed to facilitate indexing
+    // during matrix multiplication
+    for (j=0; j < size; j++) {
+        for (i=0; i < size; i++) {
+           if (i>j) {
+               u[j*size+i] = 0;
+           }else {
+               u[j*size+i] = common_randJS();
+           }
+        }
+    }
+
+    for (i=0; i < size; i++) {
+        for (j=0; j < size; j++) {
+            sum = 0;
+            for (k=0; k <= MIN(i,j); k++) {
+                sum += l[i*size+k] * u[j*size+k];
+            }
+            m[i*size+j] = sum;
+        }
+    }
+
+    free(l);
+    free(u);
+
+    *mp = m;
+
+    return RET_SUCCESS;
+}
+
+
+func_ret_t
 lud_verify(double *m, double *lu, int matrix_dim){
     int i,j,k;
     double *tmp = (double*)malloc(matrix_dim*matrix_dim*sizeof(double));

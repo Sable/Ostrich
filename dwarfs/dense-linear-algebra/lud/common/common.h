@@ -25,20 +25,23 @@ typedef struct __stopwatch_t{
     struct timeval end;
 }stopwatch;
 
-void 
+void
 stopwatch_start(stopwatch *sw);
 
-void 
+void
 stopwatch_stop (stopwatch *sw);
 
-double 
+double
 get_interval_by_sec(stopwatch *sw);
 
-int 
+int
 get_interval_by_usec(stopwatch *sw);
 
 func_ret_t
 create_matrix_from_random(double **mp, int size);
+
+func_ret_t
+create_matrix_from_random_float(float **mp, int size);
 
 func_ret_t
 lud_verify(double *m, double *lu, int size);
