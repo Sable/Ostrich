@@ -66,7 +66,7 @@ function lud(size) {
 var matrix;
 
 function ludRun(size) {
-    matrix = new Float32Array(size*size);
+    matrix = new Float64Array(size*size);
     randomMatrix(matrix, 0, 10000);
     console.log("Matrix of size: " + size);
     var t1 = performance.now();
