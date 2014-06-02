@@ -1,3 +1,4 @@
+/*
 Math.commonRandom = (function() {
     var seed = 49734321;
     return function() {
@@ -15,6 +16,7 @@ Math.commonRandom = (function() {
 Math.commonRandomJS = function () {
     return Math.abs(Math.commonRandom() / 0x7fffffff);
 }
+*/
 
 if (typeof performance === "undefined") {
     performance = Date;

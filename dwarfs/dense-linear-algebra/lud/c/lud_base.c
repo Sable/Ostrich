@@ -1,7 +1,7 @@
-void lud_base(float *a, int size)
+void lud_base(double *a, int size)
 {
      int i,j,k;
-     float sum;
+     double sum;
 
      for (i=0; i<size; i++){
          for (j=i; j<size; j++){
