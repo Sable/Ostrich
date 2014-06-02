@@ -86,10 +86,11 @@ class Benchmark(object):
         self.env = env
         self.iters = iters
 
-    def run_c_benchmark(self):
+    def run_native_benchmark(self, opencl=False):
         """Run the C benchmark.  Assume that there is a build/c/run.sh script
            that will feed all the correct parameters."""
-        runner_script = ["sh", os.path.join("build", "c", "run.sh")]
+        runner_script = ["sh", os.path.join("build", "c" if not opencl else "opencl", "run.sh")]
+        
         with cd(self.dir):
             for _ in xrange(self.iters):
                 stdout, _ = subprocess.Popen(runner_script,
@@ -109,7 +110,7 @@ class Benchmark(object):
         """Move into the benchmark's directory and run make clean && make."""
         with cd(self.dir):
             subprocess.call(["make", "clean"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            subprocess.call(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.call(["make", "-k"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 BENCHMARK_INFO = {
@@ -121,20 +122,21 @@ BENCHMARK_INFO = {
     "bfs": "graph-traversal/bfs",
     "page-rank": "map-reduce/page-rank",
     "lavamd": "n-body-methods/lavamd",
-    #"spmv": "sparse-linear-algebra/spmv",
+    "spmv": "sparse-linear-algebra/spmv",
     "fft": "spectral-methods/fft",
     "srad": "structured-grid/SRAD",
     "back-prop": "unstructured-grid/back-propagation",
 }
 
 ENVIRONMENTS = {
-    "c": ("C", "N/A", lambda b: b.run_c_benchmark()),
+    "c": ("C", "N/A", lambda b: b.run_native_benchmark()),
     "asmjs-chrome": ("asmjs", "Chrome", lambda b: b.run_js_benchmark("google-chrome", True)),
     "asmjs-firefox": ("asmjs", "Firefox", lambda b: b.run_js_benchmark("firefox", True)),
     "js-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome")),
     "js-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox")),
     "asmjs-safari": ("asmjs", "Safari", lambda b: b.run_js_benchmark("safari", True)),
     "js-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari")),
+    "opencl": ("OpenCL", "N/A", lambda b: b.run_native_benchmark(True)),
 }
 
 

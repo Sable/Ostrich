@@ -8,7 +8,7 @@ C_RUN_ARGUMENT = "-s "$(SIZE)
 JS_RUN_ARGUMENT = "runNQueens("$(SIZE)")"
 FILENAME = "nqueens"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -46,9 +46,14 @@ build/js/run.html: build/js build/js/nqueens.js
 build/opencl:
 	mkdir -p build/opencl
 
-build/opencl/nqueens: build/opencl opencl/main.c opencl/nqueen_cpu.cpp nqueen_cl.cpp common/opts/opts.c common/comon.c common/common_args.c
-	$(CCOMP) $(CC_FLAGS) -o build/opencl/nqueens opencl/nqueen_cpu.cpp opencl/main.cpp opencl/nqueen_cl.cpp common/opts/opts.c common/common.c common/common_args.c  -Icommon -I../../common -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lstdc++ -DOPENCL_HEADER_CL_CL
+build/opencl/nqueens: build/opencl opencl/main.cpp opencl/nqueen_cpu.cpp opencl/nqueen_cl.cpp common/opts/opts.c common/common.c common/common_args.c
+	$(CCOMP) -o build/opencl/nqueens opencl/nqueen_cpu.cpp opencl/main.cpp opencl/nqueen_cl.cpp common/opts/opts.c common/common.c common/common_args.c  -Icommon -I../../common -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lstdc++ -DOPENCL_HEADER_CL_CL
+	cp opencl/kernels_nqueens.cl build/opencl/
 
+build/opencl/run.sh: build/opencl build/opencl/nqueens
+	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
+	echo "./nqueens -p 0 -d 0 -- $(SIZE)" >> build/opencl/run.sh
+	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl
