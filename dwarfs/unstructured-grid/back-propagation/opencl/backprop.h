@@ -52,7 +52,7 @@ void bpnn_save(BPNN *net, char *filename);
 //BPNN *bpnn_read();
 BPNN *bpnn_read(char *filename);
 void load(BPNN *net);
-int bpnn_train_kernel(BPNN *net, float *eo, float *eh);
+int bpnn_train_kernel(BPNN *net, float *eo, float *eh, int platform, int device);
 void bpnn_layerforward(float *l1, float *l2, float **conn, int n1, int n2);
 void bpnn_output_error(float *delta, float *target, float *output, int nj, float *err);
 void bpnn_hidden_error(float *delta_h, int nh, float *delta_o, int no, float **who, float *hidden, float *err); 
