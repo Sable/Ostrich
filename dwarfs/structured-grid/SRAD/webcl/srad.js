@@ -56,12 +56,22 @@ function kernel(kernel, program) {
     return program.createKernel(kernel);
 }
 
+function printM(mat, m, n, q){
+    //var x = new Float32Array(m*n); 
+    for(var i = 0; i < m; ++ i){
+        //console.log(Array.prototype.join.call(
+          //  Array.prototype.slice.call(x, i*n, (i+1)*n),","));
+        console.log(Array.prototype.join.call(mat,","));
+    }
+}
+
 function webclsrad(niter,lambda, platformIdx, deviceIdx) {
     var programSourceId = "clsrad";
-    var float_bytes = 8, int_bytes = 4;
+    var float_bytes = 4, int_bytes = 4;
 
     var output = 0;
-    image = new Float64Array(Ne);
+    image = new Float32Array(Ne);
+
     for(i=0; i<Ne; i++) {
         image[i] = Math.exp(data[i]/255);
     }
@@ -123,21 +133,21 @@ function webclsrad(niter,lambda, platformIdx, deviceIdx) {
 
         var blocks2_x, blocks2_work_size, global_work_size2 = [], no, mul;
         var mem_size_single = float_bytes;
-        var total = new Float64Array(1), total2 = new Float64Array(1), meanROI, meanROI2, varROI, q0sqr;
+        var total = new Float32Array(1), total2 = new Float32Array(1), meanROI, meanROI2, varROI, q0sqr;
 
-        prepare_kernel.setArg(0, new Float64Array([Ne]));
+        prepare_kernel.setArg(0, new Uint32Array([Ne]));
         prepare_kernel.setArg(1, d_I);
         prepare_kernel.setArg(2, d_sums);
         prepare_kernel.setArg(3, d_sums2);
 
-        reduce_kernel.setArg(0, new Float64Array([Ne]));
+        reduce_kernel.setArg(0, new Uint32Array([Ne]));
         reduce_kernel.setArg(3, d_sums);
         reduce_kernel.setArg(4, d_sums2);
 
-        srad_kernel.setArg(0, new Float64Array([lambda]));
+        srad_kernel.setArg(0, new Float32Array([lambda]));
         srad_kernel.setArg(1, new Int32Array([Nr]));
         srad_kernel.setArg(2, new Int32Array([Nc]));
-        srad_kernel.setArg(3, new Float64Array([Ne]));
+        srad_kernel.setArg(3, new Uint32Array([Ne]));
         srad_kernel.setArg(4, d_iN);
         srad_kernel.setArg(5, d_iS);
         srad_kernel.setArg(6, d_jE);
@@ -149,10 +159,10 @@ function webclsrad(niter,lambda, platformIdx, deviceIdx) {
         srad_kernel.setArg(13, d_c);
         srad_kernel.setArg(14, d_I);
 
-        srad2_kernel.setArg(0, new Float64Array([lambda]));
+        srad2_kernel.setArg(0, new Float32Array([lambda]));
         srad2_kernel.setArg(1, new Int32Array([Nr]));
         srad2_kernel.setArg(2, new Int32Array([Nc]));
-        srad2_kernel.setArg(3, new Float64Array([Ne]));
+        srad2_kernel.setArg(3, new Uint32Array([Ne]));
         srad2_kernel.setArg(4, d_iN);
         srad2_kernel.setArg(5, d_iS);
         srad2_kernel.setArg(6, d_jE);
@@ -174,12 +184,11 @@ function webclsrad(niter,lambda, platformIdx, deviceIdx) {
             while(blocks2_work_size !== 0) {
                 // set arguments that were uptaded in this loop
 
-                reduce_kernel.setArg(1, new Float64Array([no]));
+                reduce_kernel.setArg(1, new Uint32Array([no]));
                 reduce_kernel.setArg(2, new Int32Array([mul]));
                 reduce_kernel.setArg(5, new Int32Array([blocks2_work_size]));
                 // launch kernel
                 queue.enqueueNDRangeKernel(reduce_kernel, 1, null, global_work_size2, local_work_size);
-
                 no = blocks2_work_size;
                 if(blocks2_work_size === 1) {
                     blocks2_work_size = 0;
@@ -201,19 +210,16 @@ function webclsrad(niter,lambda, platformIdx, deviceIdx) {
             var total0 = total[0];
             var total20 = total2[0];
 
-            console.log(total0);
-            console.log(total20);
-
             meanROI = total0 / NeROI;
             meanROI2 = meanROI * meanROI;
             varROI = (total20 / NeROI) - meanROI2;
             q0sqr = varROI / meanROI2;
 
 
-            srad_kernel.setArg(12, new Float64Array([q0sqr]));
+            srad_kernel.setArg(12, new Float32Array([q0sqr]));
             queue.finish();
-            //queue.enqueueNDRangeKernel(srad_kernel, 1, null, global_work_size, local_work_size);
-            //queue.enqueueNDRangeKernel(srad2_kernel, 1, null, global_work_size, local_work_size);
+            queue.enqueueNDRangeKernel(srad_kernel, 1, null, global_work_size, local_work_size);
+            queue.enqueueNDRangeKernel(srad2_kernel, 1, null, global_work_size, local_work_size);
         }
         queue.finish();
         queue.enqueueReadBuffer(d_I, true, 0, mem_size, image);
@@ -288,13 +294,13 @@ jW = new Int32Array(Nc);
 jE = new Int32Array(Nc);
 
 // allocate variables for directional derivatives
-dN = new Float64Array(Ne);
-dS = new Float64Array(Ne);
-dW = new Float64Array(Ne);
-dE = new Float64Array(Ne);
+dN = new Float32Array(Ne);
+dS = new Float32Array(Ne);
+dW = new Float32Array(Ne);
+dE = new Float32Array(Ne);
 
 // allocate variable for diffusion coefficient
-c  = new Float64Array(Ne);
+c  = new Float32Array(Ne);
 
 for (i=0; i<Nr; i++) {
     iN[i] = i-1;
@@ -323,4 +329,4 @@ function writeImage() {
     ctx.putImageData(imageData, 0, 0);*/
 }
 
-//webclsrad(5, 1, 0, 0);
+webclsrad(500, 1, 0, 0);

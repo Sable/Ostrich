@@ -9,12 +9,12 @@ NB_ITERATIONS = "10"
 THRESHOLD = "0.00000001"
 DIVISOR = "100000"
 
-ASMJS_RUN_ARGUMENT = "'-n', '"$(NB_PAGES)"', '-i', '"$(NB_ITERATIONS)"', '-t', '"$(THRESHOLD)"', '-d', '"$(DIVISOR)"'"
-C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -i "$(NB_ITERATIONS)" -t "$(THRESHOLD)" -d "$(DIVISOR)
+ASMJS_RUN_ARGUMENT = "'-n', '"$(NB_PAGES)"', '-i', '"$(NB_ITERATIONS)"', '-t', '"$(THRESHOLD)"', '-q', '"$(DIVISOR)"'"
+C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -i "$(NB_ITERATIONS)" -t "$(THRESHOLD)" -q "$(DIVISOR)
 JS_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)", "$(NB_ITERATIONS)", "$(THRESHOLD)", "$(DIVISOR)")"
 FILENAME = "pagerank"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -67,6 +67,15 @@ build/js/run.html: build/js build/js/pagerank.js
 
 build/opencl:
 	mkdir -p build/opencl
+
+build/opencl/pagerank:
+	$(CCOMP) -o build/opencl/pagerank  opencl/pagerank.c ../../common/opts/opts.c ../../common/common.c  ../../common/common_args.c ../../common/common_rand.c -I$(OPENCL_INC) -I../../common/ -L$(OPENCL_LIB) -lOpenCL -lm  -DOPENCL_HEADER_CL_CL
+	cp opencl/*.cl build/opencl/
+
+build/opencl/run.sh: build/opencl build/opencl/pagerank
+	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
+	echo "./pagerank -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl

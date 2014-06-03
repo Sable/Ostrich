@@ -39,128 +39,158 @@ get_interval_by_usec(stopwatch *sw){
 }
 
 func_ret_t
-create_matrix_from_file(float **mp, const char* filename, int *size_p){
-  int i, j, size;
-  float *m;
-  FILE *fp = NULL;
+create_matrix_from_random(double **mp, int size){
+    double *l, *u, *m;
+    int i,j,k;
+    double sum;
 
-  fp = fopen(filename, "rb");
-  if ( fp == NULL) {
-      return RET_FAILURE;
-  }
 
-  fscanf(fp, "%d\n", &size);
+    l = (double*)malloc(size*size*sizeof(double));
+    if ( l == NULL)
+       return RET_FAILURE;
 
-  m = (float*) malloc(sizeof(float)*size*size);
-  if ( m == NULL) {
-      fclose(fp);
-      return RET_FAILURE;
-  }
+    u = (double*)malloc(size*size*sizeof(double));
+    if ( u == NULL) {
+       free(l);
+       return RET_FAILURE;
+    }
 
-  for (i=0; i < size; i++) {
-      for (j=0; j < size; j++) {
-          fscanf(fp, "%f ", m+i*size+j);
-      }
-  }
+    m = (double *)malloc(size*size*sizeof(double));
+    if ( m == NULL) {
+        free(l);
+        free(u);
+        return RET_FAILURE;
+    }
 
-  fclose(fp);
+    for (i = 0; i < size; i++) {
+        for (j=0; j < size; j++) {
+            if (i>j) {
+                l[i*size+j] = common_randJS();
+            } else if (i == j) {
+                l[i*size+j] = 1;
+            } else {
+                l[i*size+j] = 0;
+            }
+        }
+    }
 
-  *size_p = size;
-  *mp = m;
+    // The u matrix is transposed to facilitate indexing
+    // during matrix multiplication
+    for (j=0; j < size; j++) {
+        for (i=0; i < size; i++) {
+           if (i>j) {
+               u[j*size+i] = 0;
+           }else {
+               u[j*size+i] = common_randJS();
+           }
+        }
+    }
 
-  return RET_SUCCESS;
-}
+    for (i=0; i < size; i++) {
+        for (j=0; j < size; j++) {
+            sum = 0;
+            for (k=0; k <= MIN(i,j); k++) {
+                sum += l[i*size+k] * u[j*size+k];
+            }
+            m[i*size+j] = sum;
+        }
+    }
 
-func_ret_t
-create_matrix_from_random(float **mp, int size){
-  float *l, *u, *m;
-  int i,j,k;
-
-  srand(time(NULL));
-
-  l = (float*)malloc(size*size*sizeof(float));
-  if ( l == NULL)
-    return RET_FAILURE;
-
-  u = (float*)malloc(size*size*sizeof(float));
-  if ( u == NULL) {
-      free(l);
-      return RET_FAILURE;
-  }
-
-  m = (float *)malloc(size*size*sizeof(float));
-  if ( m == NULL) {
     free(l);
     free(u);
-    return RET_FAILURE;
-  }
 
-  for (i = 0; i < size; i++) {
-      for (j=0; j < size; j++) {
-          if (i>j) {
-              l[i*size+j] = common_randJS();
-          } else if (i == j) {
-              l[i*size+j] = 1;
-          } else {
-              l[i*size+j] = 0;
-          }
-      }
-  }
+    *mp = m;
 
-  for (j=0; j < size; j++) {
-      for (i=0; i < size; i++) {
-          if (i>j) {
-              u[j*size+i] = 0;
-          }else {
-              u[j*size+i] = common_randJS();
-          }
-      }
-  }
-
-  for (i=0; i < size; i++) {
-      for (j=0; j < size; j++) {
-          for (k=0; k <= MIN(i,j); k++)
-            m[i*size+j] = l[i*size+k] * u[j*size+k];
-      }
-  }
-  free(l);
-  free(u);
-
-  *mp = m;
-
-  return RET_SUCCESS;
-}
-
-void
-matrix_multiply(float *inputa, float *inputb, float *output, int size){
-  int i, j, k;
-
-  for (i=0; i < size; i++)
-    for (k=0; k < size; k++)
-      for (j=0; j < size; j++)
-        output[i*size+j] = inputa[i*size+k] * inputb[k*size+j];
-
+    return RET_SUCCESS;
 }
 
 func_ret_t
-lud_verify(float *m, float *lu, int matrix_dim){
-  int i,j,k;
-  float *tmp = (float*)malloc(matrix_dim*matrix_dim*sizeof(float));
+create_matrix_from_random_float(float **mp, int size){
+    float *l, *u, *m;
+    int i,j,k;
+    float sum;
 
-  for (i=0; i < matrix_dim; i ++)
-    for (j=0; j< matrix_dim; j++) {
-        float sum = 0;
-        float l,u;
-        for (k=0; k <= MIN(i,j); k++){
-            if ( i==k)
-              l=1;
-            else
-              l=lu[i*matrix_dim+k];
-            u=lu[k*matrix_dim+j];
-            sum+=l*u;
+
+    l = (float*)malloc(size*size*sizeof(float));
+    if ( l == NULL)
+       return RET_FAILURE;
+
+    u = (float*)malloc(size*size*sizeof(float));
+    if ( u == NULL) {
+       free(l);
+       return RET_FAILURE;
+    }
+
+    m = (float *)malloc(size*size*sizeof(float));
+    if ( m == NULL) {
+        free(l);
+        free(u);
+        return RET_FAILURE;
+    }
+
+    for (i = 0; i < size; i++) {
+        for (j=0; j < size; j++) {
+            if (i>j) {
+                l[i*size+j] = common_randJS();
+            } else if (i == j) {
+                l[i*size+j] = 1;
+            } else {
+                l[i*size+j] = 0;
+            }
         }
+    }
+
+    // The u matrix is transposed to facilitate indexing
+    // during matrix multiplication
+    for (j=0; j < size; j++) {
+        for (i=0; i < size; i++) {
+           if (i>j) {
+               u[j*size+i] = 0;
+           }else {
+               u[j*size+i] = common_randJS();
+           }
+        }
+    }
+
+    for (i=0; i < size; i++) {
+        for (j=0; j < size; j++) {
+            sum = 0;
+            for (k=0; k <= MIN(i,j); k++) {
+                sum += l[i*size+k] * u[j*size+k];
+            }
+            m[i*size+j] = sum;
+        }
+    }
+
+    free(l);
+    free(u);
+
+    *mp = m;
+
+    return RET_SUCCESS;
+}
+
+
+func_ret_t
+lud_verify(double *m, double *lu, int matrix_dim){
+    int i,j,k;
+    double *tmp = (double*)malloc(matrix_dim*matrix_dim*sizeof(double));
+
+    for (i=0; i < matrix_dim; i ++)
+        for (j=0; j< matrix_dim; j++) {
+            double sum = 0;
+            double l,u;
+            for (k=0; k <= MIN(i,j); k++){
+                if ( i==k)
+                    l=1;
+                else
+                    l=lu[i*matrix_dim+k];
+                u=lu[k*matrix_dim+j];
+                sum+=l*u;
+            }
         tmp[i*matrix_dim+j] = sum;
     }
+/*
   fprintf(stderr, ">>>>>LU<<<<<<<\n");
   for (i=0; i<matrix_dim; i++){
     for (j=0; j<matrix_dim;j++){
@@ -182,35 +212,36 @@ lud_verify(float *m, float *lu, int matrix_dim){
     }
     fprintf(stderr, "\n");
   }
+*/
 
-  int good = 1;
-  for (i=0; i<matrix_dim; i++){
-      for (j=0; j<matrix_dim; j++){
-          if ( fabs(m[i*matrix_dim+j]-tmp[i*matrix_dim+j])/fabs(m[i*matrix_dim+j])> 0.00001){
-            fprintf(stderr, "dismatch at (%d, %d): (o)%f (n)%f\n", i, j, m[i*matrix_dim+j], tmp[i*matrix_dim+j]);
-            good = 0;
-          }
-      }
-  }
-  if(good) fprintf(stderr, "Good LUD!");
-  else fprintf(stderr, "Bad LUD!");
-  free(tmp);
+    int good = 1;
+    for (i=0; i<matrix_dim; i++){
+        for (j=0; j<matrix_dim; j++){
+            if ( fabs(m[i*matrix_dim+j]-tmp[i*matrix_dim+j])/fabs(m[i*matrix_dim+j])> 0.0000000001){
+                fprintf(stderr, "dismatch at (%d, %d): (o)%.*f (n)%.*f\n", i, j, 21, m[i*matrix_dim+j], 21, tmp[i*matrix_dim+j]);
+                good = 0;
+            }
+        }
+    }
+    if(good) fprintf(stderr, "Good LUD!");
+    else fprintf(stderr, "Bad LUD!");
+    free(tmp);
 }
 
 void
-matrix_duplicate(float *src, float **dst, int matrix_dim) {
-    int s = matrix_dim*matrix_dim*sizeof(float);
-   float *p = (float *) malloc (s);
-   memcpy(p, src, s);
-   *dst = p;
+matrix_duplicate(double *src, double **dst, int matrix_dim) {
+    int s = matrix_dim*matrix_dim*sizeof(double);
+    double *p = (double *) malloc (s);
+    memcpy(p, src, s);
+    *dst = p;
 }
 
 void
-print_matrix(float *m, int matrix_dim) {
+print_matrix(double *m, int matrix_dim) {
     int i, j;
     for (i=0; i<matrix_dim;i++) {
-      for (j=0; j<matrix_dim;j++)
-        fprintf(stderr, "%f ", m[i*matrix_dim+j]);
-      fprintf(stderr, "\n");
+        for (j=0; j<matrix_dim;j++)
+            fprintf(stderr, "%f ", m[i*matrix_dim+j]);
+        fprintf(stderr, "\n");
     }
 }

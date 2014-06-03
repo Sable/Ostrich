@@ -9,7 +9,7 @@ C_RUN_ARGUMENT = "-v n -n 512"
 JS_RUN_ARGUMENT = "bwa_hmm('n', 512)"
 FILENAME = "hmm"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -18,9 +18,8 @@ build/c:
 build/c/hmm:	build/c \
             c/main_bwa_hmm.c
 	$(CCOMP) c/main_bwa_hmm.c \
-			 common/common.c \
+			../../common/common.c \
 			 ../../common/common_rand.c \
-			 -Icommon \
 			 -I../../common \
 			 -lm -o build/c/hmm
 
@@ -33,9 +32,8 @@ build/asmjs:
 build/asmjs/hmm.js: build/asmjs \
             c/main_bwa_hmm.c
 	$(EMCC) c/main_bwa_hmm.c \
-			common/common.c \
+			../../common/common.c \
 			../../common/common_rand.c \
-			-Icommon \
 			-I../../common \
 			$(EMOPTIONS) -lm -o build/asmjs/hmm.js
 
@@ -59,6 +57,15 @@ build/js/run.html: build/js build/js/hmm.js
 
 build/opencl:
 	mkdir -p build/opencl
+
+build/opencl/hmm:
+	$(CCOMP) -o build/opencl/hmm opencl/main_bwa_hmm.c ../../common/common.c ../../common/common_rand.c ../../common/common_args.c ../../common/opts/opts.c -I$(OPENCL_INC)  -I../../common/ -L$(OPENCL_LIB) -lOpenCL -lm -DOPENCL_HEADER_CL_CL
+	cp opencl/*.cl build/opencl/
+
+build/opencl/run.sh: build/opencl build/opencl/hmm
+	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
+	echo "./hmm -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl

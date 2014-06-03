@@ -46,8 +46,8 @@
 //	MAIN FUNCTION
 //========================================================================================================================================================================================================200
 
-int 
-main(	int argc, 
+int
+main(	int argc,
 		char* argv []){
 
 	//======================================================================================================================================================150
@@ -72,14 +72,14 @@ main(	int argc,
 	long NeROI;														// ROI nbr of elements
 
 	// surrounding pixel indicies
-	int *iN, *iS, *jE, *jW;    
+	int *iN, *iS, *jE, *jW;
 
 	// center pixel value
     fp Jc;
 
 	// directional derivatives
 	fp *dN,*dS,*dW,*dE;
-    
+
 	// counters
 	int iter;   // primary loop
 	long i;    // image row
@@ -96,7 +96,7 @@ main(	int argc,
 	//======================================================================================================================================================150
 
 	if(argc != 3) {
-		printf("ERROR: wrong number of arguments\n");
+		fprintf(stderr, "ERROR: wrong number of arguments\n");
 		return 0;
 	} else {
 		niter = atoi(argv[1]);
@@ -148,7 +148,7 @@ main(	int argc,
 
 	// N/S/W/E boundary conditions, fix surrounding indices outside boundary of image
 	iN[0]    = 0;															// changes IMAGE top row index from -1 to 0
-	iS[Nr-1] = Nr-1;														// changes IMAGE bottom row index from Nr to Nr-1 
+	iS[Nr-1] = Nr-1;														// changes IMAGE bottom row index from Nr to Nr-1
 	jW[0]    = 0;															// changes IMAGE leftmost column index from -1 to 0
 	jE[Nc-1] = Nc-1;														// changes IMAGE rightmost column index from Nc to Nc-1
 
@@ -157,7 +157,7 @@ main(	int argc,
 	//======================================================================================================================================================150
 	// 	KERNEL
 	//======================================================================================================================================================150
-	
+
 	kernel_gpu_opencl_wrapper(	image,											// input image
 								Nr,												// IMAGE nbr of rows
 								Nc,												// IMAGE nbr of cols
@@ -186,16 +186,17 @@ main(	int argc,
 	//======================================================================================================================================================150
 
 	free(image);
-	free(iN); 
-	free(iS); 
-	free(jW); 
+	free(iN);
+	free(iS);
+	free(jW);
 	free(jE);
 
 	//======================================================================================================================================================150
 	//	DISPLAY TIMING
 	//======================================================================================================================================================150
 
-	printf("Computation time: %.12f s\n", (float) (time1-time0) / 1000000);
+	fprintf(stderr, "Computation time: %.12f s\n", (float) (time1-time0) / 1000000);
+        printf("{ \"status\": %d, \"options\": \"%d %f\", \"time\": %f }\n", 1, niter, lambda, (float) (time1-time0) / 1000000);
 }
 
 //========================================================================================================================================================================================================200

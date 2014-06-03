@@ -1,5 +1,3 @@
-include ../../common/make.config
-
 # C compiler
 CC = g++
 CC_FLAGS = -g -O2 

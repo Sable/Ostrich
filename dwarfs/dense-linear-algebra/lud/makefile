@@ -10,7 +10,7 @@ C_RUN_ARGUMENT = "-s "$(SIZE)
 JS_RUN_ARGUMENT = "ludRun("$(SIZE)")"
 FILENAME = "lud"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -57,7 +57,7 @@ build/js:
 	mkdir -p build/js
 
 build/js/lud.js:
-	cp js/lud_typed.js build/js/$(FILENAME).js
+	cp js/lud.js build/js/$(FILENAME).js
 
 build/js/run.html: build/js build/js/lud.js
 	cat ../../utils/js/run_template.html > build/js/run.html
@@ -66,6 +66,15 @@ build/js/run.html: build/js build/js/lud.js
 
 build/opencl:
 	mkdir -p build/opencl
+
+build/opencl/lud:
+	g++ -O3 -o build/opencl/lud opencl/lud.cpp common/common.c ../../common/common_rand.c -I$(OPENCL_INC) -Icommon/ -I../../common/ -L$(OPENCL_LIB) -Llibm -lOpenCL
+	cp opencl/*.cl build/opencl/
+
+build/opencl/run.sh: build/opencl build/opencl/lud
+	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
+	echo "./lud -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl

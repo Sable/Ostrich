@@ -2,12 +2,12 @@
 <html>
   <head>
     <script id="clsrad" type="text/x-opencl">
-        #define fp double
+        #define fp float
         #define NUMBER_THREADS 512
 
         //  Prepare KERNEL
         __kernel void 
-        prepare_kernel(long d_Ne, __global fp* d_I, __global fp* d_sums, __global fp* d_sums2) {
+        prepare_kernel(unsigned int d_Ne, __global fp* d_I, __global fp* d_sums, __global fp* d_sums2) {
             int bx = get_group_id(0);
             int tx = get_local_id(0);
             int ei = (bx*NUMBER_THREADS)+tx;
@@ -20,7 +20,7 @@
 
         //  Reduce KERNEL
         __kernel void 
-        reduce_kernel(long d_Ne, long d_no, int d_mul, __global fp* d_sums, __global fp* d_sums2, int gridDim) {
+        reduce_kernel(unsigned int d_Ne, unsigned int d_no, int d_mul, __global fp* d_sums, __global fp* d_sums2, int gridDim) {
             int bx = get_group_id(0);
             int tx = get_local_id(0);
             int ei = (bx*NUMBER_THREADS)+tx;
@@ -106,7 +106,7 @@
 
         //  SRAD KERNEL
         __kernel void 
-        srad_kernel(fp d_lambda, int d_Nr, int d_Nc, long d_Ne, __global int* d_iN, __global int* d_iS, __global int* d_jE, __global int* d_jW, __global fp* d_dN, __global fp* d_dS, __global fp* d_dE, __global fp* d_dW, fp d_q0sqr, __global fp* d_c, __global fp* d_I) {
+        srad_kernel(fp d_lambda, int d_Nr, int d_Nc, unsigned int d_Ne, __global int* d_iN, __global int* d_iS, __global int* d_jE, __global int* d_jW, __global fp* d_dN, __global fp* d_dS, __global fp* d_dE, __global fp* d_dW, fp d_q0sqr, __global fp* d_c, __global fp* d_I) {
             int bx = get_group_id(0);
             int tx = get_local_id(0);
             int ei = bx*NUMBER_THREADS+tx;
@@ -167,7 +167,7 @@
 
         //  SRAD2 KERNEL
         __kernel void 
-        srad2_kernel(fp d_lambda, int d_Nr, int d_Nc, long d_Ne, __global int* d_iN, __global int* d_iS, __global int* d_jE, __global int* d_jW, __global fp* d_dN, __global fp* d_dS, __global fp* d_dE, __global fp* d_dW, __global fp* d_c, __global fp* d_I) {
+        srad2_kernel(fp d_lambda, int d_Nr, int d_Nc, unsigned int d_Ne, __global int* d_iN, __global int* d_iS, __global int* d_jE, __global int* d_jW, __global fp* d_dN, __global fp* d_dS, __global fp* d_dE, __global fp* d_dW, __global fp* d_c, __global fp* d_I) {
             int bx = get_group_id(0);
             int tx = get_local_id(0);
             int ei = bx*NUMBER_THREADS+tx;

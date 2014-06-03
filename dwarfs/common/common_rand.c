@@ -49,13 +49,13 @@ int common_rand() {
     return _common_seed;
 }
 
-float common_randJS() {
-	return ((float) abs(common_rand()) / (float) MAXRND);
+double common_randJS() {
+	return ((double) abs(common_rand()) / (double) MAXRND);
 }
 
 
-float common_norm_rand(){
-  float R1 = common_randJS(); 
-  float R2 = common_randJS(); 
+double common_norm_rand(){
+  double R1 = common_randJS(); 
+  double R2 = common_randJS(); 
   return 0.0f + 1.0f *cos(2*3.14*R1)*sqrt(-log(R2));
 }

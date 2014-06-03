@@ -11,7 +11,7 @@ C_RUN_ARGUMENT = "-n "$(DIMENSIONS)" -g "$(PENALTY)
 JS_RUN_ARGUMENT = "runNeedle("$(DIMENSIONS)","$(PENALTY)")"
 FILENAME = "needle"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -57,6 +57,15 @@ build/js/run.html: build/js build/js/needle.js
 
 build/opencl:
 	mkdir -p build/opencl
+
+build/opencl/needle:
+	$(CCOMP) -o build/opencl/needle opencl/needle.c ../../common/common.c ../../common/common_rand.c ../../common/common_args.c ../../common/opts/opts.c -I$(OPENCL_INC)  -I../../common/ -L$(OPENCL_LIB) -lOpenCL -lm -DOPENCL_HEADER_CL_CL
+	cp opencl/*.cl build/opencl/
+
+build/opencl/run.sh: build/opencl build/opencl/needle
+	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
+	echo "./needle -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl

@@ -11,7 +11,7 @@ CC_FLAGS = -O3
 EXE = needle 
 
 $(EXE): needle.c 
-	$(CC) $(CC_FLAGS) -o $(EXE) needle.c ../common/common.c ../common/common_args.c ../../../common/common_rand.c ../common/opts/opts.c  $(INC) $(LIB) $(DEF) 
+	$(CC) $(CC_FLAGS) -o $(EXE) needle.c ../../../common/common.c ../../../common/common_args.c ../../../common/common_rand.c ../../../common/opts/opts.c  $(INC) $(LIB) $(DEF) 
 
 clean:
 	rm -f $(EXE)

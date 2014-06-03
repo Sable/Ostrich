@@ -12,7 +12,7 @@ C_RUN_ARGUMENT = "-n $(DIM) -s $(STDDEV) -d $(DENSITY)"
 JS_RUN_ARGUMENT = "spmvRun($(DIM), $(DENSITY), $(STDDEV))"
 FILENAME = "spmv"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -80,6 +80,15 @@ build/js/run.html: build/js build/js/spmv.js
 
 build/opencl:
 	mkdir -p build/opencl
+
+build/opencl/spmv:
+	g++ -O3 -Wall -o build/opencl/spmv opencl/csr_spmv.c common/common.c common/sparse_formats.c common/common_args_serial.c common/ziggurat.c ../../common/common_rand.c -I../../common/ -Icommon/ -lOpenCL -Llibm -lOpenCL -DSERIAL
+	cp opencl/*.cl build/opencl/
+
+build/opencl/run.sh: build/opencl build/opencl/spmv
+	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
+	echo "./spmv -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl

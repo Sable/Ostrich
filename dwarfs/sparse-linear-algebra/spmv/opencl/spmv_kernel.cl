@@ -1,17 +1,16 @@
 /*
  */
 
-void __kernel csr(const unsigned int num_rows,
-		__global unsigned int * Ap, 
-		__global unsigned int * Aj, 
-		__global float * Ax, 
-		__global float * x, 
+void __kernel csr_ocl(const unsigned int num_rows,
+		__global unsigned int * Ap,
+		__global unsigned int * Aj,
+		__global float * Ax,
+		__global float * x,
 		__global float * y)
 {
 	unsigned int row = get_global_id(0);
 
-	if(row < num_rows)
-	{     
+	if(row < num_rows) {
 		float sum = y[row];
 
 		const unsigned int row_start = Ap[row];      	
