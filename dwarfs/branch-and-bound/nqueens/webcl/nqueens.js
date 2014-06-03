@@ -113,7 +113,8 @@ function solverInformation(device, queue){
   solver["maxThreads"] = 0;
  
   var exts = device.getInfo(WebCL.DEVICE_EXTENSIONS);
-  if(exts.search("cl_khr_global_int32_base_atomics") != -1){
+
+  if(exts.search("cl_khr_global_int32_base_atomics") != -1 && !solver["cpu"]){
     solver["enableAtomics"] = true;
   }
   if(exts.search("cl_khr_global_int32_base_atomics") != -1){
