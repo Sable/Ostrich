@@ -28,17 +28,8 @@ build/asmjs:
 build/asmjs/data.js:
 	cp data/data.js build/asmjs/data.js
 
-build/asmjs/backprop.js: build/asmjs \
-            c/*.c \
-            c/*.h
-	$(EMCC) -Ic \
-             -I../../common/ \
-             ../../common/*.c \
-             c/imagenet.c \
-             c/backprop_kernel.c \
-             c/backprop.c \
-             c/facetrain.c \
-			$(EMOPTIONS) -lm -o build/asmjs/backprop.js
+build/asmjs/backprop.js: build/asmjs c/*.c c/*.h
+	$(EMCC) -I../../common/ ../../common/common.c ../../common/common_rand.c c/imagenet.c c/backprop_kernel.c c/backprop.c c/facetrain.c -lm -o build/asmjs/backprop.js $(EMOPTIONS)
 
 build/asmjs/run.html: build/asmjs \
             build/asmjs/backprop.js
