@@ -61,7 +61,7 @@ float *alloc_1d_dbl(int n)
 
   new_t = (float *) malloc ((unsigned) (n * sizeof (float)));
   if (new_t == NULL) {
-    printf("ALLOC_1D_DBL: Couldn't allocate array of floats\n");
+    fprintf(stderr, "ALLOC_1D_DBL: Couldn't allocate array of floats\n");
     return (NULL);
   }
   return (new_t);
@@ -77,7 +77,7 @@ float **alloc_2d_dbl(int m, int n)
 
   new_t = (float **) malloc ((unsigned) (m * sizeof (float *)));
   if (new_t == NULL) {
-    printf("ALLOC_2D_DBL: Couldn't allocate array of dbl ptrs\n");
+    fprintf(stderr, "ALLOC_2D_DBL: Couldn't allocate array of dbl ptrs\n");
     return (NULL);
   }
 
@@ -125,7 +125,7 @@ void bpnn_zero_weights(float **w, int m, int n)
 
 void bpnn_initialize(int seed)
 {
-  printf("Random number generator seed: %d\n", seed);
+  fprintf(stderr, "Random number generator seed: %d\n", seed);
   srand(seed);
 }
 
@@ -136,7 +136,7 @@ BPNN *bpnn_internal_create(int n_in, int n_hidden, int n_out)
 
   newnet = (BPNN *) malloc (sizeof (BPNN));
   if (newnet == NULL) {
-    printf("BPNN_CREATE: Couldn't allocate neural network\n");
+    fprintf(stderr, "BPNN_CREATE: Couldn't allocate neural network\n");
     return (NULL);
   }
 
@@ -233,20 +233,20 @@ void bpnn_layerforward(float *l1, float *l2, float **conn, int n1, int n2)
 #ifdef OPEN
   omp_set_num_threads(NUM_THREAD);
   #pragma omp parallel for shared(conn, n1, n2, l1) private(k, j) reduction(+: sum) schedule(static)
-#endif 
+#endif
   /*** For each unit in second layer ***/
   for (j = 1; j <= n2; j++) {
 
     /*** Compute weighted sum of its inputs ***/
     sum = 0.0;
-    for (k = 0; k <= n1; k++) {	
-      sum += conn[k][j] * l1[k]; 
+    for (k = 0; k <= n1; k++) {
+      sum += conn[k][j] * l1[k];
     }
     l2[j] = squash(sum);
   }
 }
 
-void bpnn_output_error(float *delta, float *target, float *output, int nj, float *err)  
+void bpnn_output_error(float *delta, float *target, float *output, int nj, float *err)
 {
   int j;
   float o, t, errsum;
@@ -261,12 +261,12 @@ void bpnn_output_error(float *delta, float *target, float *output, int nj, float
 }
 
 
-void bpnn_hidden_error(float *delta_h,   
-					   int nh, 
-					   float *delta_o, 
-					   int no, 
-					   float **who, 
-					   float *hidden, 
+void bpnn_hidden_error(float *delta_h,
+					   int nh,
+					   float *delta_o,
+					   int no,
+					   float **who,
+					   float *hidden,
 					   float *err)
 {
   int j, k;
@@ -297,8 +297,8 @@ void bpnn_adjust_weights(float *delta, int ndelta, float *ly, int nly, float **w
   #pragma omp parallel for  \
       shared(oldw, w, delta) \
 	  private(j, k, new_dw) \
-	  firstprivate(ndelta, nly, momentum) 
-#endif 
+	  firstprivate(ndelta, nly, momentum)
+#endif
   for (j = 1; j <= ndelta; j++) {
     for (k = 0; k <= nly; k++) {
       new_dw = ((ETA * delta[j] * ly[k]) + (MOMENTUM * oldw[k][j]));
@@ -371,13 +371,13 @@ void bpnn_save(BPNN *net, char *filename)
   ///////
   /*
   if ((fd = creat(filename, 0644)) == -1) {
-    printf("BPNN_SAVE: Cannot create '%s'\n", filename);
+    fprintf(stderr, "BPNN_SAVE: Cannot create '%s'\n", filename);
     return;
   }
   */
 
   n1 = net->input_n;  n2 = net->hidden_n;  n3 = net->output_n;
-  printf("Saving %dx%dx%d network to '%s'\n", n1, n2, n3, filename);
+  fprintf(stderr, "Saving %dx%dx%d network to '%s'\n", n1, n2, n3, filename);
   //fflush(stdout);
 
   //write(fd, (char *) &n1, sizeof(int));
@@ -388,7 +388,7 @@ void bpnn_save(BPNN *net, char *filename)
   fwrite( (char *) &n2 , sizeof(char), sizeof(char), pFile);
   fwrite( (char *) &n3 , sizeof(char), sizeof(char), pFile);
 
-  
+
 
   memcnt = 0;
   w = net->input_weights;
@@ -433,15 +433,15 @@ BPNN *bpnn_read(char *filename)
     return (NULL);
   }
 
-  printf("Reading '%s'\n", filename);  //fflush(stdout);
+  fprintf(stderr, "Reading '%s'\n", filename);  //fflush(stdout);
 
   read(fd, (char *) &n1, sizeof(int));
   read(fd, (char *) &n2, sizeof(int));
   read(fd, (char *) &n3, sizeof(int));
   new_t = bpnn_internal_create(n1, n2, n3);
 
-  printf("'%s' contains a %dx%dx%d network\n", filename, n1, n2, n3);
-  printf("Reading input weights...");  //fflush(stdout);
+  fprintf(stderr, "'%s' contains a %dx%dx%d network\n", filename, n1, n2, n3);
+  fprintf(stderr, "Reading input weights...");  //fflush(stdout);
 
   memcnt = 0;
   mem = (char *) malloc ((unsigned) ((n1+1) * (n2+1) * sizeof(float)));
@@ -454,7 +454,7 @@ BPNN *bpnn_read(char *filename)
   }
   free(mem);
 
-  printf("Done\nReading hidden weights...");  //fflush(stdout);
+  fprintf(stderr, "Done\nReading hidden weights...");  //fflush(stdout);
 
   memcnt = 0;
   mem = (char *) malloc ((unsigned) ((n2+1) * (n3+1) * sizeof(float)));
@@ -468,7 +468,7 @@ BPNN *bpnn_read(char *filename)
   free(mem);
   close(fd);
 
-  printf("Done\n");  //fflush(stdout);
+  fprintf(stderr, "Done\n");  //fflush(stdout);
 
   bpnn_zero_weights(new_t->input_prev_weights, n1, n2);
   bpnn_zero_weights(new_t->hidden_prev_weights, n2, n3);
