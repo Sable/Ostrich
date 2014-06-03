@@ -95,7 +95,7 @@ function randCRC(numPages, pageSize){
 
     return page; 
 }
-function webclCRC(numpages, pagesize, numexecs, platformIdx, deviceIdx, numblockSize){
+function webclCRC(platformIdx, deviceIdx, numpages, pagesize, numexecs, numblockSize){
     var programSourceId = "clCRC";
     var int_bytes = 4;    
     var blockSize = 16; 
@@ -201,5 +201,8 @@ function webclCRC(numpages, pagesize, numexecs, platformIdx, deviceIdx, numblock
     }
     var t2 = performance.now();
     console.log("Total time elapsed is "+ (t2-t1)/1000+ " seconds");
+
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }
-webclCRC(128, 65536, 150, 0, 0);

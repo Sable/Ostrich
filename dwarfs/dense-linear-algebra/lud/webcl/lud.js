@@ -186,4 +186,3 @@ function webclLUD(platformIdx, deviceIdx, dim){
              options: null,
              time: (t2-t1) / 1000 };
 }
-

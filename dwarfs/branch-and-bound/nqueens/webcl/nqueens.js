@@ -633,5 +633,7 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
 
     console.log("Solutions: " + solutionsFinal + " unique solutions: " + uniqueSolutionsFinal); 
     console.log("Total time elapsed is "+ (t2-t1)/1000+ " seconds");
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }
- // webclNQ(0, 0, 15);

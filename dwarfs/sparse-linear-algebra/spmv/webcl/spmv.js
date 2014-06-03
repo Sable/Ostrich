@@ -273,8 +273,8 @@ function default_wg_sizes(num_wg_sizes, max_wg_size, global_size) {
     return wg_sizes;
 }
 
-function spmvRun(dim, density, stddev, platformIdx, deviceIdx) {
-    var programSourceId = "clLUD";
+function spmvRun(platformIdx, deviceIdx, dim, density, stddev) {
+    var programSourceId = "clSPMV";
     var csr = generateRandomCSR(dim, density, stddev);
     var x = new Float32Array(dim);
     var y = new Float32Array(dim);
@@ -306,8 +306,8 @@ function spmvRun(dim, density, stddev, platformIdx, deviceIdx) {
         var memy = ctx.createBuffer(WebCL.MEM_READ_WRITE, float_bytes*csr.num_rows);
 
         // write buffers
-        queue.enqueueWriteBuffer(memAp, false, 0, int_bytes*csr.num_rows+1, csr.Ap);
-        queue.enqueueWriteBuffer(memAj, false, 0, int_bytes*csr.num_nonzeros, csr.Aj);
+        queue.enqueueWriteBuffer(memAp, false, 0, int_bytes*(csr.num_rows+1), csr.Arow);
+        queue.enqueueWriteBuffer(memAj, false, 0, int_bytes*csr.num_nonzeros, csr.Acol);
         queue.enqueueWriteBuffer(memAx, false, 0, float_bytes*csr.num_nonzeros, csr.Ax);
         queue.enqueueWriteBuffer(memx, false, 0, float_bytes*csr.num_cols, x);
         queue.enqueueWriteBuffer(memy, false, 0, float_bytes*csr.num_rows, y);
@@ -317,8 +317,8 @@ function spmvRun(dim, density, stddev, platformIdx, deviceIdx) {
         kernel_csr.setArg(1, memAp);
         kernel_csr.setArg(2, memAj);
         kernel_csr.setArg(3, memAx);
-        kernel_csr.setArg(2, memx);
-        kernel_csr.setArg(3, memy);
+        kernel_csr.setArg(4, memx);
+        kernel_csr.setArg(5, memy);
 
         var global_size = [csr.num_rows];
         var wg_sizes;
@@ -351,4 +351,8 @@ function spmvRun(dim, density, stddev, platformIdx, deviceIdx) {
 
     console.log("first result of output is: " + out[0]);
     console.log("The total time for the spmv is " + (t2-t1)/1000 + " seconds");
+
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }

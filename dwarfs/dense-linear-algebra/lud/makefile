@@ -8,7 +8,7 @@ SIZE = "1024"
 ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
 C_RUN_ARGUMENT = "-s "$(SIZE)
 JS_RUN_ARGUMENT = "ludRun("$(SIZE)")"
-WEBCL_CALL = "webclLUD(0, 0, 2048)"
+WEBCL_CALL = "webclLUD("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
 FILENAME = "lud"
 
 build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html

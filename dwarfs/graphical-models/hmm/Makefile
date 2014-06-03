@@ -7,9 +7,10 @@ EMOPTIONS = -s TOTAL_MEMORY=400000000
 ASMJS_RUN_ARGUMENT = "'-v', 'n', '-n', '512'"
 C_RUN_ARGUMENT = "-v n -n 512"
 JS_RUN_ARGUMENT = "bwa_hmm('n', 512)"
+WEBCL_CALL = "webclBWAHmm("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", 'n', 512)"
 FILENAME = "hmm"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -69,6 +70,12 @@ build/opencl/run.sh: build/opencl build/opencl/hmm
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/hmm.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/hmm.js
 
 clean:
 	rm -rf build

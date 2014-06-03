@@ -8,9 +8,10 @@ NB_INPUT_ELEMS = "2850000"
 ASMJS_RUN_ARGUMENT = "['"$(NB_INPUT_ELEMS)"']"
 C_RUN_ARGUMENT = $(NB_INPUT_ELEMS)
 JS_RUN_ARGUMENT = "runBackProp("$(NB_INPUT_ELEMS)")"
+WEBCL_CALL = "webclbackprop("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_INPUT_ELEMS)")"
 FILENAME = "backprop"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -63,6 +64,12 @@ build/opencl/run.sh: build/opencl build/opencl/backprop
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/backprop.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/backprop.js
 
 clean:
 	rm -rf build

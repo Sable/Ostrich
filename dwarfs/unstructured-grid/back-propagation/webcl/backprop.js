@@ -56,7 +56,7 @@ function kernel(kernel, program) {
     return program.createKernel(kernel);
 }
 
-function webclbackprop(layerSize, platformIdx, deviceIdx) {
+function webclbackprop(platformIdx, deviceIdx, layerSize) {
     var programSourceId = "clbackprop";
     var float_bytes = 4;
     var layer_size = layerSize || 2850000;
@@ -193,6 +193,10 @@ function webclbackprop(layerSize, platformIdx, deviceIdx) {
     }
 
     console.log("Total time elapsed is " + (t2 - t1) / 1000 + " seconds");
+
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }
 
 
@@ -347,6 +351,3 @@ function bpnn_adjust_weights(delta, ndelta, ly, nly, w, oldw) {
         }
     }
 }
-
-
-webclbackprop(null, 0, 0);

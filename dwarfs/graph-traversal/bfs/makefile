@@ -11,9 +11,10 @@ NB_NODES = "3000000"
 ASMJS_RUN_ARGUMENT = "'"$(NB_NODES)"'"
 C_RUN_ARGUMENT = $(NB_NODES)
 JS_RUN_ARGUMENT = "BFSGraph("$(NB_NODES)")"
+WEBCL_CALL = "webclBFS("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_NODES)")"
 FILENAME = "bfs"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -63,6 +64,12 @@ build/opencl/run.sh: build/opencl build/opencl/bfs
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/bfs.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/bfs.js
 
 clean:
 	rm -rf build

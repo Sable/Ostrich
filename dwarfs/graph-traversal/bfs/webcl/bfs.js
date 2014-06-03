@@ -246,16 +246,14 @@ function printM(a, m, n){
 }
 
 var hh;
-function webclBFS(noOfNodes, numexecs, platformIdx, deviceIdx, numblockSize){
+function webclBFS(platformIdx, deviceIdx, noOfNodes){
     var programSourceId = "clBFS";
-    var intBytes = 4;    
-    var blockSize = 16; 
-    var numBlockSize = numblockSize || 1; 
+    var intBytes = 4;
+    var blockSize = 16;
     var num_blocks, num_pages_last_block;
-    var numExecs = numexecs || 0;
 
     var expected_no_of_nodes = 3000000;
-    var expected_total_cost = 26321966; 
+    var expected_total_cost = 26321966;
     var inits = InitializeGraph(noOfNodes);
     var hGraphNodes = inits.h_graph_nodes;
     var hGraphMask = inits.h_graph_mask;
@@ -267,7 +265,6 @@ function webclBFS(noOfNodes, numexecs, platformIdx, deviceIdx, numblockSize){
     var noOfNodesA = new Uint32Array([noOfNodes]);
     var hGraphNodesStarting = new Int32Array(noOfNodes);
     var hGraphNodesNoOfEdges = new Int32Array(noOfNodes);
-
 
     hGraphNodes.forEach(function (v, i){ 
       hGraphNodesStarting[i] = v.starting;
@@ -378,6 +375,8 @@ function webclBFS(noOfNodes, numexecs, platformIdx, deviceIdx, numblockSize){
     var t2 = performance.now();
     console.log("Total time elapsed is " + (t2-t1)/1000 + " seconds");
     console.log(Array.prototype.join.call(hCost, ","));
-}
 
-//webclBFS(3000000, 1, 0, 0);
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
+}

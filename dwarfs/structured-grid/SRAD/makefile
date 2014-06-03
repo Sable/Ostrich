@@ -9,11 +9,12 @@ LAMBDA = "1"
 ASMJS_RUN_ARGUMENT = "['"$(NB_REPETITIONS)"', '"$(LAMBDA)"'].concat(data)"
 C_RUN_ARGUMENT = $(NB_REPETITIONS)" "$(LAMBDA)
 JS_RUN_ARGUMENT = "runSRAD("$(NB_REPETITIONS)","$(LAMBDA)")"
+WEBCL_CALL = "webclsrad("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_REPETITIONS)","$(LAMBDA)")"
 FILENAME = "srad"
 
 PREAMBLE = "<script src=\"data.js\"><\/script>"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -87,6 +88,13 @@ build/opencl/run.sh: build/opencl build/opencl/srad
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	cp data/data.js build/webcl/data.js
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/srad.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/srad.js
 
 clean:
 	rm -rf build

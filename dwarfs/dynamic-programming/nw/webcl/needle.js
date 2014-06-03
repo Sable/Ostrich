@@ -424,6 +424,7 @@ function webclNeedle(platformIdx, deviceIdx, dimensions, penalty, options){
     }
 
     console.log("The total time spent is "+ (t2-t1)/1000+ " seconds\n" );
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }
-
-//webclNeedle(0, 0, 32, 10);

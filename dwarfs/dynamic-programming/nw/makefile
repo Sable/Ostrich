@@ -9,9 +9,10 @@ PENALTY = "1"
 ASMJS_RUN_ARGUMENT = "'-n', '"$(DIMENSIONS)"', '-g', '"$(PENALTY)"'"
 C_RUN_ARGUMENT = "-n "$(DIMENSIONS)" -g "$(PENALTY)
 JS_RUN_ARGUMENT = "runNeedle("$(DIMENSIONS)","$(PENALTY)")"
+WEBCL_CALL = "webclNeedle("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(DIMENSIONS)","$(PENALTY)")"
 FILENAME = "needle"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -69,6 +70,12 @@ build/opencl/run.sh: build/opencl build/opencl/needle
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/needle.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/needle.js
 
 clean:
 	rm -rf build
