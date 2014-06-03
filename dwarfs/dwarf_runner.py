@@ -99,9 +99,9 @@ class Benchmark(object):
                                              stderr=subprocess.PIPE).communicate()
                 yield json.loads(stdout)["time"]
 
-    def run_js_benchmark(self, browser, asmjs=False):
+    def run_js_benchmark(self, browser, version="js"):
         httpd = subprocess.Popen(["python", "webbench.py"], stdout=subprocess.PIPE)
-        url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", "asmjs" if asmjs else "js", "run.html")
+        url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", version, "run.html")
         for _ in xrange(self.iters):
             with self.env.provision_browser(browser, url):
                 yield json.loads(httpd.stdout.readline())["time"]
@@ -131,13 +131,14 @@ BENCHMARK_INFO = {
 
 ENVIRONMENTS = {
     "c": ("C", "N/A", lambda b: b.run_native_benchmark()),
-    "asmjs-chrome": ("asmjs", "Chrome", lambda b: b.run_js_benchmark("google-chrome", True)),
-    "asmjs-firefox": ("asmjs", "Firefox", lambda b: b.run_js_benchmark("firefox", True)),
+    "asmjs-chrome": ("asmjs", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "asmjs")),
+    "asmjs-firefox": ("asmjs", "Firefox", lambda b: b.run_js_benchmark("firefox", "asmjs")),
     "js-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome")),
     "js-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox")),
-    "asmjs-safari": ("asmjs", "Safari", lambda b: b.run_js_benchmark("safari", True)),
+    "asmjs-safari": ("asmjs", "Safari", lambda b: b.run_js_benchmark("safari", "asmjs")),
     "js-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari")),
     "opencl": ("OpenCL", "N/A", lambda b: b.run_native_benchmark(True)),
+    "webcl": ("WebCL", "Firefox", lambda b: b.run_js_benchmark("firefox", "webcl")),
 }
 
 

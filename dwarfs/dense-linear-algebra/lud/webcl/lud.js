@@ -85,7 +85,7 @@ function printM(a, m, n){
     }    
 }
 
-function webclLUD(dim, platformIdx, deviceIdx){
+function webclLUD(platformIdx, deviceIdx, dim){
     var matrix = new Float32Array(dim*dim);    
     var programSourceId = "clLUD";        
     var blockSize = 16; 
@@ -182,5 +182,8 @@ function webclLUD(dim, platformIdx, deviceIdx){
     var t2 = performance.now();
 
     console.log("Total time elapsed is "+ (t2-t1)/1000+ " seconds");
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }
-webclLUD(2048, 0, 0);
+
