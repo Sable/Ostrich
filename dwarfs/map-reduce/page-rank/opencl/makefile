@@ -11,7 +11,7 @@ CC_FLAGS = -g
 EXE = pagerank 
 
 $(EXE): pagerank.c 
-	$(CC) $(CC_FLAGS) -o $(EXE) pagerank.c ../common/opts/opts.c ../common/common.c  ../common/common_args.c ../../../common/common_rand.c $(INC) $(LIB) $(DEF)
+	$(CC) $(CC_FLAGS) -o $(EXE) pagerank.c ../../../common/opts/opts.c ../../../common/common.c  ../../../common/common_args.c ../../../common/common_rand.c $(INC) $(LIB) $(DEF)
 
 clean:
 	rm -f $(EXE)

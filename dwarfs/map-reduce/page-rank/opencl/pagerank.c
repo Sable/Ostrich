@@ -42,7 +42,7 @@ void setup_device(int platform, int device){
     map_kernel = clCreateKernel(program, "map_page_rank" , &err); // Create the compute kernel in the program we wish to run
     reduce_kernel = clCreateKernel(program, "reduce_page_rank" , &err); // Create the compute kernel in the program we wish to run
 
-    size_t sizes[3]; 
+    size_t sizes[3];
     err = clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t)*3, sizes, NULL);
     CHKERR(err, "Failed to get max work items");
 
@@ -54,16 +54,16 @@ void setup_device(int platform, int device){
 int *random_pages(int n, unsigned int *noutlinks, int divisor){
     int i, j, k;
     int *pages = malloc(sizeof(*pages)*n*n); // matrix 1 means link from j->i
-    
+
     if (divisor <= 0) {
-        printf("ERROR: Invalid divisor '%d' for random initialization, divisor should be greater or equal to 1\n", divisor);
+        fprintf(stderr, "ERROR: Invalid divisor '%d' for random initialization, divisor should be greater or equal to 1\n", divisor);
         exit(1);
     }
 
     for(i=0; i<n; ++i){
         noutlinks[i] = 0;
         for(j=0; j<n; ++j){
-            if(i!=j && (common_rand()%divisor == 0)){
+            if(i!=j && (abs(common_rand())%divisor == 0)){
                 pages[i*n+j] = 1;
                 noutlinks[i] += 1;
             }
@@ -71,7 +71,7 @@ int *random_pages(int n, unsigned int *noutlinks, int divisor){
 
         // the case with no outlinks is avoided
         if(noutlinks[i] == 0){
-            do { k = common_rand() % n; } while ( k == i);
+            do { k = abs(common_rand()) % n; } while ( k == i);
             pages[i*n + k] = 1;
             noutlinks[i] = 1;
         }
@@ -142,11 +142,11 @@ static struct option size_opts[] =
     { 0, 0, 0}
 };
 
-float maximum_dif(float *difs, int n){ 
+float maximum_dif(float *difs, int n){
   int i;
   float max = 0.0f;
   for(i=0; i<n; ++i){
-    max = difs[i] > max ? difs[i] : max; 
+    max = difs[i] > max ? difs[i] : max;
   }
   return max;
 }
@@ -158,7 +158,7 @@ int main(int argc, char *argv[]){
     int t;
     float max_diff;
     stopwatch sw;
-    
+
     int i = 0;
     int j;
     int n = 1000;
@@ -174,8 +174,8 @@ int main(int argc, char *argv[]){
     while((opt = getopt_long(argc, argv, "::p:d:n:i:t:q:", size_opts, &opt_index)) != -1){
         switch(opt){
           case 'p':
-              platform = atoi(optarg); 
-              break; 
+              platform = atoi(optarg);
+              break;
           case 'd':
               device =  atoi(optarg);
               break;
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]){
               exit(EXIT_FAILURE);
         }
     }
-    cl_int err; 
+    cl_int err;
     max_diff=99.0f;
     page_ranks = (float*)malloc(sizeof(*page_ranks)*n);
     maps = (float*)malloc(sizeof(*maps)*n*n);
@@ -216,7 +216,7 @@ int main(int argc, char *argv[]){
             nb_links += pages[i*n+j];
         }
     }
-    //printf("nb of links: %d/%d\n",nb_links,n*n);
+    //fprintf(stderr, "nb of links: %d/%d\n",nb_links,n*n);
     stopwatch_start(&sw);
     setup_device(platform, device);
 
@@ -230,9 +230,9 @@ int main(int argc, char *argv[]){
 
     pages_d = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(*pages)*n*n, NULL, &err);
     page_ranks_d = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(*page_ranks)*n, NULL, &err);
-    maps_d = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(*maps)*n*n, NULL, &err); 
-    noutlinks_d = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(*noutlinks)*n, NULL, &err); 
-    dif_d = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(*diffs)*n, NULL, &err); 
+    maps_d = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(*maps)*n*n, NULL, &err);
+    noutlinks_d = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(*noutlinks)*n, NULL, &err);
+    dif_d = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(*diffs)*n, NULL, &err);
 
     err = clEnqueueWriteBuffer(queue, pages_d, CL_TRUE, 0, sizeof(*pages)*n*n, pages, 0, NULL, NULL);
     clFinish(queue);
@@ -248,28 +248,28 @@ int main(int argc, char *argv[]){
     size_t local_size[1] = { n < max_work_items? n : max_work_items};
     size_t global_size[1] = { n % local_size[0] == 0 ? n : ((n/local_size[0])+1)*local_size[0]};
 
-        err = clSetKernelArg(map_kernel, 0, sizeof(cl_mem), &pages_d);  
+        err = clSetKernelArg(map_kernel, 0, sizeof(cl_mem), &pages_d);
         err |= clSetKernelArg(map_kernel, 1, sizeof(cl_mem), &page_ranks_d);
         err |= clSetKernelArg(map_kernel, 2, sizeof(cl_mem), &maps_d);
         err |= clSetKernelArg(map_kernel, 3, sizeof(cl_mem), &noutlinks_d);
         err |= clSetKernelArg(map_kernel, 4, sizeof(int), &n);
         clFinish(queue);
-        CHKERR(err, "Map Kernel Arguments set failed"); 
+        CHKERR(err, "Map Kernel Arguments set failed");
 
         err = clSetKernelArg(reduce_kernel, 0, sizeof(cl_mem), &page_ranks_d);
         err |= clSetKernelArg(reduce_kernel, 1, sizeof(cl_mem), &maps_d);
         err |= clSetKernelArg(reduce_kernel, 2, sizeof(int), &n);
         err |= clSetKernelArg(reduce_kernel, 3, sizeof(cl_mem), &dif_d);
         clFinish(queue);
-        CHKERR(err, "REDUCE Kernel Arguments set failed"); 
+        CHKERR(err, "REDUCE Kernel Arguments set failed");
 
     for(t=1; t<=iter && max_diff>=thresh; ++t){
-        // // MAP PAGE RANKS 
-        err = clEnqueueNDRangeKernel(queue, map_kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);   
+        // // MAP PAGE RANKS
+        err = clEnqueueNDRangeKernel(queue, map_kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);
         clFinish(queue);
 
         // REDUCE PAGE RANKS
-        err = clEnqueueNDRangeKernel(queue, reduce_kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);   
+        err = clEnqueueNDRangeKernel(queue, reduce_kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);
         clFinish(queue);
 
         err = clEnqueueReadBuffer(queue, dif_d, CL_TRUE, 0, sizeof(float)*n, diffs, 0, NULL, NULL);
@@ -283,7 +283,7 @@ int main(int argc, char *argv[]){
     err = clEnqueueReadBuffer(queue, page_ranks_d, CL_FALSE, 0, sizeof(*page_ranks)*n, page_ranks, 0, NULL, NULL);
     clFinish(queue);
     stopwatch_stop(&sw);
- 
+
     fprintf(stderr, "T reached %d at max dif %lf\n", t, max_diff);
     printf("{ \"status\": %d, \"options\": \"-n %d -i %d -t %f\", \"time\": %f }\n", 1, n, iter, thresh, get_interval_by_sec(&sw));
 
@@ -303,5 +303,5 @@ int main(int argc, char *argv[]){
     clReleaseKernel(map_kernel);
     clReleaseKernel(reduce_kernel);
     clReleaseProgram(program);
-    clReleaseContext(context); 
+    clReleaseContext(context);
 }

@@ -116,7 +116,7 @@ int main(int argc, char *argv[]){
     int nb_links = 0;
 
     int opt, opt_index = 0;
-    while((opt = getopt_long(argc, argv, "::n:i:t:d:", size_opts, &opt_index)) != -1)
+    while((opt = getopt_long(argc, argv, "::n:i:t:q:", size_opts, &opt_index)) != -1)
     {
         switch(opt)
         {
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]){
         case 't':
             thresh = atof(optarg);
             break;
-        case 'd':
+        case 'q':
             divisor = atoi(optarg);
             break;
         default:
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]){
     fprintf(stderr, "PageRanks(0) : ");
     sum = 0;
     for (i=0; i<n; ++i) {
-        fprintf(stderr, "%.4f ", page_ranks[i]); 
+        fprintf(stderr, "%.4f ", page_ranks[i]);
         sum += page_ranks[i];
     }
     fprintf(stderr, " sum=%lf \n",sum);
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]){
         }
     } else {
         fprintf(stderr, "WARNING: No self-checking for n = '%d', iter = '%d', thresh = '%lf', and divisor = '%d'\n", n, iter, thresh, divisor);
-    } 
+    }
 
     fprintf(stderr, "T reached %d at max dif %lf\n", t, max_diff);
     printf("{ \"status\": %d, \"options\": \"-n %d -i %d -t %f\", \"time\": %f }\n", 1, n, iter, thresh, get_interval_by_sec(&sw));
