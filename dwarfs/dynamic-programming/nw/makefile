@@ -64,7 +64,7 @@ build/opencl/needle:
 
 build/opencl/run.sh: build/opencl build/opencl/needle
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./needle -p 0 -d 0 -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./needle -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 build/webcl:

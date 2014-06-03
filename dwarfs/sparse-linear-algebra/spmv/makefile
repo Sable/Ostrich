@@ -87,7 +87,7 @@ build/opencl/spmv:
 
 build/opencl/run.sh: build/opencl build/opencl/spmv
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./spmv $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./spmv -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 build/webcl:

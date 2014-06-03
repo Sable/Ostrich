@@ -64,7 +64,7 @@ build/opencl/hmm:
 
 build/opencl/run.sh: build/opencl build/opencl/hmm
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./hmm -p 0 -d 0 -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./hmm -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 build/webcl:

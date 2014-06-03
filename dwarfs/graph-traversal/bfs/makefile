@@ -58,7 +58,7 @@ build/opencl/bfs:
 
 build/opencl/run.sh: build/opencl build/opencl/bfs
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./bfs -p 0 -d 0 -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./bfs  -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 build/webcl:

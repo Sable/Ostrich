@@ -52,7 +52,7 @@ build/opencl/nqueens: build/opencl opencl/main.cpp opencl/nqueen_cpu.cpp opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/nqueens
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./nqueens -p 0 -d 0 -- $(SIZE)" >> build/opencl/run.sh
+	echo "./nqueens -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(SIZE)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 build/webcl:
