@@ -240,6 +240,6 @@ function spmvRun(dim, density, stddev) {
 
     console.log("The total time for the spmv is " + (t2-t1)/1000 + " seconds");
     return { status: 1,
--             options: "spmvRun(" + [dim, density, stddev].join(",") + ")",
--             time: (t2 - t1) / 1000 };
+             options: "spmvRun(" + [dim, density, stddev].join(",") + ")",
+             time: (t2 - t1) / 1000 };
 }
