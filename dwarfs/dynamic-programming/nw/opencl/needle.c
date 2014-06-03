@@ -69,7 +69,7 @@ double gettime() {
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
 	int
-main( int argc, char** argv) 
+main( int argc, char** argv)
 {
 	ocd_init(&argc, &argv, NULL);
 	ocd_initCL();
@@ -160,15 +160,15 @@ void printM(int *mat, int m, int n){
   int i,j;
   for(i=0;i<m;++i){
     for(j=0;j<n;++j){
-      printf("%.4d,", mat[i*n+j]); 
+      fprintf(stderr, "%.4d,", mat[i*n+j]);
     }
-    printf("\n");
+    fprintf(stderr, "\n");
   }
 }
 
 void printMD(cl_mem a, int m, int n){
     int *x = malloc(sizeof(int)*m*n);
-    clEnqueueReadBuffer(commands, a, CL_TRUE, 0, sizeof(int)*m*n, x, 0, NULL, NULL); 
+    clEnqueueReadBuffer(commands, a, CL_TRUE, 0, sizeof(int)*m*n, x, 0, NULL, NULL);
     clFinish(commands);
     printM(x, m, n);
     free(x);
@@ -204,7 +204,7 @@ void runTest( int argc, char** argv) {
     int* expected_aligned_seq_1 = to_int_values(expected_aligned_seq_1_chars);
     int* expected_aligned_seq_2 = to_int_values(expected_aligned_seq_2_chars);
 
-    cl_mem matrix_d, reference_d; 
+    cl_mem matrix_d, reference_d;
   	cl_int errcode;
     penalty = 1;
 
@@ -547,4 +547,3 @@ void runTest( int argc, char** argv) {
 
     printf("{ \"status\": %d, \"options\": \"-n %d -g %d\", \"time\": %f }\n", 1, input_seq_1_size, penalty, t2-t1);
 }
-
