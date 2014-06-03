@@ -16,7 +16,7 @@ $(EXE): bfs.cpp common.o
 	$(CC) $(CC_FLAGS) -o $(EXE) bfs.cpp ../common/common.c ../../../common/common_rand.c *.o $(INC) $(LIB)  $(DEF) 
 
 common.o: 
-	$(GCC) $(CC_FLAGS) -c ../common/common_args.c ../common/opts/opts.c $(INC) $(LIB)  $(DEF) 
+	$(GCC) $(CC_FLAGS) -c ../../../common/common_args.c ../../../common/opts/opts.c $(INC) $(LIB)  $(DEF) 
 
 
 clean:

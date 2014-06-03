@@ -13,7 +13,7 @@ C_RUN_ARGUMENT = $(NB_NODES)
 JS_RUN_ARGUMENT = "BFSGraph("$(NB_NODES)")"
 FILENAME = "bfs"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
 
 build/c:
 	mkdir -p build/c
@@ -49,6 +49,17 @@ build/js/run.html: build/js build/js/bfs.js
 
 build/opencl:
 	mkdir -p build/opencl
+
+build/opencl/bfs:
+	$(CCOMP) -o build/opencl/opts.o -c ../../common/opts/opts.c -I$(OPENCL_INC) -I../../common/ -L$(OPENCL_LIB) -lOpenCL -Llibm -DOPENCL_HEADER_CL_CL
+	$(CCOMP) -o build/opencl/common_args.o -c ../../common/common_args.c -I$(OPENCL_INC) -I../../common/ -L$(OPENCL_LIB) -lOpenCL -Llibm -DOPENCL_HEADER_CL_CL
+	g++ -O3 -o build/opencl/bfs opencl/bfs.cpp ../../common/common.c ../../common/common_rand.c build/opencl/*.o -I$(OPENCL_INC) -I../../common/ -L$(OPENCL_LIB) -lOpenCL -Llibm  -DOPENCL_HEADER_CL_CL
+	cp opencl/*.cl build/opencl/
+
+build/opencl/run.sh: build/opencl build/opencl/bfs
+	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
+	echo "./bfs -p 0 -d 0 -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl
