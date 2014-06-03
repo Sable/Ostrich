@@ -12,9 +12,10 @@ DIVISOR = "100000"
 ASMJS_RUN_ARGUMENT = "'-n', '"$(NB_PAGES)"', '-i', '"$(NB_ITERATIONS)"', '-t', '"$(THRESHOLD)"', '-q', '"$(DIVISOR)"'"
 C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -i "$(NB_ITERATIONS)" -t "$(THRESHOLD)" -q "$(DIVISOR)
 JS_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)", "$(NB_ITERATIONS)", "$(THRESHOLD)", "$(DIVISOR)")"
+WEBCL_CALL = "webclPR("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_PAGES)", "$(NB_ITERATIONS)", "$(THRESHOLD)", "$(DIVISOR)")"
 FILENAME = "pagerank"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -79,6 +80,12 @@ build/opencl/run.sh: build/opencl build/opencl/pagerank
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/pagerank.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/pagerank.js
 
 clean:
 	rm -rf build

@@ -10,9 +10,10 @@ STDDEV = 0.01
 ASMJS_RUN_ARGUMENT = "'-n', $(DIM), '-s', $(STDDEV), '-d', $(DENSITY)"
 C_RUN_ARGUMENT = "-n $(DIM) -s $(STDDEV) -d $(DENSITY)"
 JS_RUN_ARGUMENT = "spmvRun($(DIM), $(DENSITY), $(STDDEV))"
+WEBCL_CALL = "spmvRun("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(DIM)", "$(DENSITY)", "$(STDDEV)")"
 FILENAME = "spmv"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -87,11 +88,17 @@ build/opencl/spmv:
 
 build/opencl/run.sh: build/opencl build/opencl/spmv
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./spmv -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./spmv -p $(OPENCL_PLATFORM) -c $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/spmv.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/spmv.js
 
 clean:
 	rm -rf build

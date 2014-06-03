@@ -6,9 +6,10 @@ SIZE = "16"
 ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
 C_RUN_ARGUMENT = "-s "$(SIZE)
 JS_RUN_ARGUMENT = "runNQueens("$(SIZE)")"
+WEBCL_CALL = "webclNQ("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
 FILENAME = "nqueens"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -57,6 +58,12 @@ build/opencl/run.sh: build/opencl build/opencl/nqueens
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/nqueens.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/nqueens.js
 
 clean:
 	rm -rf build

@@ -14,41 +14,193 @@
 #endif
 
 
-// local variables
-static cl_context       context;
-static cl_command_queue cmd_queue;
-static cl_device_type   device_type;
-static cl_device_id   * device_list;
-static cl_int           num_devices;
+int _deviceType;
 
-static int initialize(int use_gpu) {
-    cl_int result;
-    size_t size;
+#define CHKERR(err, str) \
+    if (err != CL_SUCCESS) \
+    { \
+        fprintf(stdout, "CL Error %d: %s\n", err, str); \
+        exit(1); \
+    }
+#define CHECK_ERROR(err) {if (err != CL_SUCCESS) { \
+	fprintf(stderr, "Error: %d\n", err);\
+	exit(1); \
+}}
 
-    // create OpenCL context
-    cl_platform_id platform_id;
-    if (clGetPlatformIDs(1, &platform_id, NULL) != CL_SUCCESS) { fprintf(stderr, "ERROR: clGetPlatformIDs(1,*,0) failed\n"); return -1; }
-    cl_context_properties ctxprop[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform_id, 0};
-    device_type = use_gpu ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
-    context = clCreateContextFromType( ctxprop, device_type, NULL, NULL, NULL );
-    if( !context ) { fprintf(stderr, "ERROR: clCreateContextFromType(%s) failed\n", use_gpu ? "GPU" : "CPU"); return -1; }
+cl_command_queue cmd_queue;
+cl_context context;
+cl_device_id device_id;
+cl_program prog;
 
-    // get the list of GPUs
-    result = clGetContextInfo( context, CL_CONTEXT_DEVICES, 0, NULL, &size );
-    num_devices = (int) (size / sizeof(cl_device_id));
-    fprintf(stderr, "num_devices = %d\n", num_devices);
+const char* kernel_file =  "spmv_kernel.cl";
 
-    if( result != CL_SUCCESS || num_devices < 1 ) { fprintf(stderr, "ERROR: clGetContextInfo() failed\n"); return -1; }
-    device_list = new cl_device_id[num_devices];
-    //device_list = (cl_device_id *)malloc(sizeof(cl_device_id)*num_devices);
-    if( !device_list ) { fprintf(stderr, "ERROR: new cl_device_id[] failed\n"); return -1; }
-    result = clGetContextInfo( context, CL_CONTEXT_DEVICES, size, device_list, NULL );
-    if( result != CL_SUCCESS ) { fprintf(stderr, "ERROR: clGetContextInfo() failed\n"); return -1; }
+cl_device_id _ocd_get_device(int platform, int device, cl_int dev_type)
+{
+    cl_int err;
+    cl_uint nPlatforms = 1;
+    char DeviceName[100];
+    cl_device_id* devices;
+    err = clGetPlatformIDs(0, NULL, &nPlatforms);
+    CHECK_ERROR(err);
 
-    // create command queue for the first device
-    cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
-    if( !cmd_queue ) { fprintf(stderr, "ERROR: clCreateCommandQueue() failed\n"); return -1; }
-    return 0;
+    if (nPlatforms <= 0) {
+        fprintf(stderr, "No OpenCL platforms found. Exiting.\n");
+        exit(0);
+    }
+    if (platform < 0 || platform >= nPlatforms) // platform ID out of range
+    {
+        fprintf(stderr, "Platform index %d is out of range. \n", platform);
+        exit(-4);
+    }
+    cl_platform_id *platforms = (cl_platform_id *) malloc(sizeof (cl_platform_id) * nPlatforms);
+    err = clGetPlatformIDs(nPlatforms, platforms, NULL);
+    CHECK_ERROR(err);
+
+    cl_uint nDevices = 1;
+    char platformName[100];
+    err = clGetPlatformInfo(platforms[platform], CL_PLATFORM_VENDOR, sizeof (platformName), platformName, NULL);
+    CHECK_ERROR(err);
+    fprintf(stderr, "Platform Chosen : %s\n", platformName);
+
+
+	//IF given device ID, use this, and disregard -t parameter if given
+	if(device!=-1){
+		err = clGetDeviceIDs(platforms[platform], CL_DEVICE_TYPE_ALL, 0, NULL, &nDevices);
+		fprintf(stderr, "Number of available devices: %d\n", nDevices);
+    	if (nDevices <= 0) {
+        	fprintf(stderr, "No OpenCL Device found. Exiting.\n");
+        	exit(0);
+    	}
+		if (device < 0 || device >= nDevices) // platform ID out of range
+    	{
+        	fprintf(stderr, "Device index %d is out of range. \n", device);
+        	exit(-4);
+    	}
+    	devices = (cl_device_id *) malloc(sizeof (cl_device_id) * nDevices);
+		err = clGetDeviceIDs(platforms[platform], CL_DEVICE_TYPE_ALL, nDevices, devices, NULL);
+    	err = clGetDeviceInfo(devices[device], CL_DEVICE_NAME, sizeof (DeviceName), DeviceName, NULL);
+    	CHECK_ERROR(err);
+	}
+	//OTHERWISE, check at the device type parameter
+	else{
+		// query devices
+		err = clGetDeviceIDs(platforms[platform], dev_type, 0, NULL, &nDevices);
+		if(err == CL_DEVICE_NOT_FOUND)
+		{
+			fprintf(stderr,"No supported device of requested type found. Falling back to CPU.\n");
+			dev_type = CL_DEVICE_TYPE_CPU;
+			err = clGetDeviceIDs(platforms[platform], dev_type, 0, NULL, &nDevices);
+			if(err == CL_DEVICE_NOT_FOUND){
+				fprintf(stderr, "No CPU device available in this platform. Please, check your available OpenCL devices.\n"); 
+				exit(-4);
+			}
+		}
+		CHECK_ERROR(err);
+		fprintf(stderr, "Number of available devices: %d\n", nDevices);
+    	if (nDevices <= 0) {
+        	fprintf(stderr, "No OpenCL Device found. Exiting.\n");
+        	exit(0);
+    	}
+		//if (device < 0 || device >= nDevices) // platform ID out of range
+    	//{
+       	//	fprintf(stderr, "Device index %d is out of range. \n", device);
+        //	exit(-4);
+    	//}
+    	devices = (cl_device_id *) malloc(sizeof (cl_device_id) * nDevices);
+    	err = clGetDeviceIDs(platforms[platform], dev_type, nDevices, devices, NULL);
+    	//Get the first available device of requested type
+    	err = clGetDeviceInfo(devices[0], CL_DEVICE_NAME, sizeof (DeviceName), DeviceName, NULL);
+    	device=0;
+    	CHECK_ERROR(err);	
+	}
+	    
+    //Return
+    fprintf(stderr, "Device Chosen : %s\n", DeviceName);
+    return devices[device];
+}
+cl_program ocdBuildProgramFromFile(cl_context context, cl_device_id device_id, const char* kernel_file_name)
+{
+	cl_int err;
+	cl_program program;
+	size_t kernelLength;
+	char* kernelSource;
+	FILE* kernel_fp;
+	size_t items_read;
+	const char* kernel_file_mode;
+
+	if (_deviceType == 3) //FPGA
+		kernel_file_mode = "rb";
+	else //CPU or GPU or MIC
+		kernel_file_mode = "r";
+
+	kernel_fp = fopen(kernel_file_name, kernel_file_mode);
+	if(kernel_fp == NULL){
+		fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Cannot open kernel file!");
+		exit(-1);
+	}
+	fseek(kernel_fp, 0, SEEK_END);
+	kernelLength = (size_t) ftell(kernel_fp);
+	kernelSource = (char *)malloc(sizeof(char)*kernelLength);
+	if(kernelSource == NULL){
+		fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Heap Overflow! Cannot allocate space for kernelSource.");
+		exit(-1);
+	}
+	rewind(kernel_fp);
+	items_read = fread((void *) kernelSource, kernelLength, 1, kernel_fp);
+	if(items_read != 1){
+		fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Error reading from kernelFile");
+		exit(-1);
+	}
+	fclose(kernel_fp);
+
+	/* Create the compute program from the source buffer */
+	if (_deviceType == 3) //use Altera FPGA
+		program = clCreateProgramWithBinary(context,1,&device_id,&kernelLength,(const unsigned char**)&kernelSource,NULL,&err);
+	else //CPU or GPU or MIC
+		program = clCreateProgramWithSource(context, 1, (const char **) &kernelSource, &kernelLength, &err);
+	CHKERR(err, "common_ocl.ocdBuildProgramFromFile() - Failed to create a compute program!");
+
+	/* Build the program executable */
+	if (_deviceType == 3) //use Altera FPGA
+		err = clBuildProgram(program,1,&device_id,"-DOPENCL -I.",NULL,NULL);
+	else
+		err = clBuildProgram(program, 0, NULL, "-DOPENCL -I.", NULL, NULL);
+	
+	if (err == CL_BUILD_PROGRAM_FAILURE)
+	{
+		char *buildLog;
+		size_t logLen;
+		err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &logLen);
+		buildLog = (char *) malloc(sizeof(char)*logLen);
+		if(buildLog == NULL){
+			fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Heap Overflow! Cannot allocate space for buildLog.");
+			exit(-1);
+		}
+		err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, logLen, (void *) buildLog, NULL);
+		fprintf(stderr, "CL Error %d: Failed to build program! Log:\n%s", err, buildLog);
+		free(buildLog);
+		exit(1);
+	}
+	CHKERR(err,"common_ocl.ocdBuildProgramFromFile() - Failed to build program!");
+
+	free(kernelSource); /* Free kernel source */
+	return program;
+}
+void setup_device(int platform, int device){
+    cl_int err;
+    cl_int dev_type;
+
+    device_id = _ocd_get_device(platform, device, dev_type);
+
+    // Create a compute context
+    context = clCreateContext(0, 1, &device_id, NULL, NULL, &err);
+    CHKERR(err, "Failed to create a compute context!");
+
+    // Create a command queue
+    cmd_queue = clCreateCommandQueue(context, device_id, 0, &err);
+    CHKERR(err, "Failed to create a command queue!");
+
+    prog = ocdBuildProgramFromFile(context, device_id, kernel_file);
 }
 
 static int shutdown()
@@ -56,14 +208,14 @@ static int shutdown()
     // release resources
     if( cmd_queue ) clReleaseCommandQueue( cmd_queue );
     if( context ) clReleaseContext( context );
-    if( device_list ) delete[] device_list;
+    // if( device_list ) delete[] device_list;
 
     // reset all variables
     cmd_queue = 0;
     context = 0;
-    device_list = 0;
-    num_devices = 0;
-    device_type = 0;
+    // device_list = 0;
+    // num_devices = 0;
+    // device_type = 0;
 
     return 0;
 }
@@ -100,29 +252,13 @@ size_t* default_wg_sizes(unsigned int* num_wg_sizes,const size_t max_wg_size, si
 }
 
 
-void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out) {
+void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out, int platform_idx, int device_idx) {
     int sourcesize = 1024*1024;
-    char * source = (char *)calloc(sourcesize, sizeof(char));
-    if(!source) { fprintf(stderr, "ERROR: calloc(%d) failed\n", sourcesize); return; }
+    setup_device(platform_idx, device_idx);
 
     // read the kernel core source
     char * kernel_csr_src  = "csr_ocl";
-    char * tempchar = "./spmv_kernel.cl";
-    FILE * fp = fopen(tempchar, "rb");
-    if(!fp) { fprintf(stderr, "ERROR: unable to open '%s'\n", tempchar); return; }
-    fread(source + strlen(source), sourcesize, 1, fp);
-    fclose(fp);
-
-    int use_gpu = 0;
-    if(initialize(use_gpu)) return;
-
-    // compile kernel
     cl_int err = 0;
-    const char * slist[2] = { source, 0 };
-    cl_program prog = clCreateProgramWithSource(context, 1, slist, NULL, &err);
-    if(err != CL_SUCCESS) { fprintf(stderr, "ERROR: clCreateProgramWithSource() => %d\n", err); return; }
-    err = clBuildProgram(prog, 0, NULL, NULL, NULL, NULL);
-    if(err != CL_SUCCESS) { fprintf(stderr, "ERROR: clBuildProgram() => %d\n", err); return; }
 
     cl_kernel kernel_csr;
     kernel_csr = clCreateKernel(prog, kernel_csr_src, &err);
@@ -170,7 +306,7 @@ void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out
     unsigned int num_wg_sizes=0;
     size_t max_wg_size;
 
-    err = clGetKernelWorkGroupInfo(kernel_csr, device_list[0], CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), (void *) &max_wg_size, NULL);
+    err = clGetKernelWorkGroupInfo(kernel_csr, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), (void *) &max_wg_size, NULL);
     if(err) fprintf(stderr, "Failed to retrieve kernel work group info!");
     // all kernels have same max workgroup size
     wg_sizes = default_wg_sizes(&num_wg_sizes,max_wg_size,global_size);
@@ -192,28 +328,10 @@ void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out
     shutdown();
 }
 
-/**
- * Sparse Matrix-Vector Multiply
- *
- * Multiplies csr matrix by vector x, adds vector y, and stores output in vector out
- */
-/*void spmv_csr_cpu(const csr_matrix* csr, const float* x, const float* y, float* out) {
-    unsigned int row,row_start,row_end,jj;
-    float sum = 0;
-    for(row=0; row < csr->num_rows; row++) {
-        sum = y[row];
-        row_start = csr->Ap[row];
-        row_end   = csr->Ap[row+1];
-
-        for (jj = row_start; jj < row_end; jj++){
-            sum += csr->Ax[jj] * x[csr->Aj[jj]];
-        }
-        out[row] = sum;
-    }
-}*/
-
 static struct option long_options[] = {
     /* name, has_arg, flag, val */
+    {"platform", 1, NULL, 'p'},
+    {"device", 1, NULL, 'c'},
     {"stddev", 1, NULL, 's'},
     {"density", 1, NULL, 'd'},
     {"size", 1, NULL, 'n'},
@@ -227,9 +345,17 @@ int main(int argc, char *argv[]){
     unsigned long seed = 10000;
     float *v;
     stopwatch sw;
+    int platform_idx =0; 
+    int device_idx = 0;
 
-    while ((opt = getopt_long(argc, argv, "s:d:n:", long_options, &option_index)) != -1){
+    while ((opt = getopt_long(argc, argv, "s:d:n:p:c:", long_options, &option_index)) != -1){
         switch(opt){
+        case 'p':
+            platform_idx = atoi(optarg);
+            break;
+        case 'c':
+            device_idx = atoi(optarg);
+            break;
         case 's':
             normal_stdev = atof(optarg);
             break;
@@ -240,21 +366,19 @@ int main(int argc, char *argv[]){
             dim  = atoi(optarg);
             break ;
         default:
-            fprintf(stderr, "Usage: %s [-s stddev] [-d density] [-n dimension]", argv[0]);
+            fprintf(stderr, "Usage: %s [-p platform] [-c device] [-s stddev] [-d density] [-n dimension]", argv[0]);
             break;
         }
     }
 
     float *sum = (float *) calloc(dim, sizeof(float));
     float *result = (float *) calloc(dim, sizeof(float));
-    //memset(sum, 0.0, sizeof(sum));
-    //memset(result, 0.0, sizeof(result));
 
     csr_matrix sm =  rand_csr(dim, density, normal_stdev, &seed, stderr);
     create_vector_from_random(&v, dim);
 
     stopwatch_start(&sw);
-    spmv_csr_cpu(&sm,v,sum, result);
+    spmv_csr_cpu(&sm,v,sum, result, platform_idx, device_idx);
     stopwatch_stop(&sw);
 
     fprintf(stderr, "The first value of the result is %lf\n", result[0]);

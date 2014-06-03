@@ -229,5 +229,8 @@ function webclPR(platformIdx, deviceIdx, n, iter, thresh, divisor){
 
     console.log("T reached "+ t+ " at max dif " + max_diff + "\n");
     console.log("The total time taken for a random web of" + n + "pages is " +(t2-t1)/1000 + " seconds\n");
+
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }
-webclPR(0, 0);

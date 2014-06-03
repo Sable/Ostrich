@@ -8,9 +8,10 @@ SIZE = "1024"
 ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
 C_RUN_ARGUMENT = "-s "$(SIZE)
 JS_RUN_ARGUMENT = "ludRun("$(SIZE)")"
+WEBCL_CALL = "webclLUD("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
 FILENAME = "lud"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -73,11 +74,17 @@ build/opencl/lud:
 
 build/opencl/run.sh: build/opencl build/opencl/lud
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./lud -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./lud -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/lud.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/lud.js
 
 clean:
 	rm -rf build

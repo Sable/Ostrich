@@ -17,6 +17,7 @@
 
 #include <stdio.h>									// (in path known to compiler)	needed by printf
 #include <stdlib.h>									// (in path known to compiler)	needed by malloc, free
+#include <getopt.h>
 
 //======================================================================================================================================================150
 //	HEADER
@@ -42,6 +43,16 @@
 //	End
 //======================================================================================================================================================150
 
+static struct option long_options[] = {
+    /* name, has_arg, flag, val */
+    {"platform", 1, NULL, 'p'},
+    {"device", 1, NULL, 'd'},
+    {"niter", 1, NULL, 'n'},
+    {"lambda", 1, NULL, 'l'},
+    {0,0,0,0}
+};
+
+
 //========================================================================================================================================================================================================200
 //	MAIN FUNCTION
 //========================================================================================================================================================================================================200
@@ -54,6 +65,8 @@ main(	int argc,
 	// 	VARIABLES
 	//======================================================================================================================================================150
 
+	int opt, option_index=0;
+	int platform_idx=0, device_idx=0;
 	// time
 	long long time0;
 	long long time1;
@@ -95,13 +108,25 @@ main(	int argc,
 	//	INPUT ARGUMENTS
 	//======================================================================================================================================================150
 
-	if(argc != 3) {
-		fprintf(stderr, "ERROR: wrong number of arguments\n");
-		return 0;
-	} else {
-		niter = atoi(argv[1]);
-		lambda = atof(argv[2]);
-	}
+	while ((opt = getopt_long(argc, argv, "d:n:p:l:", long_options, &option_index)) != -1) {
+        switch(opt){
+        case 'p':
+            platform_idx = atoi(optarg);
+            break;
+        case 'd':
+            device_idx = atoi(optarg);
+            break;
+        case 'n':
+            niter = atoi(optarg);
+            break;
+        case 'l':
+            lambda =  atof(optarg);
+            break;
+        default:
+            fprintf(stderr, "Usage: %s [-p platform] [-d device] [-n niter] [-l lambda]", argv[0]);
+            break;
+        }
+    }
 
 	//====================================================================================================100
 	// 	READ IMAGE (SIZE OF IMAGE HAS TO BE KNOWN)
@@ -171,7 +196,7 @@ main(	int argc,
 								jW,
 								iter,											// primary loop
 								mem_size_i,
-								mem_size_j);
+								mem_size_j, platform_idx, device_idx);
 
 	time1 = get_time();
 

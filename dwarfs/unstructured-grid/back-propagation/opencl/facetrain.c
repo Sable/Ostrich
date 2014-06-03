@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <math.h>
 #include "backprop.h"
 #include "omp.h"
@@ -9,6 +10,16 @@ extern char *strcpy();
 extern void exit();
 
 int layer_size = 0;
+int platform_idx = 0, device_idx = 0;
+
+static struct option long_options[] = {
+    /* name, has_arg, flag, val */
+    {"platform", 1, NULL, 'p'},
+    {"device", 1, NULL, 'd'},
+    {"layer_size", 1, NULL, 'n'},
+    {0,0,0,0}
+};
+
 
 void backprop_face()
 {
@@ -25,7 +36,7 @@ void backprop_face()
     fprintf(stderr, "Starting training kernel\n");
 
     stopwatch_start(&sw);
-    bpnn_train_kernel(net, &out_err, &hid_err);
+    bpnn_train_kernel(net, &out_err, &hid_err, platform_idx, device_idx);
     stopwatch_stop(&sw);
 
     bpnn_free(net);
@@ -37,17 +48,28 @@ int setup(int argc, char **argv)
 {
 
     int seed;
-
-    if (argc!=2){
-        fprintf(stderr, "usage: backprop <num of input elements>\n");
-        exit(0);
+    int opt, option_index=0;
+    while ((opt = getopt_long(argc, argv, "d:n:p:", long_options, &option_index)) != -1) {
+        switch(opt){
+        case 'p':
+            platform_idx = atoi(optarg);
+            break;
+        case 'd':
+            device_idx = atoi(optarg);
+            break;
+        case 'n':
+            layer_size = atoi(optarg);
+            break;
+        default:
+            fprintf(stderr, "Usage: %s [-p platform] [-d device] [-n layer_size]", argv[0]);
+            break;
+        }
     }
-    layer_size = atoi(argv[1]);
+
     if (layer_size%16!=0){
         fprintf(stderr, "The number of input points must be divided by 16\n");
         exit(0);
     }
-
 
     seed = 7;
     bpnn_initialize(seed);

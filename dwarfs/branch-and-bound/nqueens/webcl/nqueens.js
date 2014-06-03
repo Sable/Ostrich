@@ -113,7 +113,8 @@ function solverInformation(device, queue){
   solver["maxThreads"] = 0;
  
   var exts = device.getInfo(WebCL.DEVICE_EXTENSIONS);
-  if(exts.search("cl_khr_global_int32_base_atomics") != -1){
+
+  if(exts.search("cl_khr_global_int32_base_atomics") != -1 && !solver["cpu"]){
     solver["enableAtomics"] = true;
   }
   if(exts.search("cl_khr_global_int32_base_atomics") != -1){
@@ -633,5 +634,7 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
 
     console.log("Solutions: " + solutionsFinal + " unique solutions: " + uniqueSolutionsFinal); 
     console.log("Total time elapsed is "+ (t2-t1)/1000+ " seconds");
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }
- // webclNQ(0, 0, 15);

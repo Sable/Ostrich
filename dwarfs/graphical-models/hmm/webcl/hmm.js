@@ -825,6 +825,9 @@ function webclBWAHmm(platformIdx, deviceIdx, v_, n_, s_, t_){
         console.log("Observations\tLog_likelihood\n");
         console.log(n + "\t");
         console.log(log_lik + "\n");
+        return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 
     } else if(v_model == 's'){
         /* Create observation sequence */
@@ -867,6 +870,9 @@ function webclBWAHmm(platformIdx, deviceIdx, v_, n_, s_, t_){
         console.log("Observations\tLog_likelihood\n");
         console.log(s +"\t");
         console.log(log_lik + "\n");
+        return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 
     } else if(v_model == 't')
     {
@@ -909,8 +915,9 @@ function webclBWAHmm(platformIdx, deviceIdx, v_, n_, s_, t_){
         console.log("Observations\tLog_likelihood\n");
         console.log(t + "\t");
         console.log(log_lik + "\n");
+        return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
     }
     return 0;
 }
-
-webclBWAHmm(0, 0, 'n');

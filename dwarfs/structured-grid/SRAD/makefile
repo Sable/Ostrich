@@ -9,11 +9,12 @@ LAMBDA = "1"
 ASMJS_RUN_ARGUMENT = "['"$(NB_REPETITIONS)"', '"$(LAMBDA)"'].concat(data)"
 C_RUN_ARGUMENT = $(NB_REPETITIONS)" "$(LAMBDA)
 JS_RUN_ARGUMENT = "runSRAD("$(NB_REPETITIONS)","$(LAMBDA)")"
+WEBCL_CALL = "webclsrad("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_REPETITIONS)","$(LAMBDA)")"
 FILENAME = "srad"
 
 PREAMBLE = "<script src=\"data.js\"><\/script>"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
 build/c:
 	mkdir -p build/c
@@ -75,17 +76,25 @@ build/opencl:
 
 
 build/opencl/srad:
-	g++ -O3 -Wall -o build/opencl/srad opencl/main.c opencl/util/timer/timer.c opencl/util/graphics/resize.c opencl/util/graphics/graphics.c opencl/kernel/kernel_gpu_opencl_wrapper.c opencl/util/opencl/opencl.c -I../../common/ -L -Llibm -lOpenCL
+	g++ -O3 -Wall -o build/opencl/srad opencl/main.c opencl/util/timer/timer.c opencl/util/graphics/resize.c opencl/util/graphics/graphics.c opencl/kernel/kernel_gpu_opencl_wrapper.c opencl/util/opencl/opencl.c -I../../common/ -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lOpenCL
 	cp opencl/kernel/*.cl build/opencl/kernel/
+	cp opencl/main.h build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/srad
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./srad -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./srad -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -n $(NB_REPETITIONS) -l $(LAMBDA)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 
 build/webcl:
 	mkdir -p build/webcl
+
+build/webcl/run.html: build/webcl
+	cp webcl/* build/webcl/
+	cp data/data.js build/webcl/data.js
+	mv build/webcl/index.html build/webcl/run.html
+	cat ../../utils/webcl/template >> build/webcl/srad.js
+	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/srad.js
 
 clean:
 	rm -rf build

@@ -65,7 +65,7 @@ function printM(mat, m, n, q){
     }
 }
 
-function webclsrad(niter,lambda, platformIdx, deviceIdx) {
+function webclsrad(platformIdx, deviceIdx, niter,lambda) {
     var programSourceId = "clsrad";
     var float_bytes = 4, int_bytes = 4;
 
@@ -266,6 +266,9 @@ function webclsrad(niter,lambda, platformIdx, deviceIdx) {
     }
 
     console.log("Time: " + ((t2-t1)/1000) + " s");
+    return { status: 1,
+             options: null,
+             time: (t2-t1) / 1000 };
 }
 
 
@@ -328,5 +331,3 @@ function writeImage() {
     /*ctx.clearRect(0, 0, Nc, Nr);
     ctx.putImageData(imageData, 0, 0);*/
 }
-
-webclsrad(500, 1, 0, 0);
