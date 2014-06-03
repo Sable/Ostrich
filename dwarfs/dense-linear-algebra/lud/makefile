@@ -73,7 +73,7 @@ build/opencl/lud:
 
 build/opencl/run.sh: build/opencl build/opencl/lud
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./lud -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -- $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./lud -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 build/webcl:
