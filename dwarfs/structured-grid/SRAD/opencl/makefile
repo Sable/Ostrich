@@ -1,4 +1,3 @@
-include make.config
 
 INC = -I$(OPENCL_INC) -I../../../common/
 LIB = -L$(OPENCL_LIB) -Llibm

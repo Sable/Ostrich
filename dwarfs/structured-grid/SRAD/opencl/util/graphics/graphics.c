@@ -39,11 +39,11 @@ extern "C" {
 //	WRITE FUNCTION
 //===============================================================================================================================================================================================================200
 
-void 
+void
 write_graphics(	char* filename,
-				fp* input, 
-				int data_rows, 
-				int data_cols, 
+				fp* input,
+				int data_rows,
+				int data_cols,
 				int major,
 				int data_range){
 
@@ -60,7 +60,7 @@ write_graphics(	char* filename,
 
 	fid = fopen(filename, "w");
 	if( fid == NULL ){
-		printf( "The file was not created/opened for writing\n" );
+		fprintf(stderr,  "The file was not created/opened for writing\n" );
 		return;
 	}
 
@@ -107,10 +107,10 @@ write_graphics(	char* filename,
 //	READ FUNCTION
 //===============================================================================================================================================================================================================200
 
-void 
+void
 read_graphics(	char* filename,
 				fp* input,
-				int data_rows, 
+				int data_rows,
 				int data_cols,
 				int major){
 
@@ -129,7 +129,7 @@ read_graphics(	char* filename,
 
 	fid = fopen(filename, "r");
 	if( fid == NULL ){
-		printf( "The file was not opened for reading\n" );
+		fprintf(stderr,  "The file was not opened for reading\n" );
 		return;
 	}
 
