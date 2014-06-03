@@ -6,6 +6,7 @@ import os
 import time
 import signal
 import contextlib
+import sys
 from optparse import OptionParser
 
 if os.uname()[0] == "Darwin":
@@ -90,7 +91,7 @@ class Benchmark(object):
         """Run the C benchmark.  Assume that there is a build/c/run.sh script
            that will feed all the correct parameters."""
         runner_script = ["sh", os.path.join("build", "c" if not opencl else "opencl", "run.sh")]
-        
+
         with cd(self.dir):
             for _ in xrange(self.iters):
                 stdout, _ = subprocess.Popen(runner_script,
@@ -162,7 +163,7 @@ def main():
 
     benchmarks_to_run = [
         Benchmark(name, BENCHMARK_INFO[name], OS, options.iters)
-        for name in options.benchmark_csv.strip().split(",")
+        for name in sorted(options.benchmark_csv.strip().split(","))
     ]
     environments_to_use = sorted(map(ENVIRONMENTS.get, options.env_csv.strip().split(",")))
 
@@ -172,6 +173,7 @@ def main():
         for env in environments_to_use:
             if b.env.can_use(env[1]):
                 print ",".join([b.name, env[0], env[1], ",".join(map(str, env[2](b)))])
+                sys.stdout.flush()
 
 if __name__ == "__main__":
     main()

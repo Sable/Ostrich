@@ -162,6 +162,7 @@ function backprop_face(layer_size) {
     var time0,time1;
     var expected_layer_size = 2850000;
     var expected_sum_of_hidden_weights = 10.855641469359398;
+    var eps = 0.00001;
     net = bpnn_create(layer_size, 16, 1); // (16, 1 can not be changed)
     //entering the training kernel, only one iteration
     time0 = performance.now();
@@ -175,7 +176,8 @@ function backprop_face(layer_size) {
                 sum_of_hidden_weights += net.hidden_weights[i*(net.output_n + 1) + j];
             }
         }
-        if (sum_of_hidden_weights !== expected_sum_of_hidden_weights) {
+        if (!(expected_sum_of_hidden_weights - eps < sum_of_hidden_weights && 
+              sum_of_hidden_weights < expected_sum_of_hidden_weights + eps)) {
             throw new Error("ERROR: expected a sum of hidden weights of '" + expected_sum_of_hidden_weights + "'" +
                             " for an input size of '" + expected_layer_size + "'" +
                             " but got '" + sum_of_hidden_weights + "' instead");

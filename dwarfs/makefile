@@ -14,8 +14,7 @@ BENCHMARKS = \
     unstructured-grid/back-propagation/
 
 all:
-	for d in $(BENCHMARKS); do cd $$d && $(MAKE) && cd ../..; done
+	for d in $(BENCHMARKS); do $(MAKE) -C $$d; done
 
 clean:
-	for d in $(BENCHMARKS); do cd $$d && $(MAKE) clean && cd ../..; done
-
+	for d in $(BENCHMARKS); do $(MAKE) -C $$d clean; done
