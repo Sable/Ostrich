@@ -20,7 +20,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 							int* jW,
 							int iter,											// primary loop
 							int mem_size_i,
-							int mem_size_j);
+							int mem_size_j, int platform, int device);
 
 //========================================================================================================================================================================================================200
 //	END

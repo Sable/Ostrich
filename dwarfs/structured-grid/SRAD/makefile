@@ -75,12 +75,13 @@ build/opencl:
 
 
 build/opencl/srad:
-	g++ -O3 -Wall -o build/opencl/srad opencl/main.c opencl/util/timer/timer.c opencl/util/graphics/resize.c opencl/util/graphics/graphics.c opencl/kernel/kernel_gpu_opencl_wrapper.c opencl/util/opencl/opencl.c -I../../common/ -L -Llibm -lOpenCL
+	g++ -O3 -Wall -o build/opencl/srad opencl/main.c opencl/util/timer/timer.c opencl/util/graphics/resize.c opencl/util/graphics/graphics.c opencl/kernel/kernel_gpu_opencl_wrapper.c opencl/util/opencl/opencl.c -I../../common/ -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lOpenCL
 	cp opencl/kernel/*.cl build/opencl/kernel/
+	cp opencl/main.h build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/srad
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
-	echo "./srad -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) $(C_RUN_ARGUMENT)" >> build/opencl/run.sh
+	echo "./srad -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -n $(NB_REPETITIONS) -l $(LAMBDA)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
 
 

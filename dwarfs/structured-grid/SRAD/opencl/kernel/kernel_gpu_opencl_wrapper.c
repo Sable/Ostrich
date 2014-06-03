@@ -37,6 +37,197 @@
 //	END
 //======================================================================================================================================================150
 
+
+int _deviceType;
+
+#define CHKERR(err, str) \
+    if (err != CL_SUCCESS) \
+    { \
+        fprintf(stdout, "CL Error %d: %s\n", err, str); \
+        exit(1); \
+    }
+#define CHECK_ERROR(err) {if (err != CL_SUCCESS) { \
+	fprintf(stderr, "Error: %d\n", err);\
+	exit(1); \
+}}
+
+cl_command_queue cmd_queue;
+cl_context context;
+cl_device_id device_id;
+cl_program prog;
+
+const char* kernel_file =  "./kernel/kernel_gpu_opencl.cl";
+
+cl_device_id _ocd_get_device(int platform, int device, cl_int dev_type)
+{
+    cl_int err;
+    cl_uint nPlatforms = 1;
+    char DeviceName[100];
+    cl_device_id* devices;
+    err = clGetPlatformIDs(0, NULL, &nPlatforms);
+    CHECK_ERROR(err);
+
+    if (nPlatforms <= 0) {
+        fprintf(stderr, "No OpenCL platforms found. Exiting.\n");
+        exit(0);
+    }
+    if (platform < 0 || platform >= nPlatforms) // platform ID out of range
+    {
+        fprintf(stderr, "Platform index %d is out of range. \n", platform);
+        exit(-4);
+    }
+    cl_platform_id *platforms = (cl_platform_id *) malloc(sizeof (cl_platform_id) * nPlatforms);
+    err = clGetPlatformIDs(nPlatforms, platforms, NULL);
+    CHECK_ERROR(err);
+
+    cl_uint nDevices = 1;
+    char platformName[100];
+    err = clGetPlatformInfo(platforms[platform], CL_PLATFORM_VENDOR, sizeof (platformName), platformName, NULL);
+    CHECK_ERROR(err);
+    fprintf(stderr, "Platform Chosen : %s\n", platformName);
+
+
+	//IF given device ID, use this, and disregard -t parameter if given
+	if(device!=-1){
+		err = clGetDeviceIDs(platforms[platform], CL_DEVICE_TYPE_ALL, 0, NULL, &nDevices);
+		fprintf(stderr, "Number of available devices: %d\n", nDevices);
+    	if (nDevices <= 0) {
+        	fprintf(stderr, "No OpenCL Device found. Exiting.\n");
+        	exit(0);
+    	}
+		if (device < 0 || device >= nDevices) // platform ID out of range
+    	{
+        	fprintf(stderr, "Device index %d is out of range. \n", device);
+        	exit(-4);
+    	}
+    	devices = (cl_device_id *) malloc(sizeof (cl_device_id) * nDevices);
+		err = clGetDeviceIDs(platforms[platform], CL_DEVICE_TYPE_ALL, nDevices, devices, NULL);
+    	err = clGetDeviceInfo(devices[device], CL_DEVICE_NAME, sizeof (DeviceName), DeviceName, NULL);
+    	CHECK_ERROR(err);
+	}
+	//OTHERWISE, check at the device type parameter
+	else{
+		// query devices
+		err = clGetDeviceIDs(platforms[platform], dev_type, 0, NULL, &nDevices);
+		if(err == CL_DEVICE_NOT_FOUND)
+		{
+			fprintf(stderr,"No supported device of requested type found. Falling back to CPU.\n");
+			dev_type = CL_DEVICE_TYPE_CPU;
+			err = clGetDeviceIDs(platforms[platform], dev_type, 0, NULL, &nDevices);
+			if(err == CL_DEVICE_NOT_FOUND){
+				fprintf(stderr, "No CPU device available in this platform. Please, check your available OpenCL devices.\n"); 
+				exit(-4);
+			}
+		}
+		CHECK_ERROR(err);
+		fprintf(stderr, "Number of available devices: %d\n", nDevices);
+    	if (nDevices <= 0) {
+        	fprintf(stderr, "No OpenCL Device found. Exiting.\n");
+        	exit(0);
+    	}
+		//if (device < 0 || device >= nDevices) // platform ID out of range
+    	//{
+       	//	fprintf(stderr, "Device index %d is out of range. \n", device);
+        //	exit(-4);
+    	//}
+    	devices = (cl_device_id *) malloc(sizeof (cl_device_id) * nDevices);
+    	err = clGetDeviceIDs(platforms[platform], dev_type, nDevices, devices, NULL);
+    	//Get the first available device of requested type
+    	err = clGetDeviceInfo(devices[0], CL_DEVICE_NAME, sizeof (DeviceName), DeviceName, NULL);
+    	device=0;
+    	CHECK_ERROR(err);	
+	}
+	    
+    //Return
+    fprintf(stderr, "Device Chosen : %s\n", DeviceName);
+    return devices[device];
+}
+cl_program ocdBuildProgramFromFile(cl_context context, cl_device_id device_id, const char* kernel_file_name)
+{
+	cl_int err;
+	cl_program program;
+	size_t kernelLength;
+	char* kernelSource;
+	FILE* kernel_fp;
+	size_t items_read;
+	const char* kernel_file_mode;
+
+	if (_deviceType == 3) //FPGA
+		kernel_file_mode = "rb";
+	else //CPU or GPU or MIC
+		kernel_file_mode = "r";
+
+	kernel_fp = fopen(kernel_file_name, kernel_file_mode);
+	if(kernel_fp == NULL){
+		fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Cannot open kernel file!");
+		exit(-1);
+	}
+	fseek(kernel_fp, 0, SEEK_END);
+	kernelLength = (size_t) ftell(kernel_fp);
+	kernelSource = (char *)malloc(sizeof(char)*kernelLength);
+	if(kernelSource == NULL){
+		fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Heap Overflow! Cannot allocate space for kernelSource.");
+		exit(-1);
+	}
+	rewind(kernel_fp);
+	items_read = fread((void *) kernelSource, kernelLength, 1, kernel_fp);
+	if(items_read != 1){
+		fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Error reading from kernelFile");
+		exit(-1);
+	}
+	fclose(kernel_fp);
+
+	/* Create the compute program from the source buffer */
+	if (_deviceType == 3) //use Altera FPGA
+		program = clCreateProgramWithBinary(context,1,&device_id,&kernelLength,(const unsigned char**)&kernelSource,NULL,&err);
+	else //CPU or GPU or MIC
+		program = clCreateProgramWithSource(context, 1, (const char **) &kernelSource, &kernelLength, &err);
+	CHKERR(err, "common_ocl.ocdBuildProgramFromFile() - Failed to create a compute program!");
+
+	/* Build the program executable */
+	if (_deviceType == 3) //use Altera FPGA
+		err = clBuildProgram(program,1,&device_id,"-DOPENCL -I.",NULL,NULL);
+	else
+		err = clBuildProgram(program, 0, NULL, "-DOPENCL -I.", NULL, NULL);
+	
+	if (err == CL_BUILD_PROGRAM_FAILURE)
+	{
+		char *buildLog;
+		size_t logLen;
+		err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &logLen);
+		buildLog = (char *) malloc(sizeof(char)*logLen);
+		if(buildLog == NULL){
+			fprintf(stderr,"common_ocl.ocdBuildProgramFromFile() - Heap Overflow! Cannot allocate space for buildLog.");
+			exit(-1);
+		}
+		err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, logLen, (void *) buildLog, NULL);
+		fprintf(stderr, "CL Error %d: Failed to build program! Log:\n%s", err, buildLog);
+		free(buildLog);
+		exit(1);
+	}
+	CHKERR(err,"common_ocl.ocdBuildProgramFromFile() - Failed to build program!");
+
+	free(kernelSource); /* Free kernel source */
+	return program;
+}
+void setup_device(int platform, int device){
+    cl_int err;
+    cl_int dev_type;
+
+    device_id = _ocd_get_device(platform, device, dev_type);
+
+    // Create a compute context
+    context = clCreateContext(0, 1, &device_id, NULL, NULL, &err);
+    CHKERR(err, "Failed to create a compute context!");
+
+    // Create a command queue
+    cmd_queue = clCreateCommandQueue(context, device_id, 0, &err);
+    CHKERR(err, "Failed to create a command queue!");
+
+    prog = ocdBuildProgramFromFile(context, device_id, kernel_file);
+}
+
+
 //========================================================================================================================================================================================================200
 //	KERNEL_GPU_CUDA_WRAPPER FUNCTION
 //========================================================================================================================================================================================================200
@@ -55,163 +246,15 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 							int* jW,
 							int iter,											// primary loop
 							int mem_size_i,
-							int mem_size_j)
+							int mem_size_j, int platform, int device)
 {
 
 	//======================================================================================================================================================150
-	//	GPU SETUP
+	// SETUP DEVICE
 	//======================================================================================================================================================150
 
-	//====================================================================================================100
-	//	COMMON VARIABLES
-	//====================================================================================================100
-
-	// common variables
-	cl_int error;
-
-	//====================================================================================================100
-	//	GET PLATFORMS (Intel, AMD, NVIDIA, based on provided library), SELECT ONE
-	//====================================================================================================100
-
-	// Get the number of available platforms
-	cl_uint num_platforms;
-	error = clGetPlatformIDs(	0,
-								NULL,
-								&num_platforms);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	// Get the list of available platforms
-	cl_platform_id *platforms = (cl_platform_id *)malloc(sizeof(cl_platform_id) * num_platforms);
-	error = clGetPlatformIDs(	num_platforms,
-								platforms,
-								NULL);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	// Select the 1st platform
-	cl_platform_id platform = platforms[0];
-
-	// Get the name of the selected platform and print it (if there are multiple platforms, choose the first one)
-	char pbuf[100];
-	error = clGetPlatformInfo(	platform,
-								CL_PLATFORM_VENDOR,
-								sizeof(pbuf),
-								pbuf,
-								NULL);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-	fprintf(stderr, "Platform: %s\n", pbuf);
-
-	//====================================================================================================100
-	//	CREATE CONTEXT FOR THE PLATFORM
-	//====================================================================================================100
-
-	// Create context properties for selected platform
-	cl_context_properties context_properties[3] = {	CL_CONTEXT_PLATFORM,
-													(cl_context_properties) platform,
-													0};
-
-	// Create context for selected platform being GPU
-	cl_context context;
-	context = clCreateContextFromType(	context_properties,
-										CL_DEVICE_TYPE_ALL,
-										NULL,
-										NULL,
-										&error);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	//====================================================================================================100
-	//	GET DEVICES AVAILABLE FOR THE CONTEXT, SELECT ONE
-	//====================================================================================================100
-
-	// Get the number of devices (previousely selected for the context)
-	size_t devices_size;
-	error = clGetContextInfo(	context,
-								CL_CONTEXT_DEVICES,
-								0,
-								NULL,
-								&devices_size);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	// Get the list of devices (previousely selected for the context)
-	cl_device_id *devices = (cl_device_id *) malloc(devices_size);
-	error = clGetContextInfo(	context,
-								CL_CONTEXT_DEVICES,
-								devices_size,
-								devices,
-								NULL);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	// Select the first device (previousely selected for the context) (if there are multiple devices, choose the first one)
-	cl_device_id device;
-	device = devices[0];
-
-	// Get the name of the selected device (previousely selected for the context) and print it
-	error = clGetDeviceInfo(device,
-							CL_DEVICE_NAME,
-							sizeof(pbuf),
-							pbuf,
-							NULL);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-	fprintf(stderr, "Device: %s\n", pbuf);
-
-	//====================================================================================================100
-	//	CREATE COMMAND QUEUE FOR THE DEVICE
-	//====================================================================================================100
-
-	// Create a command queue
-	cl_command_queue command_queue;
-	command_queue = clCreateCommandQueue(	context,
-											device,
-											0,
-											&error);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	//====================================================================================================100
-	//	CREATE PROGRAM, COMPILE IT
-	//====================================================================================================100
-
-	// Load kernel source code from file
-	const char *source = load_kernel_source("./kernel/kernel_gpu_opencl.cl");
-	size_t sourceSize = strlen(source);
-
-	// Create the program
-	cl_program program = clCreateProgramWithSource(	context,
-													1,
-													&source,
-													&sourceSize,
-													&error);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	// Compile the program
-	error = clBuildProgram(	program,
-							1,
-							&device,
-							"-I./",
-							NULL,
-							NULL);
-	// Print warnings and errors from compilation
-	static char log[65536];
-	memset(log, 0, sizeof(log));
-	clGetProgramBuildInfo(	program,
-							device,
-							CL_PROGRAM_BUILD_LOG,
-							sizeof(log)-1,
-							log,
-							NULL);
-	fprintf(stderr, "-----OpenCL Compiler Output-----\n");
-	if (strstr(log,"warning:") || strstr(log, "error:"))
-		fprintf(stderr, "<<<<\n%s\n>>>>\n", log);
-	fprintf(stderr, "--------------------------------\n");
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
+    cl_int error;
+	setup_device(platform, device);
 
 	//====================================================================================================100
 	//	CREATE Kernels
@@ -219,7 +262,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 
 	// Extract kernel
 	cl_kernel extract_kernel;
-	extract_kernel = clCreateKernel(program,
+	extract_kernel = clCreateKernel(prog,
 									"extract_kernel",
 									&error);
 	if (error != CL_SUCCESS)
@@ -227,7 +270,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 
 	// Prepare kernel
 	cl_kernel prepare_kernel;
-	prepare_kernel = clCreateKernel(program,
+	prepare_kernel = clCreateKernel(prog,
 									"prepare_kernel",
 									&error);
 	if (error != CL_SUCCESS)
@@ -235,7 +278,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 
 	// Reduce kernel
 	cl_kernel reduce_kernel;
-	reduce_kernel = clCreateKernel(	program,
+	reduce_kernel = clCreateKernel(	prog,
 									"reduce_kernel",
 									&error);
 	if (error != CL_SUCCESS)
@@ -243,7 +286,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 
 	// SRAD kernel
 	cl_kernel srad_kernel;
-	srad_kernel = clCreateKernel(	program,
+	srad_kernel = clCreateKernel(	prog,
 									"srad_kernel",
 									&error);
 	if (error != CL_SUCCESS)
@@ -251,7 +294,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 
 	// SRAD2 kernel
 	cl_kernel srad2_kernel;
-	srad2_kernel = clCreateKernel(	program,
+	srad2_kernel = clCreateKernel(	prog,
 									"srad2_kernel",
 									&error);
 	if (error != CL_SUCCESS)
@@ -259,7 +302,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 
 	// Compress kernel
 	cl_kernel compress_kernel;
-	compress_kernel = clCreateKernel(	program,
+	compress_kernel = clCreateKernel(	prog,
 										"compress_kernel",
 										&error);
 	if (error != CL_SUCCESS)
@@ -429,7 +472,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	// Image
 	//====================================================================================================100
 
-	error = clEnqueueWriteBuffer(	command_queue,
+	error = clEnqueueWriteBuffer(	cmd_queue,
 									d_I,
 									1,
 									0,
@@ -445,7 +488,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	// coordinates
 	//====================================================================================================100
 
-	error = clEnqueueWriteBuffer(	command_queue,
+	error = clEnqueueWriteBuffer(	cmd_queue,
 									d_iN,
 									1,
 									0,
@@ -457,7 +500,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 
-	error = clEnqueueWriteBuffer(	command_queue,
+	error = clEnqueueWriteBuffer(	cmd_queue,
 									d_iS,
 									1,
 									0,
@@ -469,7 +512,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 
-	error = clEnqueueWriteBuffer(	command_queue,
+	error = clEnqueueWriteBuffer(	cmd_queue,
 									d_jE,
 									1,
 									0,
@@ -481,7 +524,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 
-	error = clEnqueueWriteBuffer(	command_queue,
+	error = clEnqueueWriteBuffer(	cmd_queue,
 									d_jW,
 									1,
 									0,
@@ -542,7 +585,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	//	launch kernel
 	//====================================================================================================100
 
-	error = clEnqueueNDRangeKernel(	command_queue,
+	error = clEnqueueNDRangeKernel(	cmd_queue,
 									extract_kernel,
 									1,
 									NULL,
@@ -834,7 +877,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 		//====================================================================================================100
 
 		// launch kernel
-		error = clEnqueueNDRangeKernel(	command_queue,
+		error = clEnqueueNDRangeKernel(	cmd_queue,
 										prepare_kernel,
 										1,
 										NULL,
@@ -886,7 +929,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 				fatal_CL(error, __LINE__);
 
 			// launch kernel
-			error = clEnqueueNDRangeKernel(	command_queue,
+			error = clEnqueueNDRangeKernel(	cmd_queue,
 											reduce_kernel,
 											1,
 											NULL,
@@ -921,7 +964,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 		}
 
 		// copy total sums to device
-		error = clEnqueueReadBuffer(command_queue,
+		error = clEnqueueReadBuffer(cmd_queue,
 									d_sums,
 									CL_TRUE,
 									0,
@@ -933,7 +976,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 		if (error != CL_SUCCESS)
 			fatal_CL(error, __LINE__);
 
-		error = clEnqueueReadBuffer(command_queue,
+		error = clEnqueueReadBuffer(cmd_queue,
 									d_sums2,
 									CL_TRUE,
 									0,
@@ -967,7 +1010,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 			fatal_CL(error, __LINE__);
 
 		// launch kernel
-		error = clEnqueueNDRangeKernel(	command_queue,
+		error = clEnqueueNDRangeKernel(	cmd_queue,
 										srad_kernel,
 										1,
 										NULL,
@@ -989,7 +1032,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 		//====================================================================================================100
 
 		// launch kernel
-		error = clEnqueueNDRangeKernel(	command_queue,
+		error = clEnqueueNDRangeKernel(	cmd_queue,
 										srad2_kernel,
 										1,
 										NULL,
@@ -1039,7 +1082,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	// launch kernel
 	//====================================================================================================100
 
-	error = clEnqueueNDRangeKernel(	command_queue,
+	error = clEnqueueNDRangeKernel(	cmd_queue,
 									compress_kernel,
 									1,
 									NULL,
@@ -1055,7 +1098,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	// synchronize
 	//====================================================================================================100
 
-	error = clFinish(command_queue);
+	error = clFinish(cmd_queue);
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 
@@ -1067,7 +1110,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	// 	COPY RESULTS BACK TO CPU
 	//======================================================================================================================================================150
 
-	error = clEnqueueReadBuffer(command_queue,
+	error = clEnqueueReadBuffer(cmd_queue,
 								d_I,
 								CL_TRUE,
 								0,
@@ -1107,7 +1150,7 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	error = clReleaseKernel(compress_kernel);
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
-	error = clReleaseProgram(program);
+	error = clReleaseProgram(prog);
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 
@@ -1153,10 +1196,10 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 		fatal_CL(error, __LINE__);
 
 	// OpenCL structures
-	error = clFlush(command_queue);
+	error = clFlush(cmd_queue);
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
-	error = clReleaseCommandQueue(command_queue);
+	error = clReleaseCommandQueue(cmd_queue);
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 	error = clReleaseContext(context);
