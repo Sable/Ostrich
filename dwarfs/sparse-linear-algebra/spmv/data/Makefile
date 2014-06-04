@@ -9,10 +9,10 @@ DEBUG          := YES
 PROFILE        := NO
 
 # ------------  name of the executable  ----------------------------------------
-EXECUTABLE      := spmv 
+EXECUTABLE      := generate 
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := csr_spmv.c ../common/common.c ../common/common_args_serial.c \
+SOURCES         := generate.c ../common/common.c ../common/common_args_serial.c \
  									 ../common/sparse_formats.c ../common/ziggurat.c ../../../common/common_rand.c
 
 # ------------  compiler  ------------------------------------------------------
@@ -111,7 +111,7 @@ endif
 				$(CXX) -c $(ALL_CFLAGS) $< -o $@
 
 clean:
-	-rm --force $(EXECUTABLE) $(OBJECTS) *~
+	-rm --force $(EXECUTABLE) $(OBJECTS) *~ data.*
 
 .PHONY: clean
 

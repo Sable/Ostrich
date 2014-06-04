@@ -7,11 +7,16 @@ EMOPTIONS = -s TOTAL_MEMORY=2000000000
 DIM = 100000
 DENSITY = 20000
 STDDEV = 0.01
-ASMJS_RUN_ARGUMENT = "'-n', $(DIM), '-s', $(STDDEV), '-d', $(DENSITY)"
-C_RUN_ARGUMENT = "-n $(DIM) -s $(STDDEV) -d $(DENSITY)"
-JS_RUN_ARGUMENT = "spmvRun($(DIM), $(DENSITY), $(STDDEV))"
+USE_GENERATED =true
+ifeq ($(USE_GENERATED),true)
+	GEN = -g
+endif
+ASMJS_RUN_ARGUMENT = "'-n', $(DIM), '-s', $(STDDEV), '-d', $(DENSITY), $(GEN))"
+C_RUN_ARGUMENT = "-n $(DIM) -s $(STDDEV) -d $(DENSITY) $(GEN)"
+JS_RUN_ARGUMENT = "spmvRun($(DIM), $(DENSITY), $(STDDEV), $(USE_GENERATED))"
 WEBCL_CALL = "spmvRun("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(DIM)", "$(DENSITY)", "$(STDDEV)")"
 FILENAME = "spmv"
+PREAMBLE = "<script src=\"data.js\"><\/script>"
 
 build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
 
@@ -33,6 +38,7 @@ build/c/spmv:	build/c \
 			 ../../common/common_rand.c \
 			 -Icommon \
 			 -I../../common \
+			 -Idata \
 			 -DSERIAL \
 			 -std=c99 \
 			 -lm -o build/c/spmv
@@ -73,9 +79,11 @@ build/js:
 
 build/js/spmv.js:
 	cp js/spmv.js build/js/$(FILENAME).js
+	cp data/data.js build/js/data.js
 
 build/js/run.html: build/js build/js/spmv.js
 	cat ../../utils/js/run_template.html > build/js/run.html
+	sed -i.bak s/\<\!--PREAMBLE--\>/$(PREAMBLE)/g build/js/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html
 

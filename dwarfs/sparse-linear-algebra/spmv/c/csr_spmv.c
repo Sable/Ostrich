@@ -4,6 +4,7 @@
 
 #include "../common/sparse_formats.h"
 #include "../common/common.h"
+#include "data.h"
 #include <getopt.h>
 #include <stdlib.h>
 /**
@@ -33,6 +34,7 @@ static struct option long_options[] = {
     {"stddev", 1, NULL, 's'},
     {"density", 1, NULL, 'd'},
     {"size", 1, NULL, 'n'},
+    {"use_generated", 0, NULL, 'g'},
     {0,0,0,0}
 };
 
@@ -43,8 +45,9 @@ int main(int argc, char *argv[]){
     unsigned long seed = 10000;
     float *v;
     stopwatch sw;
+    int use_generated=0;
 
-    while ((opt = getopt_long(argc, argv, "s:d:n:", long_options, &option_index)) != -1){
+    while ((opt = getopt_long(argc, argv, "gs:d:n:", long_options, &option_index)) != -1){
         switch(opt){
         case 's':
             normal_stdev = atof(optarg);
@@ -54,23 +57,37 @@ int main(int argc, char *argv[]){
             break;
         case 'n':
             dim  = atoi(optarg);
-            break ;
+            break;
+        case 'g':
+            use_generated = 1; 
+            break;
         default:
-            fprintf(stderr, "Usage: %s [-s stddev] [-d density] [-n dimension]", argv[0]);
+            fprintf(stderr, "Usage: %s [-g] [-s stddev] [-d density] [-n dimension]", argv[0]);
             break;
         }
     }
 
+    csr_matrix *sm;
+    if(!use_generated){
+      *sm = rand_csr(dim, density, normal_stdev, &seed, stderr);
+      create_vector_from_random(&v, dim);
+    }
+    else{
+      sm = &_sm;
+      dim = _dim;
+      density = _density; 
+      normal_stdev = _normal_stdev;
+      v = _v;
+      sm->Ap = _Ap;
+      sm->Aj = _Aj; 
+      sm->Ax = _Ax;
+    }
+
     float *sum = calloc(dim, sizeof(float));
     float *result = calloc(dim, sizeof(float));
-    //memset(sum, 0.0, sizeof(sum));
-    //memset(result, 0.0, sizeof(result));
-
-    csr_matrix sm =  rand_csr(dim, density, normal_stdev, &seed, stderr);
-    create_vector_from_random(&v, dim);
 
     stopwatch_start(&sw);
-    spmv_csr_cpu(&sm,v,sum, result);
+    spmv_csr_cpu(sm,v,sum, result);
     stopwatch_stop(&sw);
 
     fprintf(stderr, "The first value of the result is %lf\n", result[0]);
@@ -78,5 +95,6 @@ int main(int argc, char *argv[]){
 
     free(sum);
     free(result);
-    free(v);
+
+    if(!use_generated) free(v);
 }

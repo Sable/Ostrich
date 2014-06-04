@@ -227,12 +227,24 @@ function spmv_csr(matrix, dim, rowv, colv, v, y, out) {
     }
 }
 
-function spmvRun(dim, density, stddev) {
-    var m = generateRandomCSR(dim, density, stddev);
-    var v = new Float32Array(dim);
+function spmvRun(dim, density, stddev, use_generated) {
+    var m;
+    var v;
     var y = new Float32Array(dim);
     var out = new Float32Array(dim);
-    Array.prototype.forEach.call(v, function(n, i, a) { a[i] = randf(); });
+
+    if(!use_generated){
+      v = new Float32Array(dim);
+      m = generateRandomCSR(dim, density, stddev);
+      Array.prototype.forEach.call(v, function(n, i, a) { a[i] = randf(); });
+    }
+    else {
+      dim = _dim; 
+      density = _density; 
+      stddev = _normal_stdev;
+      m = _m; 
+      v = _v;
+    }
 
     var t1 =  performance.now();
     spmv_csr(m.Ax, dim, m.Arow, m.Acol, v, y, out);
@@ -240,6 +252,6 @@ function spmvRun(dim, density, stddev) {
 
     console.log("The total time for the spmv is " + (t2-t1)/1000 + " seconds");
     return { status: 1,
--             options: "spmvRun(" + [dim, density, stddev].join(",") + ")",
--             time: (t2 - t1) / 1000 };
+             options: "spmvRun(" + [dim, density, stddev].join(",") + ")",
+             time: (t2 - t1) / 1000 };
 }
