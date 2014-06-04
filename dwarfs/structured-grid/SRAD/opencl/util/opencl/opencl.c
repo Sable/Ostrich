@@ -8,7 +8,11 @@ extern "C" {
 
 #include <stdio.h>					// (in path known to compiler)		needed by printf
 
-#include <CL/cl.h>					// (in path specified to compiler)	needed by OpenCL types
+#ifdef __APPLE__
+    #include <OpenCL/opencl.h>
+#else
+    #include <CL/cl.h>					// (in path specified to compiler)	needed by OpenCL types
+#endif
 
 //===============================================================================================================================================================================================================200
 //	INCLUDE/DEFINE

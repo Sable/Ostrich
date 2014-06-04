@@ -54,7 +54,7 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/backprop:
-	g++ -O3  -o build/opencl/backprop opencl/backprop_ocl.cpp opencl/backprop.c opencl/imagenet.c opencl/facetrain.c ../../common/common.c -I../../common -I$(OPENCL_INC) -L$(OPENCL_LIB) -lOpenCL
+	g++ -O3  -o build/opencl/backprop opencl/backprop_ocl.cpp opencl/backprop.c opencl/imagenet.c opencl/facetrain.c ../../common/common.c -I../../common $(OPENCL_COMPILE_OPTIONS) 
 	cp opencl/*.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/backprop

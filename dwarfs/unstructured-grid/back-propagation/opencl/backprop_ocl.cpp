@@ -8,6 +8,8 @@
 
 #ifdef NV //NVIDIA
 	#include <oclUtils.h>
+#elif defined(__APPLE__)
+    #include <OpenCL/opencl.h>
 #else
 	#include <CL/cl.h>
 #endif
