@@ -166,7 +166,7 @@ function generateRandomCSR(dim, density, stddev) {
      // no realloc in javascript typed arrays
      if(m.Arow[i+1] > m.num_nonzeros) {
          var temp =  m.Acol;
-         m.Acol = new Uint32Array(m.Arow[i+1]);
+         m.Acol = new Int32Array(m.Arow[i+1]);
          m.Acol.set(temp, 0);
      }
 
@@ -209,7 +209,6 @@ function generateRandomCSR(dim, density, stddev) {
     }
     return m;
 }
-
 function source(id){
     var programElement = document.getElementById(id);
     var programSource = programElement.text;
@@ -265,21 +264,22 @@ function default_wg_sizes(num_wg_sizes, max_wg_size, global_size) {
     num_wg_sizes=1;
     wg_sizes = [1];
     wg_sizes[0] = max_wg_size;
-    num_wg = global_size[0] / wg_sizes[0];
+    num_wg = (global_size[0] / wg_sizes[0])|0;
     while(global_size[0] % wg_sizes[0] != 0) {
         num_wg++;
-        wg_sizes[0] = global_size[0] / (num_wg);
+        wg_sizes[0] = (global_size[0] / (num_wg))|0;
     }
     return wg_sizes;
 }
 
-function spmvRun(platformIdx, deviceIdx, dim, density, stddev) {
+function spmvRun(platformIdx, deviceIdx, dim, density, stddev, iterations) {
     var programSourceId = "clSPMV";
     var csr = generateRandomCSR(dim, density, stddev);
     var x = new Float32Array(dim);
     var y = new Float32Array(dim);
     var out = new Float32Array(dim);
     Array.prototype.forEach.call(x, function(n, i, a) { a[i] = randf(); });
+    iterations = iterations || 1;
 
     var t1 =  performance.now();
 
@@ -306,32 +306,34 @@ function spmvRun(platformIdx, deviceIdx, dim, density, stddev) {
         var memy = ctx.createBuffer(WebCL.MEM_READ_WRITE, float_bytes*csr.num_rows);
 
         // write buffers
-        queue.enqueueWriteBuffer(memAp, false, 0, int_bytes*(csr.num_rows+1), csr.Arow);
-        queue.enqueueWriteBuffer(memAj, false, 0, int_bytes*csr.num_nonzeros, csr.Acol);
-        queue.enqueueWriteBuffer(memAx, false, 0, float_bytes*csr.num_nonzeros, csr.Ax);
-        queue.enqueueWriteBuffer(memx, false, 0, float_bytes*csr.num_cols, x);
-        queue.enqueueWriteBuffer(memy, false, 0, float_bytes*csr.num_rows, y);
+        for(var i=0; i<iterations; ++i){
+          queue.enqueueWriteBuffer(memAp, false, 0, int_bytes*(csr.num_rows+1), csr.Arow);
+          queue.enqueueWriteBuffer(memAj, false, 0, int_bytes*csr.num_nonzeros, csr.Acol);
+          queue.enqueueWriteBuffer(memAx, false, 0, float_bytes*csr.num_nonzeros, csr.Ax);
+          queue.enqueueWriteBuffer(memx, false, 0, float_bytes*csr.num_cols, x);
+          queue.enqueueWriteBuffer(memy, false, 0, float_bytes*csr.num_rows, y);
 
-        // ============== Set Args and Run Kernels ================
-        kernel_csr.setArg(0, new Uint32Array([csr.num_rows]));
-        kernel_csr.setArg(1, memAp);
-        kernel_csr.setArg(2, memAj);
-        kernel_csr.setArg(3, memAx);
-        kernel_csr.setArg(4, memx);
-        kernel_csr.setArg(5, memy);
+          // ============== Set Args and Run Kernels ================
+          kernel_csr.setArg(0, new Uint32Array([csr.num_rows]));
+          kernel_csr.setArg(1, memAp);
+          kernel_csr.setArg(2, memAj);
+          kernel_csr.setArg(3, memAx);
+          kernel_csr.setArg(4, memx);
+          kernel_csr.setArg(5, memy);
 
-        var global_size = [csr.num_rows];
-        var wg_sizes;
-        var num_wg_sizes=0;
-        var max_wg_size = kernel_csr.getWorkGroupInfo(pd.device, WebCL.KERNEL_WORK_GROUP_SIZE);
-        // all kernels have same max workgroup size
-        wg_sizes = default_wg_sizes(num_wg_sizes,max_wg_size,global_size);
+          var global_size = [csr.num_rows];
+          var wg_sizes;
+          var num_wg_sizes=0;
+          var max_wg_size = kernel_csr.getWorkGroupInfo(pd.device, WebCL.KERNEL_WORK_GROUP_SIZE);
+          // all kernels have same max workgroup size
+          wg_sizes = default_wg_sizes(num_wg_sizes,max_wg_size,global_size);
 
-        queue.enqueueNDRangeKernel(kernel_csr, 1, null, global_size, wg_sizes);
-        
-        queue.enqueueReadBuffer(memy, 1, 0, float_bytes*csr.num_rows, out);
-        // ============== Free Memory ================ 
-        queue.finish();
+          queue.enqueueNDRangeKernel(kernel_csr, 1, null, global_size, wg_sizes);
+          
+          queue.enqueueReadBuffer(memy, true, 0, float_bytes*csr.num_rows, out);
+          // ============== Free Memory ================ 
+          queue.finish();
+        }
 
         memAp.release();
         memAj.release();

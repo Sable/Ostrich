@@ -4,13 +4,14 @@ include ../../common/options.mk
 
 EMOPTIONS = -s TOTAL_MEMORY=2000000000
 
-DIM = 100000
-DENSITY = 20000
+DIM = 50000
+DENSITY = 2000
 STDDEV = 0.01
-ASMJS_RUN_ARGUMENT = "'-n', $(DIM), '-s', $(STDDEV), '-d', $(DENSITY)"
-C_RUN_ARGUMENT = "-n $(DIM) -s $(STDDEV) -d $(DENSITY)"
-JS_RUN_ARGUMENT = "spmvRun($(DIM), $(DENSITY), $(STDDEV))"
-WEBCL_CALL = "spmvRun("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(DIM)", "$(DENSITY)", "$(STDDEV)")"
+ITERATIONS = 100
+ASMJS_RUN_ARGUMENT = "'-n', $(DIM), '-s', $(STDDEV), '-d', $(DENSITY), '-i', $(ITERATIONS)"
+C_RUN_ARGUMENT = "-n $(DIM) -s $(STDDEV) -d $(DENSITY) -i $(ITERATIONS)"
+JS_RUN_ARGUMENT = "spmvRun($(DIM), $(DENSITY), $(STDDEV), $(ITERATIONS))"
+WEBCL_CALL = "spmvRun("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(DIM)", "$(DENSITY)", "$(STDDEV)", "$(ITERATIONS)")"
 FILENAME = "spmv"
 
 build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
@@ -99,6 +100,7 @@ build/webcl/run.html: build/webcl
 	mv build/webcl/index.html build/webcl/run.html
 	cat ../../utils/webcl/template >> build/webcl/spmv.js
 	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/spmv.js
+	cp ../../common/common_rand.js build/webcl
 
 clean:
 	rm -rf build
