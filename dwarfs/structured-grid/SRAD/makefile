@@ -76,11 +76,12 @@ build/opencl:
 
 
 build/opencl/srad:
-	g++ -O3 -Wall -o build/opencl/srad opencl/main.c opencl/util/timer/timer.c opencl/util/graphics/resize.c opencl/util/graphics/graphics.c opencl/kernel/kernel_gpu_opencl_wrapper.c opencl/util/opencl/opencl.c -I../../common/ $(OPENCL_COMPILE_OPTIONS) -Llibm
+	gcc -O3 -Wall -o build/opencl/srad opencl/main.c opencl/util/timer/timer.c opencl/util/graphics/resize.c opencl/util/graphics/graphics.c opencl/kernel/kernel_gpu_opencl_wrapper.c opencl/util/opencl/opencl.c -I../../common/ $(OPENCL_COMPILE_OPTIONS) -lm
 	cp opencl/kernel/*.cl build/opencl/kernel/
 	cp opencl/main.h build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/srad
+	cp -r data build/opencl/
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh
 	echo "./srad -p $(OPENCL_PLATFORM) -d $(OPENCL_DEVICE) -n $(NB_REPETITIONS) -l $(LAMBDA)" >> build/opencl/run.sh
 	chmod +x build/opencl/run.sh
@@ -96,7 +97,6 @@ build/webcl/run.html: build/webcl
 	cat ../../utils/webcl/template >> build/webcl/srad.js
 	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/srad.js
 
-
 build/js-nota/run.html: js/srad.js
 	mkdir -p build/js-nota/
 	cp js/srad.js build/js-nota/$(FILENAME).js
@@ -106,7 +106,6 @@ build/js-nota/run.html: js/srad.js
 	sed -i.bak s/\<\!--PREAMBLE--\>/$(PREAMBLE)/g build/js-nota/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
-
 
 clean:
 	rm -rf build

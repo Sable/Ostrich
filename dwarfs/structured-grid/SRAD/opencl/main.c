@@ -18,6 +18,7 @@
 #include <stdio.h>									// (in path known to compiler)	needed by printf
 #include <stdlib.h>									// (in path known to compiler)	needed by malloc, free
 #include <getopt.h>
+#include <math.h>
 
 //======================================================================================================================================================150
 //	HEADER
@@ -138,7 +139,7 @@ main(	int argc,
 	Ne = Nr*Nc;
 	image = (fp*)malloc(sizeof(fp) * Ne);
 
-	read_graphics("../data/image.pgm", image, Nr, Nc, 1);
+	read_graphics("data/image.pgm", image, Nr, Nc, 1);
 
 	
     // expected results
@@ -185,7 +186,7 @@ main(	int argc,
     // 	SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
     //================================================================================80
     for (i=0; i<Ne; i++) {													// do for the number of elements in input IMAGE
-        image[i] = exp(image[i]/255);											// exponentiate input IMAGE and copy to output image
+      image[i] = exp(image[i]/255);											// exponentiate input IMAGE and copy to output image
     }
 
 	time0= get_time();
@@ -213,7 +214,6 @@ main(	int argc,
 
 	for (i=0; i<Ne; i++) {													// do for the number of elements in IMAGE
         image[i] = log(image[i])*255;										// take logarithm of image, log compress
-        //fprintf(stderr, "%.0f, ", image[i]);
     }
 
     j = 0;
@@ -225,7 +225,7 @@ main(	int argc,
 	// 	WRITE OUTPUT IMAGE TO FILE
 	//======================================================================================================================================================150
 
-	write_graphics("../data/image_out_opencl.pgm", image, Nr, Nc, 1, 255);
+	write_graphics("data/image_out_opencl.pgm", image, Nr, Nc, 1, 255);
 
 	//======================================================================================================================================================150
 	// 	FREE MEMORY
