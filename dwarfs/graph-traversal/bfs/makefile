@@ -52,9 +52,9 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/bfs:
-	$(CCOMP) -o build/opencl/opts.o -c ../../common/opts/opts.c -I$(OPENCL_INC) -I../../common/ -L$(OPENCL_LIB) -lOpenCL -Llibm -DOPENCL_HEADER_CL_CL
-	$(CCOMP) -o build/opencl/common_args.o -c ../../common/common_args.c -I$(OPENCL_INC) -I../../common/ -L$(OPENCL_LIB) -lOpenCL -Llibm -DOPENCL_HEADER_CL_CL
-	g++ -O3 -o build/opencl/bfs opencl/bfs.cpp ../../common/common.c ../../common/common_rand.c build/opencl/*.o -I$(OPENCL_INC) -I../../common/ -L$(OPENCL_LIB) -lOpenCL -Llibm  -DOPENCL_HEADER_CL_CL
+	$(CCOMP) -o build/opencl/opts.o -c ../../common/opts/opts.c $(OPENCL_COMPILE_OPTIONS) -I../../common/ -Llibm
+	$(CCOMP) -o build/opencl/common_args.o -c ../../common/common_args.c $(OPENCL_COMPILE_OPTIONS) -I../../common/ -Llibm 
+	g++ -O3 -o build/opencl/bfs opencl/bfs.cpp ../../common/common.c ../../common/common_rand.c build/opencl/*.o $(OPENCL_COMPILE_OPTIONS) -I../../common/ -Llibm
 	cp opencl/*.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/bfs
