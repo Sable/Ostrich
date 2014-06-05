@@ -83,7 +83,7 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/spmv:
-	g++ -O3 -Wall -o build/opencl/spmv opencl/csr_spmv.c common/common.c common/sparse_formats.c common/common_args_serial.c common/ziggurat.c ../../common/common_rand.c -I../../common/ -Icommon/ -lOpenCL -Llibm -lOpenCL -DSERIAL
+	g++ -O3 -Wall -o build/opencl/spmv opencl/csr_spmv.c common/common.c common/sparse_formats.c common/common_args_serial.c common/ziggurat.c ../../common/common_rand.c -I../../common/ -Icommon/ $(OPENCL_COMPILE_OPTIONS) -Llibm -DSERIAL
 	cp opencl/*.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/spmv
