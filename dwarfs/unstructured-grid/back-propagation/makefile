@@ -11,7 +11,7 @@ JS_RUN_ARGUMENT = "runBackProp("$(NB_INPUT_ELEMS)")"
 WEBCL_CALL = "webclbackprop("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_INPUT_ELEMS)")"
 FILENAME = "backprop"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -54,7 +54,7 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/backprop:
-	g++ -O3  -o build/opencl/backprop opencl/backprop_ocl.cpp opencl/backprop.c opencl/imagenet.c opencl/facetrain.c ../../common/common.c -I../../common $(OPENCL_COMPILE_OPTIONS) 
+	g++ -O3  -o build/opencl/backprop opencl/backprop_ocl.cpp opencl/backprop.c opencl/imagenet.c opencl/facetrain.c ../../common/common.c -I../../common $(OPENCL_COMPILE_OPTIONS)
 	cp opencl/*.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/backprop
@@ -70,6 +70,16 @@ build/webcl/run.html: build/webcl
 	mv build/webcl/index.html build/webcl/run.html
 	cat ../../utils/webcl/template >> build/webcl/backprop.js
 	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/backprop.js
+
+
+build/js-nota/run.html: js/backprop.js
+	mkdir -p build/js-nota/
+	cp js/backprop.js build/js-nota/$(FILENAME).js
+	perl -i.bak -n -e 'if (/TA$$/) { print } else { s/\w+Array/Array/; print }' build/js-nota/$(FILENAME).js
+	cat ../../utils/js/run_template.html > build/js-nota/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
+
 
 clean:
 	rm -rf build

@@ -118,7 +118,7 @@ function randf() {
     return 1.0 - 2.0 * (rand() / (2147483647 + 1.0));
 }
 
-function sortArray(a, start, finish) {
+function sortArray(a, start, finish) { // TA
     var t = Array.prototype.sort.call(a.subarray(start, finish), function(a, b) {return a-b;});
     for(var i = start; i<finish; ++i) {
         a[i] = t[i-start];
@@ -140,7 +140,7 @@ function generateRandomCSR(dim, density, stddev) {
     m.stdev = stddev * m.nz_per_row;
 
     m.Arow = new Uint32Array(m.num_rows+1);
-    m.Acol = new Uint32Array(m.num_nonzeros);
+    m.Acol = new Uint32Array(m.num_nonzeros); // TA
 
     m.Arow[0] = 0;
     nnz = 0;
@@ -166,7 +166,7 @@ function generateRandomCSR(dim, density, stddev) {
      // no realloc in javascript typed arrays
      if(m.Arow[i+1] > m.num_nonzeros) {
          var temp =  m.Acol;
-         m.Acol = new Int32Array(m.Arow[i+1]);
+         m.Acol = new Int32Array(m.Arow[i+1]); // TA
          m.Acol.set(temp, 0);
      }
 
@@ -186,7 +186,7 @@ function generateRandomCSR(dim, density, stddev) {
      }
 
      // sort the column entries
-     sortArray(m.Acol, m.Arow[i], m.Arow[i+1]);
+     sortArray(m.Acol, m.Arow[i], m.Arow[i+1]); // TA
     }
 
     nz_error = (Math.abs(m.num_nonzeros - m.Arow[m.num_rows]))/m.num_nonzeros;

@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+<SHELL := /bin/bash
 
 include ../../common/options.mk
 
@@ -9,7 +9,7 @@ JS_RUN_ARGUMENT = "runNQueens("$(SIZE)")"
 WEBCL_CALL = "webclNQ("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
 FILENAME = "nqueens"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -64,6 +64,16 @@ build/webcl/run.html: build/webcl
 	mv build/webcl/index.html build/webcl/run.html
 	cat ../../utils/webcl/template >> build/webcl/nqueens.js
 	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/nqueens.js
+
+build/js-nota/run.html: js/nqueens.js
+	mkdir -p build/js-nota/
+	cp js/nqueens.js build/js-nota/$(FILENAME).js
+	perl -i.bak -n -e 'if (/TA$$/) { print } else { s/\w+Array/Array/; print }' build/js-nota/$(FILENAME).js
+	cat ../../utils/js/run_template.html > build/js-nota/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
+
+
 
 clean:
 	rm -rf build

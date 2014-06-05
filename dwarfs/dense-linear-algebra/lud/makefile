@@ -11,7 +11,7 @@ JS_RUN_ARGUMENT = "ludRun("$(SIZE)")"
 WEBCL_CALL = "webclLUD("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
 FILENAME = "lud"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -69,7 +69,7 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/lud:
-	g++ -O3 -o build/opencl/lud opencl/lud.cpp common/common.c ../../common/common_rand.c $(OPENCL_COMPILE_OPTIONS) -Icommon/ -I../../common/ -Llibm 
+	g++ -O3 -o build/opencl/lud opencl/lud.cpp common/common.c ../../common/common_rand.c $(OPENCL_COMPILE_OPTIONS) -Icommon/ -I../../common/ -Llibm
 	cp opencl/*.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/lud
@@ -85,6 +85,16 @@ build/webcl/run.html: build/webcl
 	mv build/webcl/index.html build/webcl/run.html
 	cat ../../utils/webcl/template >> build/webcl/lud.js
 	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/lud.js
+
+
+build/js-nota/run.html: js/lud.js
+	mkdir -p build/js-nota/
+	cp js/lud.js build/js-nota/$(FILENAME).js
+	perl -i.bak -n -e 'if (/TA$$/) { print } else { s/\w+Array/Array/; print }' build/js-nota/$(FILENAME).js
+	cat ../../utils/js/run_template.html > build/js-nota/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
+
 
 clean:
 	rm -rf build

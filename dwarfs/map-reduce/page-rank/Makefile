@@ -15,7 +15,7 @@ JS_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)", "$(NB_ITERATIONS)", "$(THRESHOLD)"
 WEBCL_CALL = "webclPR("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_PAGES)", "$(NB_ITERATIONS)", "$(THRESHOLD)", "$(DIVISOR)")"
 FILENAME = "pagerank"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -86,6 +86,16 @@ build/webcl/run.html: build/webcl
 	mv build/webcl/index.html build/webcl/run.html
 	cat ../../utils/webcl/template >> build/webcl/pagerank.js
 	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/pagerank.js
+
+
+build/js-nota/run.html: js/pagerank.js
+	mkdir -p build/js-nota/
+	cp js/pagerank.js build/js-nota/$(FILENAME).js
+	perl -i.bak -n -e 'if (/TA$$/) { print } else { s/\w+Array/Array/; print }' build/js-nota/$(FILENAME).js
+	cat ../../utils/js/run_template.html > build/js-nota/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
+
 
 clean:
 	rm -rf build

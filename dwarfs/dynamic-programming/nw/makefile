@@ -12,7 +12,7 @@ JS_RUN_ARGUMENT = "runNeedle("$(DIMENSIONS)","$(PENALTY)")"
 WEBCL_CALL = "webclNeedle("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(DIMENSIONS)","$(PENALTY)")"
 FILENAME = "needle"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -60,7 +60,7 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/needle:
-	$(CCOMP) -o build/opencl/needle opencl/needle.c ../../common/common.c ../../common/common_rand.c ../../common/common_args.c ../../common/opts/opts.c $(OPENCL_COMPILE_OPTIONS)  -I../../common/ -lm 
+	$(CCOMP) -o build/opencl/needle opencl/needle.c ../../common/common.c ../../common/common_rand.c ../../common/common_args.c ../../common/opts/opts.c $(OPENCL_COMPILE_OPTIONS)  -I../../common/ -lm
 	cp opencl/*.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/needle
@@ -76,6 +76,16 @@ build/webcl/run.html: build/webcl
 	mv build/webcl/index.html build/webcl/run.html
 	cat ../../utils/webcl/template >> build/webcl/needle.js
 	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/needle.js
+
+
+build/js-nota/run.html: js/needle.js
+	mkdir -p build/js-nota/
+	cp js/needle.js build/js-nota/$(FILENAME).js
+	perl -i.bak -n -e 'if (/TA$$/) { print } else { s/\w+Array/Array/; print }' build/js-nota/$(FILENAME).js
+	cat ../../utils/js/run_template.html > build/js-nota/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
+
 
 clean:
 	rm -rf build

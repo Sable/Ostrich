@@ -10,7 +10,7 @@ C_RUN_ARGUMENT = $(EXPONENT)
 JS_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
 FILENAME = "fft"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -73,6 +73,16 @@ build/opencl:
 
 build/webcl:
 	mkdir -p build/webcl
+
+
+build/js-nota/run.html: js/fft.js
+	mkdir -p build/js-nota/
+	cp js/fft.js build/js-nota/$(FILENAME).js
+	perl -i.bak -n -e 'if (/TA$$/) { print } else { s/\w+Array/Array/; print }' build/js-nota/$(FILENAME).js
+	cat ../../utils/js/run_template.html > build/js-nota/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
+
 
 clean:
 	rm -rf build

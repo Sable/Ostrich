@@ -24,10 +24,10 @@ function bpnn_internal_create(n_in, n_hidden, n_out) {
     this.target = new Float64Array(n_out+1);
 
     this.input_weights = new Float64Array((n_in+1) * (n_hidden+1));
-    this.hidden_weights = new Float64Array((n_hidden+1) * (1+n_out));
+    this.hidden_weights = new Float64Array((n_hidden+1) * (1+n_out)); // TA
 
     this.input_prev_weights = new Float64Array((n_in+1) * (1+n_hidden));
-    this.hidden_prev_weights = new Float64Array((n_hidden+1) * (1+n_out));
+    this.hidden_prev_weights = new Float64Array((n_hidden+1) * (1+n_out)); // TA
 
     return this;
 }
@@ -176,7 +176,7 @@ function backprop_face(layer_size) {
                 sum_of_hidden_weights += net.hidden_weights[i*(net.output_n + 1) + j];
             }
         }
-        if (!(expected_sum_of_hidden_weights - eps < sum_of_hidden_weights && 
+        if (!(expected_sum_of_hidden_weights - eps < sum_of_hidden_weights &&
               sum_of_hidden_weights < expected_sum_of_hidden_weights + eps)) {
             throw new Error("ERROR: expected a sum of hidden weights of '" + expected_sum_of_hidden_weights + "'" +
                             " for an input size of '" + expected_layer_size + "'" +
