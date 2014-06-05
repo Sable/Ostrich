@@ -18,5 +18,3 @@ endif
 ifeq ($(UNAME),Darwin)
 OPENCL_COMPILE_OPTIONS = -framework OpenCL -DOPENCL_HEADER_LONG -D__APPLE__
 endif
-
->>>>>>> 9ffb7ce2d1f1aadfc1614ea120be967b2bd6af8a
