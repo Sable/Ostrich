@@ -86,7 +86,7 @@ function fft2D(m){
     return M;
 }
 
-function randomComplexArray(n){
+function randomComplexArray(n){ // TA
     var r = new Float64Array(n);
     var i = new Float64Array(n);
 
@@ -99,12 +99,12 @@ function randomComplexArray(n){
 
 function randomComplexMatrix(n){
     var M = [];
-    for(var i = 0; i < n; ++i) M[i] = randomComplexArray(n);
+    for(var i = 0; i < n; ++i) M[i] = randomComplexArray(n); // TA
     return M;
 }
 
 
-function printComplexArray(r, i){
+function printComplexArray(r, i) { // TA
     var a = [];
     for(var j=0; j < r.length; ++j) a[j] = r[j].toFixed(6) + " + " + i[j].toFixed(6) + "i";
     console.log(a.join("\n"));

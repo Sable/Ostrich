@@ -33,6 +33,7 @@ static struct option long_options[] = {
     {"stddev", 1, NULL, 's'},
     {"density", 1, NULL, 'd'},
     {"size", 1, NULL, 'n'},
+    {"iterations", 1, NULL, 'i'},
     {0,0,0,0}
 };
 
@@ -43,8 +44,10 @@ int main(int argc, char *argv[]){
     unsigned long seed = 10000;
     float *v;
     stopwatch sw;
+    unsigned int iterations = 1;
+    int i;
 
-    while ((opt = getopt_long(argc, argv, "s:d:n:", long_options, &option_index)) != -1){
+    while ((opt = getopt_long(argc, argv, "s:d:n:i:", long_options, &option_index)) != -1){
         switch(opt){
         case 's':
             normal_stdev = atof(optarg);
@@ -54,6 +57,9 @@ int main(int argc, char *argv[]){
             break;
         case 'n':
             dim  = atoi(optarg);
+            break ;
+        case 'i':
+            iterations = atoi(optarg);
             break ;
         default:
             fprintf(stderr, "Usage: %s [-s stddev] [-d density] [-n dimension]", argv[0]);
@@ -70,7 +76,7 @@ int main(int argc, char *argv[]){
     create_vector_from_random(&v, dim);
 
     stopwatch_start(&sw);
-    spmv_csr_cpu(&sm,v,sum, result);
+    for(i=0; i< iterations; ++i) spmv_csr_cpu(&sm,v,sum, result);
     stopwatch_stop(&sw);
 
     fprintf(stderr, "The first value of the result is %lf\n", result[0]);

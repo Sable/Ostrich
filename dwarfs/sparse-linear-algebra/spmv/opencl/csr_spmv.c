@@ -33,6 +33,12 @@ cl_command_queue cmd_queue;
 cl_context context;
 cl_device_id device_id;
 cl_program prog;
+cl_kernel kernel_csr;
+cl_mem memAp;
+cl_mem memAj;
+cl_mem memAx;
+cl_mem memx;
+cl_mem memy;
 
 const char* kernel_file =  "spmv_kernel.cl";
 
@@ -219,6 +225,12 @@ static int shutdown()
     // num_devices = 0;
     // device_type = 0;
 
+    clReleaseMemObject(memAp);
+    clReleaseMemObject(memAj);
+    clReleaseMemObject(memAx);
+    clReleaseMemObject(memx);
+    clReleaseMemObject(memy);
+
     return 0;
 }
 
@@ -253,8 +265,7 @@ size_t* default_wg_sizes(unsigned int* num_wg_sizes,const size_t max_wg_size, si
     return wg_sizes;
 }
 
-
-void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out, int platform_idx, int device_idx) {
+void initialize(const csr_matrix *csr, int platform_idx, int device_idx){
     int sourcesize = 1024*1024;
     setup_device(platform_idx, device_idx);
 
@@ -262,16 +273,9 @@ void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out
     char * kernel_csr_src  = "csr_ocl";
     cl_int err = 0;
 
-    cl_kernel kernel_csr;
     kernel_csr = clCreateKernel(prog, kernel_csr_src, &err);
     if(err != CL_SUCCESS) { fprintf(stderr, "ERROR: clCreateKernel() 0 => %d\n", err); return; }
     clReleaseProgram(prog);
-
-    cl_mem memAp;
-    cl_mem memAj;
-    cl_mem memAx;
-    cl_mem memx;
-    cl_mem memy;
 
     memAp = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*(csr->num_rows+1), NULL, &err);
     if(err != CL_SUCCESS) { fprintf(stderr, "ERROR: clCreateBuffer\n"); return;}
@@ -283,6 +287,10 @@ void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out
     if(err != CL_SUCCESS) { fprintf(stderr, "ERROR: clCreateBuffer\n"); return;}
     memy = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float)*csr->num_rows, NULL, &err );
     if(err != CL_SUCCESS) { fprintf(stderr, "ERROR: clCreateBuffer\n"); return;}
+}
+
+void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out) {
+    cl_int err = 0;
 
     //write buffers
     err = clEnqueueWriteBuffer(cmd_queue, memAp, CL_FALSE, 0, sizeof(unsigned int)*csr->num_rows+4, csr->Ap, 0, NULL, NULL);
@@ -317,17 +325,11 @@ void spmv_csr_cpu(const csr_matrix* csr,const float* x,const float* y,float* out
 
     err = clEnqueueNDRangeKernel(cmd_queue, kernel_csr, 1, NULL, global_size, wg_sizes, 0, 0, 0);
     if(err != CL_SUCCESS) { fprintf(stderr, "ERROR: 1  clEnqueueNDRangeKernel()=>%d failed\n", err); return; }
+    clFinish(cmd_queue);
 
     err = clEnqueueReadBuffer(cmd_queue, memy, 1, 0, sizeof(float)*csr->num_rows, out, 0, 0, 0);
     if(err != CL_SUCCESS) { fprintf(stderr, "ERROR: 1  clEnqueueReadBuffer: out\n"); return; }
-
-    clReleaseMemObject(memAp);
-    clReleaseMemObject(memAj);
-    clReleaseMemObject(memAx);
-    clReleaseMemObject(memx);
-    clReleaseMemObject(memy);
-
-    shutdown();
+    clFinish(cmd_queue);
 }
 
 static struct option long_options[] = {
@@ -337,6 +339,7 @@ static struct option long_options[] = {
     {"stddev", 1, NULL, 's'},
     {"density", 1, NULL, 'd'},
     {"size", 1, NULL, 'n'},
+    {"iterations", 1, NULL, 'i'},
     {0,0,0,0}
 };
 
@@ -349,8 +352,10 @@ int main(int argc, char *argv[]){
     stopwatch sw;
     int platform_idx =0; 
     int device_idx = 0;
+    unsigned int iterations = 1;
+    int i;
 
-    while ((opt = getopt_long(argc, argv, "s:d:n:p:c:", long_options, &option_index)) != -1){
+    while ((opt = getopt_long(argc, argv, "s:d:n:p:c:i:", long_options, &option_index)) != -1){
         switch(opt){
         case 'p':
             platform_idx = atoi(optarg);
@@ -367,6 +372,9 @@ int main(int argc, char *argv[]){
         case 'n':
             dim  = atoi(optarg);
             break ;
+        case 'i':
+            iterations = atoi(optarg);
+            break ;
         default:
             fprintf(stderr, "Usage: %s [-p platform] [-c device] [-s stddev] [-d density] [-n dimension]", argv[0]);
             break;
@@ -380,7 +388,9 @@ int main(int argc, char *argv[]){
     create_vector_from_random(&v, dim);
 
     stopwatch_start(&sw);
-    spmv_csr_cpu(&sm,v,sum, result, platform_idx, device_idx);
+    initialize(&sm, platform_idx, device_idx);
+    for(i=0; i<iterations; ++i) spmv_csr_cpu(&sm,v,sum, result);
+    shutdown();
     stopwatch_stop(&sw);
 
     fprintf(stderr, "The first value of the result is %lf\n", result[0]);

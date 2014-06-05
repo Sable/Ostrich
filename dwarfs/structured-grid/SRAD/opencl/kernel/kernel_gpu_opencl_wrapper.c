@@ -936,6 +936,9 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 		varROI = (total2 / (fp)(NeROI)) - meanROI2;							// gets variance of ROI
 		q0sqr = varROI / meanROI2;											// gets standard deviation of ROI
 
+
+    //printf("%f", total);
+
 		//====================================================================================================100
 		// execute srad kernel
 		//====================================================================================================100

@@ -302,7 +302,7 @@ function crc32_8bytes(data, i, length){
 
 function randCRC(numPages, pageSize){
     var numWords = pageSize/4;
-    var page = new Uint32Array(numPages*numWords);
+    var page = new Uint32Array(numPages*numWords); // TA
 
     Array.prototype.forEach.call(page, function(v, i, a) {
         a[i] = Math.commonRandom();
@@ -320,7 +320,7 @@ function runCRC(numPages, pageSize, numExecs){
         "' please choose a page size that is a multiple of 4");
     }
 
-    var crcs = new Uint32Array(numPages);
+    var crcs = new Uint32Array(numPages); // TA
     var cumulativeTime = 0;
 
     var expectedCrc = 2231263667;
