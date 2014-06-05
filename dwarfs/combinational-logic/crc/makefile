@@ -52,8 +52,9 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/crc:
-	$(CCOMP) -o build/opencl/crc opencl/crc_algo.c common/crc_formats.c common/opts/opts.c common/common.c  ../../common/common_args.c  ../../common/common_rand.c -Icommon -I../../common -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lm -lstdc++ -DOPENCL_HEADER_CL_CL
+	$(CCOMP) -o build/opencl/crc opencl/crc_algo.c common/crc_formats.c common/opts/opts.c common/common.c  ../../common/common_args.c  ../../common/common_rand.c -Icommon -I../../common $(OPENCL_COMPILE_OPTIONS) -Llibm -lm -lstdc++
 	cp opencl/*.cl build/opencl/
+	cp common/*.h build/opencl
 
 build/opencl/run.sh: build/opencl build/opencl/crc
 	cp ../../utils/opencl/run_template.sh build/opencl/run.sh

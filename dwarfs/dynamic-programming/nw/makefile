@@ -60,7 +60,7 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/needle:
-	$(CCOMP) -o build/opencl/needle opencl/needle.c ../../common/common.c ../../common/common_rand.c ../../common/common_args.c ../../common/opts/opts.c -I$(OPENCL_INC)  -I../../common/ -L$(OPENCL_LIB) -lOpenCL -lm -DOPENCL_HEADER_CL_CL
+	$(CCOMP) -o build/opencl/needle opencl/needle.c ../../common/common.c ../../common/common_rand.c ../../common/common_args.c ../../common/opts/opts.c $(OPENCL_COMPILE_OPTIONS)  -I../../common/ -lm 
 	cp opencl/*.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/needle

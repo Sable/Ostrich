@@ -1,4 +1,4 @@
 #!/bin/bash
 
-DIRNAME=$(dirname $(readlink -e $0))
+DIRNAME=$(pwd -P)/build/opencl
 cd $DIRNAME
