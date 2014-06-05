@@ -69,7 +69,7 @@ build/opencl:
 	mkdir -p build/opencl
 
 build/opencl/lud:
-	g++ -O3 -o build/opencl/lud opencl/lud.cpp common/common.c ../../common/common_rand.c -I$(OPENCL_INC) -Icommon/ -I../../common/ -L$(OPENCL_LIB) -Llibm -lOpenCL
+	g++ -O3 -o build/opencl/lud opencl/lud.cpp common/common.c ../../common/common_rand.c $(OPENCL_COMPILE_OPTIONS) -Icommon/ -I../../common/ -Llibm 
 	cp opencl/*.cl build/opencl/
 
 build/opencl/run.sh: build/opencl build/opencl/lud

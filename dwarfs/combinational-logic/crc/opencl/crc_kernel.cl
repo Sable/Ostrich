@@ -4,7 +4,7 @@
  ** This code computes a 32-bit ethernet CRC using the "Slice-by-8" Algorithm published by Intel
  */
 
-#include "../common/eth_crc32_lut.h"
+#include "eth_crc32_lut.h"
 
 __kernel void crc32_slice8(	__global const uint* restrict data, 
 		uint length_bytes, 

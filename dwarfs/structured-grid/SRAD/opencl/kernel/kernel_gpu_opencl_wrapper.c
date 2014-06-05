@@ -19,7 +19,11 @@
 #include <stdio.h>									// (in path known to compiler)	needed by printf
 #include <string.h>									// (in path known to compiler)	needed by strlen
 
-#include <CL/cl.h>									// (in path specified to compiler)			needed by OpenCL types and functions
+#ifdef __APPLE__
+    #include <OpenCL/opencl.h>
+#else
+    #include <CL/cl.h>   							// (in path specified to compiler)			needed by OpenCL types and functions
+#endif
 
 //======================================================================================================================================================150
 //	UTILITIES

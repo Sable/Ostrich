@@ -76,7 +76,7 @@ build/opencl:
 
 
 build/opencl/srad:
-	g++ -O3 -Wall -o build/opencl/srad opencl/main.c opencl/util/timer/timer.c opencl/util/graphics/resize.c opencl/util/graphics/graphics.c opencl/kernel/kernel_gpu_opencl_wrapper.c opencl/util/opencl/opencl.c -I../../common/ -I$(OPENCL_INC) -L$(OPENCL_LIB) -Llibm -lOpenCL
+	g++ -O3 -Wall -o build/opencl/srad opencl/main.c opencl/util/timer/timer.c opencl/util/graphics/resize.c opencl/util/graphics/graphics.c opencl/kernel/kernel_gpu_opencl_wrapper.c opencl/util/opencl/opencl.c -I../../common/ $(OPENCL_COMPILE_OPTIONS) -Llibm 
 	cp opencl/kernel/*.cl build/opencl/kernel/
 	cp opencl/main.h build/opencl/
 
