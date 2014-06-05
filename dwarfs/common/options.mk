@@ -9,7 +9,7 @@ OPENCL_INC = $(OPENCL_DIR)/include/
 OPENCL_LIB = $(OPENCL_DIR)/lib/x86_64/ -lOpenCL
 
 OPENCL_PLATFORM = 0
-OPENCL_DEVICE   = 0
+OPENCL_DEVICE   = 1
 
 UNAME := $(shell uname -s)
 ifeq ($(UNAME),Linux)
