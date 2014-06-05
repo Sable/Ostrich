@@ -144,6 +144,9 @@ ENVIRONMENTS = {
 
 def parse_options():
     parser = OptionParser()
+    parser.add_option("-m", "--machine", dest="machine",
+                      action="store", default="Desktop",
+                      help="name of the machine on which the benchmarks are run")
     parser.add_option("-b", "--benchmarks", dest="benchmark_csv",
                       metavar="bench1,bench2,...", default=",".join(BENCHMARK_INFO),
                       help="comma-separated list of benchmarks to run (%default)")
@@ -168,12 +171,12 @@ def main():
     ]
     environments_to_use = sorted(map(ENVIRONMENTS.get, options.env_csv.strip().split(",")))
 
-    print "benchmark,language,browser,%s" % ",".join("time" + str(i) for i in xrange(options.iters))
+    print "machine,benchmark,language,browser,%s" % ",".join("time" + str(i) for i in xrange(options.iters))
     for b in benchmarks_to_run:
         b.build()
         for env in environments_to_use:
             if b.env.can_use(env[1]):
-                print ",".join([b.name, env[0], env[1], ",".join(map(str, env[2](b)))])
+                print ",".join([options.machine,b.name, env[0], env[1], ",".join(map(str, env[2](b)))])
                 sys.stdout.flush()
 
 if __name__ == "__main__":
