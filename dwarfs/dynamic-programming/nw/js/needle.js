@@ -20,32 +20,32 @@ function maximum(a,b,c){
 }
 
 
-var blosum62= [
-    [ 4, -1, -2, -2,  0, -1, -1,  0, -2, -1, -1, -1, -1, -2, -1,  1,  0, -3, -2,  0, -2, -1,  0, -4],
-    [-1,  5,  0, -2, -3,  1,  0, -2,  0, -3, -2,  2, -1, -3, -2, -1, -1, -3, -2, -3, -1,  0, -1, -4],
-    [-2,  0,  6,  1, -3,  0,  0,  0,  1, -3, -3,  0, -2, -3, -2,  1,  0, -4, -2, -3,  3,  0, -1, -4],
-    [-2, -2,  1,  6, -3,  0,  2, -1, -1, -3, -4, -1, -3, -3, -1,  0, -1, -4, -3, -3,  4,  1, -1, -4],
-    [ 0, -3, -3, -3,  9, -3, -4, -3, -3, -1, -1, -3, -1, -2, -3, -1, -1, -2, -2, -1, -3, -3, -2, -4],
-    [-1,  1,  0,  0, -3,  5,  2, -2,  0, -3, -2,  1,  0, -3, -1,  0, -1, -2, -1, -2,  0,  3, -1, -4],
-    [-1,  0,  0,  2, -4,  2,  5, -2,  0, -3, -3,  1, -2, -3, -1,  0, -1, -3, -2, -2,  1,  4, -1, -4],
-    [ 0, -2,  0, -1, -3, -2, -2,  6, -2, -4, -4, -2, -3, -3, -2,  0, -2, -2, -3, -3, -1, -2, -1, -4],
-    [-2,  0,  1, -1, -3,  0,  0, -2,  8, -3, -3, -1, -2, -1, -2, -1, -2, -2,  2, -3,  0,  0, -1, -4],
-    [-1, -3, -3, -3, -1, -3, -3, -4, -3,  4,  2, -3,  1,  0, -3, -2, -1, -3, -1,  3, -3, -3, -1, -4],
-    [-1, -2, -3, -4, -1, -2, -3, -4, -3,  2,  4, -2,  2,  0, -3, -2, -1, -2, -1,  1, -4, -3, -1, -4],
-    [-1,  2,  0, -1, -3,  1,  1, -2, -1, -3, -2,  5, -1, -3, -1,  0, -1, -3, -2, -2,  0,  1, -1, -4],
-    [-1, -1, -2, -3, -1,  0, -2, -3, -2,  1,  2, -1,  5,  0, -2, -1, -1, -1, -1,  1, -3, -1, -1, -4],
-    [-2, -3, -3, -3, -2, -3, -3, -3, -1,  0,  0, -3,  0,  6, -4, -2, -2,  1,  3, -1, -3, -3, -1, -4],
-    [-1, -2, -2, -1, -3, -1, -1, -2, -2, -3, -3, -1, -2, -4,  7, -1, -1, -4, -3, -2, -2, -1, -2, -4],
-    [ 1, -1,  1,  0, -1,  0,  0,  0, -1, -2, -2,  0, -1, -2, -1,  4,  1, -3, -2, -2,  0,  0,  0, -4],
-    [ 0, -1,  0, -1, -1, -1, -1, -2, -2, -1, -1, -1, -1, -2, -1,  1,  5, -2, -2,  0, -1, -1,  0, -4],
-    [-3, -3, -4, -4, -2, -2, -3, -2, -2, -3, -2, -3, -1,  1, -4, -3, -2, 11,  2, -3, -4, -3, -2, -4],
-    [-2, -2, -2, -3, -2, -1, -2, -3,  2, -1, -1, -2, -1,  3, -3, -2, -2,  2,  7, -1, -3, -2, -1, -4],
-    [ 0, -3, -3, -3, -1, -2, -2, -3, -3,  3,  1, -2,  1, -1, -2, -2,  0, -3, -1,  4, -3, -2, -1, -4],
-    [-2, -1,  3,  4, -3,  0,  1, -1,  0, -3, -4,  0, -3, -3, -2,  0, -1, -4, -3, -3,  4,  1, -1, -4],
-    [-1,  0,  0,  1, -3,  3,  4, -2,  0, -3, -3,  1, -1, -3, -1,  0, -1, -3, -2, -2,  1,  4, -1, -4],
-    [ 0, -1, -1, -1, -2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -2,  0,  0, -2, -1, -1, -1, -1, -1, -4],
-    [-4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,  1]
-];
+var blosum62= new Int32Array([
+     4, -1, -2, -2,  0, -1, -1,  0, -2, -1, -1, -1, -1, -2, -1,  1,  0, -3, -2,  0, -2, -1,  0, -4,
+    -1,  5,  0, -2, -3,  1,  0, -2,  0, -3, -2,  2, -1, -3, -2, -1, -1, -3, -2, -3, -1,  0, -1, -4,
+    -2,  0,  6,  1, -3,  0,  0,  0,  1, -3, -3,  0, -2, -3, -2,  1,  0, -4, -2, -3,  3,  0, -1, -4,
+    -2, -2,  1,  6, -3,  0,  2, -1, -1, -3, -4, -1, -3, -3, -1,  0, -1, -4, -3, -3,  4,  1, -1, -4,
+     0, -3, -3, -3,  9, -3, -4, -3, -3, -1, -1, -3, -1, -2, -3, -1, -1, -2, -2, -1, -3, -3, -2, -4,
+    -1,  1,  0,  0, -3,  5,  2, -2,  0, -3, -2,  1,  0, -3, -1,  0, -1, -2, -1, -2,  0,  3, -1, -4,
+    -1,  0,  0,  2, -4,  2,  5, -2,  0, -3, -3,  1, -2, -3, -1,  0, -1, -3, -2, -2,  1,  4, -1, -4,
+     0, -2,  0, -1, -3, -2, -2,  6, -2, -4, -4, -2, -3, -3, -2,  0, -2, -2, -3, -3, -1, -2, -1, -4,
+    -2,  0,  1, -1, -3,  0,  0, -2,  8, -3, -3, -1, -2, -1, -2, -1, -2, -2,  2, -3,  0,  0, -1, -4,
+    -1, -3, -3, -3, -1, -3, -3, -4, -3,  4,  2, -3,  1,  0, -3, -2, -1, -3, -1,  3, -3, -3, -1, -4,
+    -1, -2, -3, -4, -1, -2, -3, -4, -3,  2,  4, -2,  2,  0, -3, -2, -1, -2, -1,  1, -4, -3, -1, -4,
+    -1,  2,  0, -1, -3,  1,  1, -2, -1, -3, -2,  5, -1, -3, -1,  0, -1, -3, -2, -2,  0,  1, -1, -4,
+    -1, -1, -2, -3, -1,  0, -2, -3, -2,  1,  2, -1,  5,  0, -2, -1, -1, -1, -1,  1, -3, -1, -1, -4,
+    -2, -3, -3, -3, -2, -3, -3, -3, -1,  0,  0, -3,  0,  6, -4, -2, -2,  1,  3, -1, -3, -3, -1, -4,
+    -1, -2, -2, -1, -3, -1, -1, -2, -2, -3, -3, -1, -2, -4,  7, -1, -1, -4, -3, -2, -2, -1, -2, -4,
+     1, -1,  1,  0, -1,  0,  0,  0, -1, -2, -2,  0, -1, -2, -1,  4,  1, -3, -2, -2,  0,  0,  0, -4,
+     0, -1,  0, -1, -1, -1, -1, -2, -2, -1, -1, -1, -1, -2, -1,  1,  5, -2, -2,  0, -1, -1,  0, -4,
+    -3, -3, -4, -4, -2, -2, -3, -2, -2, -3, -2, -3, -1,  1, -4, -3, -2, 11,  2, -3, -4, -3, -2, -4,
+    -2, -2, -2, -3, -2, -1, -2, -3,  2, -1, -1, -2, -1,  3, -3, -2, -2,  2,  7, -1, -3, -2, -1, -4,
+     0, -3, -3, -3, -1, -2, -2, -3, -3,  3,  1, -2,  1, -1, -2, -2,  0, -3, -1,  4, -3, -2, -1, -4,
+    -2, -1,  3,  4, -3,  0,  1, -1,  0, -3, -4,  0, -3, -3, -2,  0, -1, -4, -3, -3,  4,  1, -1, -4,
+    -1,  0,  0,  1, -3,  3,  4, -2,  0, -3, -3,  1, -1, -3, -1,  0, -1, -3, -2, -2,  1,  4, -1, -4,
+     0, -1, -1, -1, -2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -2,  0,  0, -2, -1, -1, -1, -1, -1, -4,
+    -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,  1
+]);
 
 function to_char(i) {
     var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -119,77 +119,12 @@ var expected_aligned_seq_2 = to_int_values(expected_aligned_seq_2_chars);
 var max_cols = 0;
 var max_rows = 0;
 
-function runNeedle(dimensions, penalty, options)
-{
-    var default_options = {
-        nb_possible_items: 10,
-        print_results: false,
-        print_intermediary_results: false,
-        use_parallelizable_version: true
-    };
+var reference, input_itemsets, aligned_seq_1, aligned_seq_2, input_seq_1, input_seq_2;
 
-    if (dimensions === undefined) {
-        dimensions = 4096;
-    }
-
-    if (penalty === undefined) {
-        penalty = 1;
-    }
-
-    if (options === undefined) {
-        options = default_options;
-    } else {
-        for (var n in default_options) {
-            if (default_options.hasOwnProperty(n) && !options.hasOwnProperty(n)) {
-                options[n] = default_options[n];
-            }
-        }
-    }
-
-
-    var penalty,idx, index;
-    var size;
-    var t1, t2;
-    var i,j;
-
-    max_rows = dimensions + 1;
-    max_cols = dimensions + 1;
-
-    var aligned_seq_size = 2*dimensions;
-
-    var reference = new Int32Array(max_rows*max_cols);
-    var input_itemsets = new Int32Array(max_rows*max_cols);
-    var aligned_seq_1 = new Int32Array(aligned_seq_size);
-    var aligned_seq_2 = new Int32Array(aligned_seq_size);
-    var input_seq_1 = new Int32Array(max_rows);
-    var input_seq_2 = new Int32Array(max_cols);
-
-    for (i = 0 ; i < max_cols; i++){
-        for (j = 0 ; j < max_rows; j++){
-            input_itemsets[i*max_cols+j] = 0;
-        }
-    }
-
-    for (i = 0; i < aligned_seq_size; ++i) {
-        aligned_seq_1[i] = -1;
-        aligned_seq_2[i] = -1;
-    }
-
-    input_seq_1[0] = -1;
-    for(i=1; i< max_rows ; i++){
-        input_seq_1[i] = Math.abs(Math.commonRandom()) % options.nb_possible_items;
-    }
-    input_seq_2[0] = -1;
-    for(j=1; j< max_cols ; j++){
-        input_seq_2[j] = Math.abs(Math.commonRandom()) % options.nb_possible_items;
-    }
-
-    if (options.print_results) { console.log("Computing dynamic programming results"); }
-
-    var t1 = performance.now();
-    for (i = 1 ; i < max_cols; i++){
+function needle(penalty, options) {
+	for (i = 1 ; i < max_cols; i++){
         for (j = 1 ; j < max_rows; j++){
-            reference[input_index(i,j)] = blosum62[input_seq_1[i]][input_seq_2[j]];
+            reference[input_index(i,j)] = blosum62[(input_seq_1[i]*24) + input_seq_2[j]];
         }
     }
     for(i = 1; i< max_rows ; i++)
@@ -228,13 +163,82 @@ function runNeedle(dimensions, penalty, options)
             }
         }
     }
+}
+
+function runNeedle(dimensions, penalty, options)
+{
+    var default_options = {
+        nb_possible_items: 10,
+        print_results: false,
+        print_intermediary_results: false,
+        use_parallelizable_version: true
+    };
+
+    if (dimensions === undefined) {
+        dimensions = 4096;
+    }
+
+    if (penalty === undefined) {
+        penalty = 1;
+    }
+
+    if (options === undefined) {
+        options = default_options;
+    } else {
+        for (var n in default_options) {
+            if (default_options.hasOwnProperty(n) && !options.hasOwnProperty(n)) {
+                options[n] = default_options[n];
+            }
+        }
+    }
+
+
+    var penalty,idx, index;
+    var size;
+    var t1, t2;
+    var i,j;
+
+    max_rows = dimensions + 1;
+    max_cols = dimensions + 1;
+
+    var aligned_seq_size = 2*dimensions;
+
+    reference = new Int32Array(max_rows*max_cols);
+    input_itemsets = new Int32Array(max_rows*max_cols);
+    aligned_seq_1 = new Int32Array(aligned_seq_size);
+    aligned_seq_2 = new Int32Array(aligned_seq_size);
+    input_seq_1 = new Int32Array(max_rows);
+    input_seq_2 = new Int32Array(max_cols);
+
+    for (i = 0 ; i < max_cols; i++){
+        for (j = 0 ; j < max_rows; j++){
+            input_itemsets[i*max_cols+j] = 0;
+        }
+    }
+
+    for (i = 0; i < aligned_seq_size; ++i) {
+        aligned_seq_1[i] = -1;
+        aligned_seq_2[i] = -1;
+    }
+
+    input_seq_1[0] = -1;
+    for(i=1; i< max_rows ; i++){
+        input_seq_1[i] = Math.abs(Math.commonRandom()) % options.nb_possible_items;
+    }
+    input_seq_2[0] = -1;
+    for(j=1; j< max_cols ; j++){
+        input_seq_2[j] = Math.abs(Math.commonRandom()) % options.nb_possible_items;
+    }
+
+    if (options.print_results) { console.log("Computing dynamic programming results"); }
+
+    var t1 = performance.now();
+    needle(penalty, options);
     var t2 = performance.now();
 
 
     var aligned_index_1 = aligned_seq_size - 1;
     var aligned_index_2 = aligned_seq_size - 1;
-
-    if (options.print_results) { console.log("Trace solution back"); }
 
     for (i = max_rows - 1, j = max_cols - 1; !(i==0 && j==0);) {
         if (i > 0 && j > 0) {
@@ -262,26 +266,6 @@ function runNeedle(dimensions, penalty, options)
             aligned_index_2--;
             aligned_seq_1[aligned_index_1--] = input_seq_1[i--];
         } else { throw new Error("ERROR n_limit: " + n_limit + " w_limit: " + w_limit + " traceback: " + traceback); }
-    }
-
-    if (options.print_results) {
-        console.log(input_seq_1);
-        console.log(input_seq_2);
-        console.log("Input Seq 1  :" + Array.prototype.map.call(input_seq_1, to_char).slice(1).join(""));
-        console.log("Input Seq 2  :" + Array.prototype.map.call(input_seq_2, to_char).slice(1).join(""));
-        console.log("Aligned Seq 1:" + Array.prototype.map.call(aligned_seq_1, to_char).join(""));
-        console.log("Aligned Seq 2:" + Array.prototype.map.call(aligned_seq_2, to_char).join(""));
-
-        if (options.print_intermediary_results) {
-            var s = "";
-            for (i=0; i<max_rows; ++i) {
-                for (j=0; j<max_cols; ++j) {
-                    s += input_itemsets[input_index(i,j)] + " ";
-                }
-                s += "\n";
-            }
-            console.log(s);
-        }
     }
 
     if (dimensions === 4096 && penalty === 1 && options.nb_possible_items === 10) {
