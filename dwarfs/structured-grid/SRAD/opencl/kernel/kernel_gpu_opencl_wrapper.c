@@ -260,14 +260,6 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	//	CREATE Kernels
 	//====================================================================================================100
 
-	// Extract kernel
-	cl_kernel extract_kernel;
-	extract_kernel = clCreateKernel(prog,
-									"extract_kernel",
-									&error);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
 	// Prepare kernel
 	cl_kernel prepare_kernel;
 	prepare_kernel = clCreateKernel(prog,
@@ -297,14 +289,6 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	srad2_kernel = clCreateKernel(	prog,
 									"srad2_kernel",
 									&error);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	// Compress kernel
-	cl_kernel compress_kernel;
-	compress_kernel = clCreateKernel(	prog,
-										"compress_kernel",
-										&error);
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 
@@ -559,55 +543,6 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	global_work_size[0] = blocks_work_size * local_work_size[0];						// define the number of blocks in the grid
 
 	fprintf(stderr, "max # of workgroups = %d, # of threads/workgroup = %d (ensure that device can handle)\n", (int)(global_work_size[0]/local_work_size[0]), (int)local_work_size[0]);
-
-	//======================================================================================================================================================150
-	// 	Extract Kernel - SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
-	//======================================================================================================================================================150
-
-	//====================================================================================================100
-	//	set arguments
-	//====================================================================================================100
-
-	error = clSetKernelArg(	extract_kernel,
-							0,
-							sizeof(long),
-							(void *) &Ne);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-	error = clSetKernelArg(	extract_kernel,
-							1,
-							sizeof(cl_mem),
-							(void *) &d_I);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	//====================================================================================================100
-	//	launch kernel
-	//====================================================================================================100
-
-	error = clEnqueueNDRangeKernel(	cmd_queue,
-									extract_kernel,
-									1,
-									NULL,
-									global_work_size,
-									local_work_size,
-									0,
-									NULL,
-									NULL);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	//====================================================================================================100
-	//	Synchronization - wait for all operations in the command queue so far to finish
-	//====================================================================================================100
-
-	// error = clFinish(command_queue);
-	// if (error != CL_SUCCESS)
-		// fatal_CL(error, __LINE__);
-
-	//====================================================================================================100
-	//	End
-	//====================================================================================================100
 
 	//======================================================================================================================================================150
 	// 	WHAT IS CONSTANT IN COMPUTATION LOOP
@@ -1057,43 +992,6 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 
 	fprintf(stderr, "\n");
 
-	//======================================================================================================================================================150
-	// 	Compress Kernel - SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
-	//======================================================================================================================================================150
-
-	//====================================================================================================100
-	// set parameters
-	//====================================================================================================100
-
-	error = clSetKernelArg(	compress_kernel,
-							0,
-							sizeof(long),
-							(void *) &Ne);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-	error = clSetKernelArg(	compress_kernel,
-							1,
-							sizeof(cl_mem),
-							(void *) &d_I);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
-	//====================================================================================================100
-	// launch kernel
-	//====================================================================================================100
-
-	error = clEnqueueNDRangeKernel(	cmd_queue,
-									compress_kernel,
-									1,
-									NULL,
-									global_work_size,
-									local_work_size,
-									0,
-									NULL,
-									NULL);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-
 	//====================================================================================================100
 	// synchronize
 	//====================================================================================================100
@@ -1132,9 +1030,6 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	//======================================================================================================================================================150
 
 	// OpenCL structures
-	error = clReleaseKernel(extract_kernel);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
 	error = clReleaseKernel(prepare_kernel);
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
@@ -1145,9 +1040,6 @@ kernel_gpu_opencl_wrapper(	fp* image,											// input image
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 	error = clReleaseKernel(srad2_kernel);
-	if (error != CL_SUCCESS)
-		fatal_CL(error, __LINE__);
-	error = clReleaseKernel(compress_kernel);
 	if (error != CL_SUCCESS)
 		fatal_CL(error, __LINE__);
 	error = clReleaseProgram(prog);

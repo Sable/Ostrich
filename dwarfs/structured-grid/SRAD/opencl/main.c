@@ -140,6 +140,10 @@ main(	int argc,
 
 	read_graphics("../data/image.pgm", image, Nr, Nc, 1);
 
+	
+    // expected results
+    long expected_output = 52608;
+
 	//======================================================================================================================================================150
 	// 	SETUP
 	//======================================================================================================================================================150
@@ -177,6 +181,13 @@ main(	int argc,
 	jW[0]    = 0;															// changes IMAGE leftmost column index from -1 to 0
 	jE[Nc-1] = Nc-1;														// changes IMAGE rightmost column index from Nc to Nc-1
 
+	//================================================================================80
+    // 	SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
+    //================================================================================80
+    for (i=0; i<Ne; i++) {													// do for the number of elements in input IMAGE
+        image[i] = exp(image[i]/255);											// exponentiate input IMAGE and copy to output image
+    }
+
 	time0= get_time();
 
 	//======================================================================================================================================================150
@@ -200,6 +211,16 @@ main(	int argc,
 
 	time1 = get_time();
 
+	for (i=0; i<Ne; i++) {													// do for the number of elements in IMAGE
+        image[i] = log(image[i])*255;										// take logarithm of image, log compress
+        //fprintf(stderr, "%.0f, ", image[i]);
+    }
+
+    j = 0;
+    for (i=0; i<Nr; i++) {
+        j = j + image[i];
+    }
+
 	//======================================================================================================================================================150
 	// 	WRITE OUTPUT IMAGE TO FILE
 	//======================================================================================================================================================150
@@ -219,6 +240,15 @@ main(	int argc,
 	//======================================================================================================================================================150
 	//	DISPLAY TIMING
 	//======================================================================================================================================================150
+
+	if (niter == 500 && lambda == 1) {
+        if (j != expected_output) {
+            fprintf(stderr, "ERROR: expected output of '%ld' but received '%ld' instead\n", expected_output, j);
+            exit(1);
+        }
+    } else {
+        fprintf(stderr, "WARNING: No self-checking step for niter '%d' and lambda '%f'\n", niter, lambda);
+    }
 
 	fprintf(stderr, "Computation time: %.12f s\n", (float) (time1-time0) / 1000000);
         printf("{ \"status\": %d, \"options\": \"%d %f\", \"time\": %f }\n", 1, niter, lambda, (float) (time1-time0) / 1000000);
