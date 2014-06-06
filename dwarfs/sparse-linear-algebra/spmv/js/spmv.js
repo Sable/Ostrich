@@ -2,6 +2,14 @@ if (typeof performance === "undefined") {
     performance = Date;
 }
 
+ArrayOld = Array;
+Array = function(dim) {
+    var xs = new ArrayOld(dim);
+    for (var i = 0; i < dim; ++i)
+        xs[i] = 0;
+    return xs;
+};
+
 /* Ziggurat code taken from james bloomer's implementation that can be
  * found at  https://github.com/jamesbloomer/node-ziggurat
  */
@@ -68,7 +76,7 @@ function Ziggurat() {
 
     function zigset() {
         // seed generator based on current time
-        jsr ^= new Date().getTime();
+        // jsr ^= new Date().getTime();
 
         var m1 = 2147483648.0;
         var dn = 3.442619855899;
@@ -119,7 +127,7 @@ function randf() {
 }
 
 function sortArray(a, start, finish) { // TA
-    var t = Array.prototype.sort.call(a.subarray(start, finish), function(a, b) {return a-b;});
+    var t = ArrayOld.prototype.sort.call(a.subarray(start, finish), function(a, b) {return a-b;});
     for(var i = start; i<finish; ++i) {
         a[i] = t[i-start];
     }
@@ -232,7 +240,7 @@ function spmvRun(dim, density, stddev, iterations) {
     var v = new Float32Array(dim);
     var y = new Float32Array(dim);
     var out = new Float32Array(dim);
-    Array.prototype.forEach.call(v, function(n, i, a) { a[i] = randf(); });
+    ArrayOld.prototype.forEach.call(v, function(n, i, a) { a[i] = randf(); });
 
     var t1 =  performance.now();
     for(var i = 0; i < iterations; ++i) spmv_csr(m.Ax, dim, m.Arow, m.Acol, v, y, out);
