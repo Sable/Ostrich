@@ -1,4 +1,4 @@
-<SHELL := /bin/bash
+SHELL := /bin/bash
 
 include ../../common/options.mk
 
