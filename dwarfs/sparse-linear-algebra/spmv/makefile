@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 include ../../common/options.mk
 
-EMOPTIONS = -s TOTAL_MEMORY=2000000000
+EMOPTIONS = -s TOTAL_MEMORY=1000000000
 
 DIM = 50000
 DENSITY = 2000
