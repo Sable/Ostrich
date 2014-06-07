@@ -23,13 +23,13 @@
 //http://create.stephan-brumme.com/crc32/
 const uint32_t Polynomial = 0xEDB88320;
 
-unsigned char verbosity=0;
+unsigned char verbosity=1;
 //int platform_id=PLATFORM_ID, n_device=DEVICE_ID;
 
 //cl_device_id device_id;
 //cl_context context;
-cl_command_queue write_queue;//,kernel_queue, (=commands in common_args.x)
-cl_command_queue read_queue;
+//cl_command_queue write_queue;//,kernel_queue, (=commands in common_args.x)
+cl_command_queue commands;
 cl_program program;
 cl_kernel kernel_compute;
 cl_mem dev_table;
@@ -111,7 +111,7 @@ void enqueueCRCDevice(unsigned int* h_num, unsigned int* h_answer, size_t global
     int err,i;
 
     // Write our data set into the input array in device memory
-    err = clEnqueueWriteBuffer(write_queue, d_input, CL_FALSE, 0, sizeof(char)*page_size*global_size, h_num, 0, NULL, write_page);
+    err = clEnqueueWriteBuffer(commands, d_input, CL_FALSE, 0, sizeof(char)*page_size*global_size, h_num, 0, NULL, write_page);
     CHKERR(err, "Failed to enqueue data write!");
 
     // Set the arguments to our compute kernel
@@ -129,7 +129,7 @@ void enqueueCRCDevice(unsigned int* h_num, unsigned int* h_answer, size_t global
     CHKERR(err, "Failed to enqueue compute kernel!");
 
     // Read back the results from the device to verify the output
-    err = clEnqueueReadBuffer(read_queue, d_output, CL_FALSE, 0, sizeof(int)*global_size, h_answer, 1, kernel_exec, read_page);
+    err = clEnqueueReadBuffer(commands, d_output, CL_FALSE, 0, sizeof(int)*global_size, h_answer, 1, kernel_exec, read_page);
     CHKERR(err, "Failed to enqueue output read!");
 }
 
@@ -301,12 +301,10 @@ int main(int argc, char** argv)
     //CHKERR(err, "Failed to create a compute context!");
 
     /* Create command queues, one for each stage in the write-execute-read pipeline */
-    write_queue = clCreateCommandQueue(context, device_id, CL_QUEUE_PROFILING_ENABLE, &err);
+    commands = clCreateCommandQueue(context, device_id, 0, &err);
     CHKERR(err, "Failed to create a command queue!");
     //commands = clCreateCommandQueue(context, device_id, CL_QUEUE_PROFILING_ENABLE, &err);
     //CHKERR(err, "Failed to create a command queue!");
-    read_queue = clCreateCommandQueue(context, device_id, CL_QUEUE_PROFILING_ENABLE, &err);
-    CHKERR(err, "Failed to create a command queue!");
 
     if(!kernel_files) //use default if no kernel files were given on commandline
     {
@@ -382,9 +380,7 @@ int main(int argc, char** argv)
                         if(verbosity >= 2) fprintf(stderr, "\tmain(): global_size=%zd - local_size=%zd\n",global_size,local_size);
                         enqueueCRCDevice(&h_num[i*num_parallel_crcs[h]*num_words],&ocl_remainders[i*num_parallel_crcs[h]],global_size,local_size,dev_input[i],dev_output[i],&write_page[i],&kernel_exec[i],&read_page[i]);
                     }
-                    clFinish(write_queue);
                     clFinish(commands);
-                    clFinish(read_queue);
 
 
                     // for(i=0; i<num_blocks; i++)
@@ -444,9 +440,7 @@ int main(int argc, char** argv)
             clReleaseMemObject(dev_output[i]);
         }
     }
-    clReleaseCommandQueue(write_queue);
     clReleaseCommandQueue(commands);
-    clReleaseCommandQueue(read_queue);
     clReleaseContext(context);
     free(h_num);
     stopwatch_stop(&sw);
