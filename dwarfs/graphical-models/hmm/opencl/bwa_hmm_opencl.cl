@@ -1,3 +1,23 @@
+/*
+ * Copyright July 29, 2011 by Virginia Polytechnic Institute and State University
+ * All rights reserved.
+ *
+ * Virginia Polytechnic Institute and State University (Virginia Tech) owns the
+ * OpenCL and the 13 Dwarfs software and its associated documentation (Software).
+ * You should carefully read the following terms and conditions before using this
+ * software.  Your use of this Software indicates your acceptance of this license
+ * agreement and all terms and conditions.
+ *
+ * You are hereby licensed to use the Software for Non-Commercial Purpose only.
+ * Non-Commercial Purpose means the use of the Software solely for research.
+ * Non-Commercial Purpose excludes, without limitation, any use of the Software, as
+ * part of, or in any way in connection with a product or service which is sold,
+ * offered for sale, licensed, leased, loaned, or rented.  Permission to use, copy,
+ * modify, and distribute this compilation for Non-Commercial Purpose is hereby
+ * granted without fee, subject to the following terms of this license.
+ */
+
+
 /************************************************************************/
 /* OpenCL Kernels for BW Algorithm in Hidden Markov Model               */
 /*                                                                      */
@@ -10,8 +30,8 @@
 #define TILE_SIZE              (32)
 
 /* Initialize ones vector */
-__kernel void init_ones_dev(  __global float *ones_s_d,  /* lth = nsymbols */    
-		int nsymbols)              /* number of symbols */   
+__kernel void init_ones_dev(  __global float *ones_s_d,  /* lth = nsymbols */
+		int nsymbols)              /* number of symbols */
 {
 	//unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -23,12 +43,12 @@ __kernel void init_ones_dev(  __global float *ones_s_d,  /* lth = nsymbols */
 }
 
 /* Initialize alpha variables */
-__kernel void init_alpha_dev( __global float *b_d,      /* dim = nsymbols x nstates */   
-		__global  float *pi_d,    /* lth = nstates */         
-		int nstates,              /* number of states */      
-		__global float *alpha_d,  /* dim = length x nstates */     
-		__global float *ones_n_d, /* lth = nstates */       
-		int obs_t)                /* current observation */     
+__kernel void init_alpha_dev( __global float *b_d,      /* dim = nsymbols x nstates */
+		__global  float *pi_d,    /* lth = nstates */
+		int nstates,              /* number of states */
+		__global float *alpha_d,  /* dim = length x nstates */
+		__global float *ones_n_d, /* lth = nstates */
+		int obs_t)                /* current observation */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -41,11 +61,11 @@ __kernel void init_alpha_dev( __global float *b_d,      /* dim = nsymbols x nsta
 }
 
 /* Calculate alpha variables */
-__kernel void calc_alpha_dev( int nstates,             /* number of states */     
-		__global float *alpha_d, /* dim = length x nstates */        
-		int offset,              /* offset for alpha_d */  
-		__global float *b_d,     /* dim = nsymbols x nstates */  
-		int obs_t)               /* current observation */     
+__kernel void calc_alpha_dev( int nstates,             /* number of states */
+		__global float *alpha_d, /* dim = length x nstates */
+		int offset,              /* offset for alpha_d */
+		__global float *b_d,     /* dim = nsymbols x nstates */
+		int obs_t)               /* current observation */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -57,10 +77,10 @@ __kernel void calc_alpha_dev( int nstates,             /* number of states */
 }
 
 /* Scale alpha values */
-__kernel void scale_alpha_dev( int nstates,             /* number of states */  
-		__global float *alpha_d, /* dim = length x nstates */  
-		int offset,              /* offset for alpha_d */   
-		float scale)             /* scaling value */    
+__kernel void scale_alpha_dev( int nstates,             /* number of states */
+		__global float *alpha_d, /* dim = length x nstates */
+		int offset,              /* offset for alpha_d */
+		float scale)             /* scaling value */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -72,10 +92,10 @@ __kernel void scale_alpha_dev( int nstates,             /* number of states */
 }
 
 /* Initialize beta values */
-__kernel void init_beta_dev(  int nstates,            /* number of states */  
-		__global float *beta_d, /* dim = length x nstates */   
-		int offset,             /* offset for beta_d */   
-		float scale)            /* scaling value */    
+__kernel void init_beta_dev(  int nstates,            /* number of states */
+		__global float *beta_d, /* dim = length x nstates */
+		int offset,             /* offset for beta_d */
+		float scale)            /* scaling value */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -87,12 +107,12 @@ __kernel void init_beta_dev(  int nstates,            /* number of states */
 }
 
 /* Calculate beta variables */
-__kernel void calc_beta_dev( __global float *beta_d, /* dim = length x nstates */ 
-		__global float *b_d,    /* dim = nsymbols x nstates */ 
-		float scale_t,          /* current scaling value */  
-		int nstates,            /* number of states */   
-		int obs_t,              /* current observation */    
-		int t)                  /* current time */    
+__kernel void calc_beta_dev( __global float *beta_d, /* dim = length x nstates */
+		__global float *b_d,    /* dim = nsymbols x nstates */
+		float scale_t,          /* current scaling value */
+		int nstates,            /* number of states */
+		int obs_t,              /* current observation */
+		int t)                  /* current time */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -105,11 +125,11 @@ __kernel void calc_beta_dev( __global float *beta_d, /* dim = length x nstates *
 }
 
 /* Sum next iteration of gamma variables */
-__kernel void calc_gamma_dev(__global float *gamma_sum_d, /* lth = nstates */  
-		__global float *alpha_d,     /* dim = length x nstates */  
-		__global float *beta_d,      /* dim = length x nstates */    
-		int nstates,                 /* number of states */   
-		int t)                       /* current time */  
+__kernel void calc_gamma_dev(__global float *gamma_sum_d, /* lth = nstates */
+		__global float *alpha_d,     /* dim = length x nstates */
+		__global float *beta_d,      /* dim = length x nstates */
+		int nstates,                 /* number of states */
+		int t)                       /* current time */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -122,15 +142,15 @@ __kernel void calc_gamma_dev(__global float *gamma_sum_d, /* lth = nstates */
 }
 
 /* Sum next iteration of xi variables */
-__kernel void calc_xi_dev(   __global float *xi_sum_d,  /* dim = nstates x nstates */   
-		__global float *a_d,       /* dim = nstates x nstates */  
-		__global float *b_d,       /* dim = nsymbols x nstates */  
-		__global float *alpha_d,   /* dim = length x nstates */    
-		__global float *beta_d,    /* dim = length x nstates */   
-		float sum_ab,              /* sum dot production of (alpha_d+t*nstates) and (beta_d+t*nstates) */  
-		int nstates,               /* number of states */     
-		int obs_t,                 /* next observation at t + 1 */    
-		int t)                     /* current time */   
+__kernel void calc_xi_dev(   __global float *xi_sum_d,  /* dim = nstates x nstates */
+		__global float *a_d,       /* dim = nstates x nstates */
+		__global float *b_d,       /* dim = nsymbols x nstates */
+		__global float *alpha_d,   /* dim = length x nstates */
+		__global float *beta_d,    /* dim = length x nstates */
+		float sum_ab,              /* sum dot production of (alpha_d+t*nstates) and (beta_d+t*nstates) */
+		int nstates,               /* number of states */
+		int obs_t,                 /* next observation at t + 1 */
+		int t)                     /* current time */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -148,15 +168,15 @@ __kernel void calc_xi_dev(   __global float *xi_sum_d,  /* dim = nstates x nstat
 }
 
 /* Re-estimate A matrix */
-__kernel void est_a_dev(  __global float *a_d,          /* dim = nstates x nstates */ 
-		__global float *alpha_d,      /* dim = length x nstates */      
-		__global float *beta_d,       /* dim = length x nstates */   
-		__global float *xi_sum_d,     /* dim = nstates x nstates */  
-		__global float *gamma_sum_d,  /* lth = nstates */  
-		float sum_ab,                 /* sum of dot production of (alpha_d+(length-1)*nstates) and  */ 
-		/* (beta_d+(length-1)*nstates)  */ 
-		int nstates,                  /* number of states */  
-		int length)                   /* number of observations */    
+__kernel void est_a_dev(  __global float *a_d,          /* dim = nstates x nstates */
+		__global float *alpha_d,      /* dim = length x nstates */
+		__global float *beta_d,       /* dim = length x nstates */
+		__global float *xi_sum_d,     /* dim = nstates x nstates */
+		__global float *gamma_sum_d,  /* lth = nstates */
+		float sum_ab,                 /* sum of dot production of (alpha_d+(length-1)*nstates) and  */
+		/* (beta_d+(length-1)*nstates)  */
+		int nstates,                  /* number of states */
+		int length)                   /* number of observations */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -174,9 +194,9 @@ __kernel void est_a_dev(  __global float *a_d,          /* dim = nstates x nstat
 }
 
 /* Normalize A matrix */
-__kernel void scale_a_dev(  __global  float *a_d, /* dim = nstates x nstates */  
-		__global  float *c_d, /* lth = nstates, matrix-vector product of a_d and ones_n_d */  
-		int nstates)          /* number of states */    
+__kernel void scale_a_dev(  __global  float *a_d, /* dim = nstates x nstates */
+		__global  float *c_d, /* lth = nstates, matrix-vector product of a_d and ones_n_d */
+		int nstates)          /* number of states */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -190,14 +210,14 @@ __kernel void scale_a_dev(  __global  float *a_d, /* dim = nstates x nstates */
 }
 
 /* Accumulate B values */
-__kernel void acc_b_dev( __global float *b_d,      /* dim = nsymbols x nstates */  
-		__global float *alpha_d,  /* dim = length x nstates */   
-		__global float *beta_d,   /* dim = length x nstates */  
-		float sum_ab,             /* sum dot production of (alpha_d+t*nstates) and (beta_d+t*nstates) */   
-		int nstates,              /* number of states */    
-		int nsymbols,             /* number of symbols */  
-		int obs_t,                /* current observation */        
-		int t)                    /* current time */   
+__kernel void acc_b_dev( __global float *b_d,      /* dim = nsymbols x nstates */
+		__global float *alpha_d,  /* dim = length x nstates */
+		__global float *beta_d,   /* dim = length x nstates */
+		float sum_ab,             /* sum dot production of (alpha_d+t*nstates) and (beta_d+t*nstates) */
+		int nstates,              /* number of states */
+		int nsymbols,             /* number of symbols */
+		int obs_t,                /* current observation */
+		int t)                    /* current time */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -212,10 +232,10 @@ __kernel void acc_b_dev( __global float *b_d,      /* dim = nsymbols x nstates *
 }
 
 /* Re-estimate B values */
-__kernel void est_b_dev( __global float *b_d,         /* dim = nsymbols x nstates */ 
-		__global float *gamma_sum_d, /* lth = nstates */  
-		int nstates,                 /* number of states */  
-		int nsymbols)                /* number of symbols */  
+__kernel void est_b_dev( __global float *b_d,         /* dim = nsymbols x nstates */
+		__global float *gamma_sum_d, /* lth = nstates */
+		int nstates,                 /* number of states */
+		int nsymbols)                /* number of symbols */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -230,10 +250,10 @@ __kernel void est_b_dev( __global float *b_d,         /* dim = nsymbols x nstate
 }
 
 /* Normalize B matrix */
-__kernel void scale_b_dev(  __global float *b_d, /* dim = nsymbols x nstates */   
-		__global float *c_d, /* lth = nstates, matrix-vector product of b_d and ones_s_d */    
-		int nstates,         /* number of states */     
-		int nsymbols)        /* number of symbols */     
+__kernel void scale_b_dev(  __global float *b_d, /* dim = nsymbols x nstates */
+		__global float *c_d, /* lth = nstates, matrix-vector product of b_d and ones_s_d */
+		int nstates,         /* number of states */
+		int nsymbols)        /* number of symbols */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -254,11 +274,11 @@ __kernel void scale_b_dev(  __global float *b_d, /* dim = nsymbols x nstates */
 }
 
 /* Re-estimate Pi values */
-__kernel void est_pi_dev(__global float *pi_d,    /* lth = nstates */  
-		__global float *alpha_d, /* dim = length x nstates */   
-		__global float *beta_d,  /* dim = length x nstates */   
-		float sum_ab,            /* sum dot production of alpha_d and beta_d */  
-		int nstates)             /* number of states */  
+__kernel void est_pi_dev(__global float *pi_d,    /* lth = nstates */
+		__global float *alpha_d, /* dim = length x nstates */
+		__global float *beta_d,  /* dim = length x nstates */
+		float sum_ab,            /* sum dot production of alpha_d and beta_d */
+		int nstates)             /* number of states */
 {
 	// unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
@@ -270,12 +290,12 @@ __kernel void est_pi_dev(__global float *pi_d,    /* lth = nstates */
 }
 
 /* dot production naive version */
-__kernel void s_dot_kernel_naive(int n,                        /* number of elements */ 
-		__global float *paramA,       /* first vector A */  
-		int offsetA,                  /* offset of vector A */ 
-		__global float *paramB,       /* second vector B */ 
-		int offsetB,                  /* offset of vector B */    
-		__global float *partialSum_d) /* memory space for partial sum */  
+__kernel void s_dot_kernel_naive(int n,                        /* number of elements */
+		__global float *paramA,       /* first vector A */
+		int offsetA,                  /* offset of vector A */
+		__global float *paramB,       /* second vector B */
+		int offsetB,                  /* offset of vector B */
+		__global float *partialSum_d) /* memory space for partial sum */
 {
 	unsigned int i;
 	unsigned int tid = get_local_id(0);
@@ -283,7 +303,7 @@ __kernel void s_dot_kernel_naive(int n,                        /* number of elem
 	unsigned int offset = SDOT_BLOCK_SIZE * get_group_id(0);
 
 	for(i = offset + tid; i < n; i += totalThreads)
-	{ 
+	{
 		partialSum_d[i] = paramA[offsetA + i] * paramB[offsetB + i];
 	}
 }
@@ -309,7 +329,7 @@ __kernel void mvm_non_kernel_naive(int m,
 	{
 		n_size = n;
 		m_size = m;
-	} else 
+	} else
 	{
 		n_size = m;
 		m_size = n;
@@ -348,7 +368,7 @@ __kernel void mvm_trans_kernel_naive(int m,
 	{
 		n_size = n;
 		m_size = m;
-	} else 
+	} else
 	{
 		n_size = m;
 		m_size = n;
@@ -365,4 +385,3 @@ __kernel void mvm_trans_kernel_naive(int m,
 	}
 
 }
-

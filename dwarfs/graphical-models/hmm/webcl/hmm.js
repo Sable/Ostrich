@@ -1,9 +1,35 @@
-var maxThreadsPerBlock = 256; 
-var sDotBlockSize = 128; 
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
+ * Foley-Bourgon, Laurie Hendren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
+var maxThreadsPerBlock = 256;
+var sDotBlockSize = 128;
 var sDotBlockNum = 80;
-var mvMulBlockSize = 128; 
-var mvMulBlockNum = 64; 
-var blockDim= 16; 
+var mvMulBlockSize = 128;
+var mvMulBlockNum = 64;
+var blockDim= 16;
 
 var T =  1000;        /* Number of static observations */
 var S = 2;           /* Number of static symbols */
@@ -12,29 +38,29 @@ var ITERATIONS = 1;           /* Number of iterations */
 var EXIT_ERROR= 1;
 
 var pd;
-var ctx; 
-var src; 
+var ctx;
+var src;
 var prgm;
-var queue; 
+var queue;
 
 var nstates;
 var nsymbols;
-var obs; 
+var obs;
 var length;
 var scale;
 var a_d;
-var b_d; 
-var pi_d; 
-var alpha_d; 
-var beta_d; 
-var gamma_sum_d; 
-var xi_sum_d; 
-var c_d; 
-var ones_n_d; 
+var b_d;
+var pi_d;
+var alpha_d;
+var beta_d;
+var gamma_sum_d;
+var xi_sum_d;
+var c_d;
+var ones_n_d;
 var ones_s_d;
 
-var intBytes = 4; 
-var floatBytes = 4; 
+var intBytes = 4;
+var floatBytes = 4;
 
 var kernelInitOnesDev;
 var kernelInitAlphaDev;
@@ -95,20 +121,20 @@ function source(id){
         mHttpReq.open("GET", programElement.src, false);
         mHttpReq.send(null);
         programSource = mHttpReq.responseText;
-    } 
+    }
     return programSource;
 }
 function program(ctx, src){ return ctx.createProgram(src);}
 
 function build(prgm, device){
-    try {        
+    try {
       prgm.build ([device], "");
     } catch(e) {
       alert ("Failed to build WebCL program. Error "
-             + prgm.getBuildInfo (device, 
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_STATUS)
-             + ":  " 
-             + prgm.getBuildInfo (device, 
+             + ":  "
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_LOG));
       throw e;
     }
@@ -116,7 +142,7 @@ function build(prgm, device){
 
 function webCLPlatformDevice(platformIdx, deviceIdx){
     var p = webcl.getPlatforms()[platformIdx];
-    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];    
+    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];
     return {"platform": p, "device": d};
 }
 
@@ -131,32 +157,32 @@ function isWebCL(){
                 "and the WebCL browser extension installed.");
           return false;
       }
-      return true; 
+      return true;
 }
 
 function kernel(kernel, program){ return program.createKernel(kernel);}
 
 function printM(a, m, n){
-    console.log("Printing Matrix:");    
+    console.log("Printing Matrix:");
     for(var i =0; i<m; ++i){
-        console.log("[" + 
+        console.log("[" +
             Array.prototype.join.call(Array.prototype.slice.call(a, i*m, i*m + n), ",") +
             "]");
-    }    
+    }
 }
 
 function dotProduct(n, x, offsetx, y,  offsety){
     var result = 0.0;
     var i = 0;
 
-    var blocks, threads; 
+    var blocks, threads;
     if(n < sDotBlockNum){
-      blocks = n; 
+      blocks = n;
     } else {
-      blocks = sDotBlockNum; 
+      blocks = sDotBlockNum;
     }
 
-    threads = sDotBlockSize; 
+    threads = sDotBlockSize;
 
     if(n <= 0){
       return result;
@@ -166,17 +192,17 @@ function dotProduct(n, x, offsetx, y,  offsety){
     var partial_sum_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*n);
 
     queue.enqueueWriteBuffer(partial_sum_d, true, 0, floatBytes*n, partialSum);
-    queue.finish(); 
+    queue.finish();
 
     kernelSDotKernelNaive.setArg(0, new Int32Array([n]));
-    kernelSDotKernelNaive.setArg(1, x); 
+    kernelSDotKernelNaive.setArg(1, x);
     kernelSDotKernelNaive.setArg(2, new Int32Array([offsetx]));
     kernelSDotKernelNaive.setArg(3, y);
     kernelSDotKernelNaive.setArg(4, new Int32Array([offsety]));
     kernelSDotKernelNaive.setArg(5, partial_sum_d);
 
-    var globalWorkSize = [ blocks*threads ]; 
-    var localWorkSize = [ threads ]; 
+    var globalWorkSize = [ blocks*threads ];
+    var localWorkSize = [ threads ];
 
     queue.enqueueNDRangeKernel(kernelSDotKernelNaive, 1, null, globalWorkSize, localWorkSize);
     queue.finish();
@@ -200,7 +226,7 @@ function matVecMul(trans, m, n, a, lda, x, offsetx, y, offsety){
     if(trans == 't'){
       kernelSGEMVTKernelNaive.setArg(0, new Int32Array([m]));
       kernelSGEMVTKernelNaive.setArg(1, new Int32Array([n]));
-      kernelSGEMVTKernelNaive.setArg(2, a); 
+      kernelSGEMVTKernelNaive.setArg(2, a);
       kernelSGEMVTKernelNaive.setArg(3, new Int32Array([lda]));
       kernelSGEMVTKernelNaive.setArg(4, x);
       kernelSGEMVTKernelNaive.setArg(5, new Int32Array([offsetx]));
@@ -216,7 +242,7 @@ function matVecMul(trans, m, n, a, lda, x, offsetx, y, offsety){
     else{
       kernelSGEMVNKernelNaive.setArg(0, new Int32Array([m]));
       kernelSGEMVNKernelNaive.setArg(1, new Int32Array([n]));
-      kernelSGEMVNKernelNaive.setArg(2, a); 
+      kernelSGEMVNKernelNaive.setArg(2, a);
       kernelSGEMVNKernelNaive.setArg(3, new Int32Array([lda]));
       kernelSGEMVNKernelNaive.setArg(4, x);
       kernelSGEMVNKernelNaive.setArg(5, new Int32Array([offsetx]));
@@ -253,7 +279,7 @@ function printM(aa,  m,  n){
 
 /* Calculates the forward variables (alpha) for an HMM and obs. sequence */
 function calcAlpha(){
-    var threadsPerBlock; 
+    var threadsPerBlock;
     var nBlocks;
     var offsetCur;
     var offsetPrev;
@@ -263,7 +289,7 @@ function calcAlpha(){
     var nstatesA = new Int32Array([nstates]);
     var obstA = new Int32Array([obs[0]]);
 
-    threadsPerBlock = maxThreadsPerBlock; 
+    threadsPerBlock = maxThreadsPerBlock;
     nBlocks = Math.floor((nstates + threadsPerBlock -1)/ threadsPerBlock);
 
     var globalWorkSize  = [nBlocks * threadsPerBlock];
@@ -271,7 +297,7 @@ function calcAlpha(){
 
     // initialize alpha variables
 
-    kernelInitAlphaDev.setArg(0, b_d); 
+    kernelInitAlphaDev.setArg(0, b_d);
     kernelInitAlphaDev.setArg(1, pi_d);
     kernelInitAlphaDev.setArg(2, nstatesA);
     kernelInitAlphaDev.setArg(3, alpha_d);
@@ -286,7 +312,7 @@ function calcAlpha(){
 
     // Scale the alpha values
     kernelScaleAlphaDev.setArg(0, nstatesA);
-    kernelScaleAlphaDev.setArg(1, alpha_d); 
+    kernelScaleAlphaDev.setArg(1, alpha_d);
     kernelScaleAlphaDev.setArg(2, new Int32Array([temp]));
     kernelScaleAlphaDev.setArg(3, new Float32Array([scale[0]]));
 
@@ -299,7 +325,7 @@ function calcAlpha(){
 
 
     // better then reallocating each time in the loop
-    var offsetPrevA = new Int32Array(1); 
+    var offsetPrevA = new Int32Array(1);
     var offsetCurA = new Int32Array(1);
     var scaletA = new Float32Array(1);
 
@@ -309,8 +335,8 @@ function calcAlpha(){
         /* Calculate offsets */
         offsetPrev = (t-1)*nstates;
         offsetCur = t*nstates;
-        offsetPrevA[0] = offsetPrev; 
-        offsetCurA[0] = offsetCur; 
+        offsetPrevA[0] = offsetPrev;
+        offsetCurA[0] = offsetCur;
         obstA[0] = obs[t];
 
         /* Multiply transposed A matrix by alpha(t-1) */
@@ -322,7 +348,7 @@ function calcAlpha(){
 
         kernelCalcAlphaDev.setArg(0, nstatesA);
         kernelCalcAlphaDev.setArg(1, alpha_d);
-        kernelCalcAlphaDev.setArg(2, offsetCurA); 
+        kernelCalcAlphaDev.setArg(2, offsetCurA);
         kernelCalcAlphaDev.setArg(3, b_d);
         kernelCalcAlphaDev.setArg(4, obstA);
 
@@ -350,18 +376,18 @@ function calcAlpha(){
 
 /* Calculates the backward variables (beta) */
 function calcBeta(){
-    var threadsPerBlock; 
-    var nBlocks; 
-    var t; 
-    var offset; 
+    var threadsPerBlock;
+    var nBlocks;
+    var t;
+    var offset;
     var nstatesA = new Int32Array([nstates]);
     var scaletA = new Float32Array(1);
     var obstA = new Int32Array(1);
     var tA = new Int32Array(1);
 
-    threadsPerBlock = maxThreadsPerBlock; 
+    threadsPerBlock = maxThreadsPerBlock;
     nBlocks = Math.floor((nstates + threadsPerBlock -1) / threadsPerBlock);
-    var globalWorkSize = [ nBlocks * threadsPerBlock ]; 
+    var globalWorkSize = [ nBlocks * threadsPerBlock ];
     var localWorkSize = [threadsPerBlock];
 
     offset = (length -1)*nstates;
@@ -383,13 +409,13 @@ function calcBeta(){
         kernelCalcBetaDev.setArg(0, beta_d);
         kernelCalcBetaDev.setArg(1, b_d);
         kernelCalcBetaDev.setArg(2, scaletA);
-        kernelCalcBetaDev.setArg(3, nstatesA); 
+        kernelCalcBetaDev.setArg(3, nstatesA);
         kernelCalcBetaDev.setArg(4, obstA);
         kernelCalcBetaDev.setArg(5, tA);
 
         queue.enqueueNDRangeKernel(kernelCalcBetaDev, 1, null, globalWorkSize, localWorkSize);
         queue.finish();
-        
+
         matVecMul( 'n', nstates, nstates, a_d, nstates,
                      beta_d, t * nstates, beta_d, t * nstates);
     }
@@ -399,17 +425,17 @@ function calcBeta(){
 
 /* Calculates the gamma sum */
 function calcGammaSum(){
-    var threadsPerBlock; 
-    var nBlocks; 
-    var size; 
-    var t; 
+    var threadsPerBlock;
+    var nBlocks;
+    var size;
+    var t;
     var nstatesA = new Int32Array([nstates]);
     var tA = new Int32Array(1);
 
 
-    threadsPerBlock = maxThreadsPerBlock; 
+    threadsPerBlock = maxThreadsPerBlock;
     nBlocks = Math.floor((nstates + threadsPerBlock -1) / threadsPerBlock);
-    var globalWorkSize = [ nBlocks * threadsPerBlock ]; 
+    var globalWorkSize = [ nBlocks * threadsPerBlock ];
     var localWorkSize = [threadsPerBlock];
 
     var gammaSumZeros = new Float32Array(nstates);
@@ -418,11 +444,11 @@ function calcGammaSum(){
 
     /* Find sum of gamma variables */
     for (t = 0; t < length; t++) {
-        tA[0] = t; 
-        kernelCalcGammaDev.setArg(0, gamma_sum_d);    
+        tA[0] = t;
+        kernelCalcGammaDev.setArg(0, gamma_sum_d);
         kernelCalcGammaDev.setArg(1, alpha_d);
         kernelCalcGammaDev.setArg(2, beta_d);
-        kernelCalcGammaDev.setArg(3, nstatesA);   
+        kernelCalcGammaDev.setArg(3, nstatesA);
         kernelCalcGammaDev.setArg(4, tA);
         queue.enqueueNDRangeKernel(kernelCalcGammaDev, 1, null, globalWorkSize, localWorkSize);
         queue.finish();
@@ -431,13 +457,13 @@ function calcGammaSum(){
 
 /* Calculates the sum of xi variables */
 function calcXiSum(){
-    var sumAB; 
-    var nBlocks; 
-    var size; 
-    var t; 
+    var sumAB;
+    var nBlocks;
+    var size;
+    var t;
     var nstatesA = new Int32Array([nstates]);
     var sumABA = new Float32Array(1);
-    var obstA = new Int32Array(1); 
+    var obstA = new Int32Array(1);
     var tA = new Int32Array(1);
 
     var xiSumZeros = new Float32Array(nstates*nstates);
@@ -447,15 +473,15 @@ function calcXiSum(){
 
     nBlocks  = Math.floor((nstates + blockDim -1) / blockDim);
 
-    var globalWorkSize = [ nBlocks * blockDim, nBlocks*blockDim]; 
+    var globalWorkSize = [ nBlocks * blockDim, nBlocks*blockDim];
     var localWorkSize = [ blockDim, blockDim];
 
     for (t = 0; t < length - 1; t++) {
-      obstA[0] = obs[t + 1]; 
+      obstA[0] = obs[t + 1];
       tA[0] = t;
-        
+
       sumAB = dotProduct(nstates, alpha_d, t*nstates, beta_d, t*nstates);
-      sumABA[0] = sumAB; 
+      sumABA[0] = sumAB;
 
       kernelCalcXiDev.setArg(0, xi_sum_d);
       kernelCalcXiDev.setArg(1, a_d);
@@ -477,7 +503,7 @@ function calcXiSum(){
 /* Re-estimates the state transition probabilities (A) */
 function estimateA(){
     var sumAB;
-    var nBlocks; 
+    var nBlocks;
     var nstatesA = new Int32Array([nstates]);
 
     nBlocks = Math.floor((nstates + blockDim -1)/blockDim);
@@ -497,7 +523,7 @@ function estimateA(){
     kernelEstADev.setArg(7, new Int32Array([length]));
 
     queue.enqueueNDRangeKernel(kernelEstADev, 2, null, globalWorkSize, localWorkSize);
-    queue.finish(); 
+    queue.finish();
 
     matVecMul('t', nstates, nstates, a_d, nstates, ones_n_d, 0, c_d, 0);
 
@@ -514,11 +540,11 @@ function estimateA(){
 /* Re-estimates the output symbol probabilities (B) */
 function estimateB(){
 
-    var sumAB; 
+    var sumAB;
     var size;
     var t;
-    var gridX; 
-    var gridY; 
+    var gridX;
+    var gridY;
 
     var bDZeros = new Float32Array(nstates*nsymbols);
     queue.enqueueWriteBuffer(b_d, true, 0, floatBytes*nstates*nsymbols, bDZeros);
@@ -532,7 +558,7 @@ function estimateB(){
     var nstatesA = new Int32Array([nstates]);
     var nsymbolsA = new Int32Array([nsymbols]);
     var sumABA = new Float32Array(1);
-    var obstA = new Int32Array(1); 
+    var obstA = new Int32Array(1);
     var tA = new Int32Array(1);
 
     for (t = 0; t < length; t++) {
@@ -576,23 +602,23 @@ function estimateB(){
     kernelScaleBDev.setArg(3, nsymbolsA);
     queue.enqueueNDRangeKernel(kernelScaleBDev, 2, null, globalWorkSize, localWorkSize);
     queue.finish();
-    
+
     return 0;
 }
 
 /* Re-estimates the initial state probabilities (Pi) */
 function estimatePi(){
-    var sumAB; 
-    var threadsPerBlock; 
-    var nBlocks; 
-    
+    var sumAB;
+    var threadsPerBlock;
+    var nBlocks;
+
     sumAB = dotProduct(nstates, alpha_d, 0, beta_d, 0);
 
-    threadsPerBlock = maxThreadsPerBlock; 
+    threadsPerBlock = maxThreadsPerBlock;
     nBlocks = Math.floor((nstates+threadsPerBlock -1)/threadsPerBlock);
 
-    var globalWorkSize = [ nBlocks*threadsPerBlock]; 
-    var localWorkSize = [ threadsPerBlock ]; 
+    var globalWorkSize = [ nBlocks*threadsPerBlock];
+    var localWorkSize = [ threadsPerBlock ];
 
     kernelEstPiDev.setArg(0, pi_d);
     kernelEstPiDev.setArg(1, alpha_d);
@@ -608,9 +634,9 @@ function estimatePi(){
 
 
 function printMD(a, m, n, type){
-  var x; 
-  var bytes = 4; 
-  if(type === "int") x = new Int32Array(m*n); 
+  var x;
+  var bytes = 4;
+  if(type === "int") x = new Int32Array(m*n);
   else x = new Float32Array(m*n);
 
   queue.enqueueReadBuffer(a, true, 0, bytes*m*n, x);
@@ -631,17 +657,17 @@ function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold)
     var oldLogLik = 0;
     var iter;
 
-    var programSourceId = "clHMM";        
-    var threadsPerBlock, nBlocks; 
-    
-    try {      
+    var programSourceId = "clHMM";
+    var threadsPerBlock, nBlocks;
+
+    try {
         //============ Setup WebCL Program ================
-        isWebCL();         
-        pd = webCLPlatformDevice(platformIdx, deviceIdx);        
-        ctx = webCLContext(pd.device);           
+        isWebCL();
+        pd = webCLPlatformDevice(platformIdx, deviceIdx);
+        ctx = webCLContext(pd.device);
         src = source(programSourceId);
         prgm = program(ctx, src);
-        build(prgm, pd.device);            
+        build(prgm, pd.device);
         queue = ctx.createCommandQueue(pd.device);
 
         //============ Initialize HMM Values================
@@ -677,10 +703,10 @@ function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold)
 
         //============ Device Memory================
         a_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates*nstates);
-        b_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates*nsymbols); 
+        b_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates*nsymbols);
         pi_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates);
         alpha_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates*length);
-        beta_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates*length); 
+        beta_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates*length);
         gamma_sum_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates);
         xi_sum_d =  ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates*nstates);
         c_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nstates);
@@ -688,18 +714,18 @@ function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold)
         ones_s_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*nsymbols);
 
         //============ Load Parameters================
-        queue.enqueueWriteBuffer(a_d, true, 0, floatBytes*nstates*nstates, a); 
-        queue.enqueueWriteBuffer(b_d, true, 0, floatBytes*nstates*nsymbols, b); 
+        queue.enqueueWriteBuffer(a_d, true, 0, floatBytes*nstates*nstates, a);
+        queue.enqueueWriteBuffer(b_d, true, 0, floatBytes*nstates*nsymbols, b);
         queue.enqueueWriteBuffer(pi_d, true, 0, floatBytes*nstates, pi);
-        queue.finish(); 
+        queue.finish();
 
         //============ Init Ones================
-        threadsPerBlock = maxThreadsPerBlock; 
-        nBlocks = Math.floor((nstates + threadsPerBlock - 1) / threadsPerBlock); 
-        var globalWorkSize = [ nBlocks*threadsPerBlock ]; 
-        var localWorkSize = [ threadsPerBlock ]; 
+        threadsPerBlock = maxThreadsPerBlock;
+        nBlocks = Math.floor((nstates + threadsPerBlock - 1) / threadsPerBlock);
+        var globalWorkSize = [ nBlocks*threadsPerBlock ];
+        var localWorkSize = [ threadsPerBlock ];
 
-        kernelInitOnesDev.setArg(0, ones_s_d); 
+        kernelInitOnesDev.setArg(0, ones_s_d);
         kernelInitOnesDev.setArg(1, new Uint32Array([nsymbols]));
         queue.enqueueNDRangeKernel(kernelInitOnesDev,1, null, globalWorkSize, localWorkSize);
         queue.finish();
@@ -711,7 +737,7 @@ function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold)
             if (newLogLik == EXIT_ERROR) {
                 return EXIT_ERROR;
             }
-            
+
             if (calcBeta() == EXIT_ERROR) {
                 return EXIT_ERROR;
             }
@@ -744,8 +770,8 @@ function run_hmm_bwa(platformIdx, deviceIdx, hmm, in_obs, iterations, threshold)
             oldLogLik = newLogLik;
         }
 
-        queue.enqueueReadBuffer(a_d, true, 0, floatBytes*nstates*nstates, a); 
-        queue.enqueueReadBuffer(b_d, true, 0, floatBytes*nsymbols*nstates, b); 
+        queue.enqueueReadBuffer(a_d, true, 0, floatBytes*nstates*nstates, a);
+        queue.enqueueReadBuffer(b_d, true, 0, floatBytes*nsymbols*nstates, b);
         queue.enqueueReadBuffer(pi_d, true, 0, floatBytes*nstates, pi);
         queue.finish();
     }
