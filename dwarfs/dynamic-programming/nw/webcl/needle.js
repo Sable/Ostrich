@@ -1,3 +1,29 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
+ * Foley-Bourgon, Laurie Hendren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
 Math.commonRandom = (function() {
     var seed = 49734321;
     return function() {
@@ -87,7 +113,7 @@ function to_int(c) {
     if (c == "-") {
         return -1;
     } else {
-        var index = characters.indexOf(c); 
+        var index = characters.indexOf(c);
         if (c < 0 || c > 26) {
             throw new Error("ERROR: Invalid conversion to int value, char '" + c + "' out of range");
         }
@@ -147,20 +173,20 @@ function source(id){
         mHttpReq.open("GET", programElement.src, false);
         mHttpReq.send(null);
         programSource = mHttpReq.responseText;
-    } 
+    }
     return programSource;
 }
 function program(ctx, src){ return ctx.createProgram(src);}
 
 function build(prgm, device){
-    try {        
+    try {
       prgm.build ([device], "");
     } catch(e) {
       alert ("Failed to build WebCL program. Error "
-             + prgm.getBuildInfo (device, 
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_STATUS)
-             + ":  " 
-             + prgm.getBuildInfo (device, 
+             + ":  "
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_LOG));
       throw e;
     }
@@ -168,7 +194,7 @@ function build(prgm, device){
 
 function webCLPlatformDevice(platformIdx, deviceIdx){
     var p = webcl.getPlatforms()[platformIdx];
-    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];    
+    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];
     return {"platform": p, "device": d};
 }
 
@@ -183,23 +209,23 @@ function isWebCL(){
                 "and the WebCL browser extension installed.");
           return false;
       }
-      return true; 
+      return true;
 }
 
 function kernel(kernel, program){ return program.createKernel(kernel);}
 
 function printM(a, m, n){
-    console.log("Printing Matrix:");    
+    console.log("Printing Matrix:");
     for(var i =0; i<m; ++i){
-        console.log("[" + 
+        console.log("[" +
             Array.prototype.join.call(Array.prototype.slice.call(a, i*m, i*m + n), ",") +
             "]");
-    }    
+    }
 }
 
 function webclNeedle(platformIdx, deviceIdx, dimensions, penalty, options){
-    var programSourceId = "clNeedle";        
-    var blockSize = 16; 
+    var programSourceId = "clNeedle";
+    var blockSize = 16;
     var intBytes = 4;
 
     var default_options = {
@@ -278,7 +304,7 @@ function webclNeedle(platformIdx, deviceIdx, dimensions, penalty, options){
         input_itemsets[input_index(0,j)] = -j * penalty;
 
     var t1 = performance.now();
-    try {      
+    try {
         //============ Setup WebCL Program ================
         isWebCL();
         var pd = webCLPlatformDevice(platformIdx, deviceIdx);
@@ -288,12 +314,12 @@ function webclNeedle(platformIdx, deviceIdx, dimensions, penalty, options){
         build(prgm, pd.device);
         var queue = ctx.createCommandQueue(pd.device);
 
-        // ============== Initialize Kernels ================ 
+        // ============== Initialize Kernels ================
         var needle1 = kernel("needle_opencl_shared_1", prgm);
         var needle2 = kernel("needle_opencl_shared_2", prgm);
 
-        // ============== Setup Kernel Memory ================     
-        // memory has to be allocated in terms of bytes 
+        // ============== Setup Kernel Memory ================
+        // memory has to be allocated in terms of bytes
         size = max_cols * max_rows;
         var clReference= ctx.createBuffer(WebCL.MEM_READ_ONLY, size*intBytes);
         var clMatrix = ctx.createBuffer(WebCL.MEM_READ_WRITE , size*intBytes);
@@ -303,21 +329,21 @@ function webclNeedle(platformIdx, deviceIdx, dimensions, penalty, options){
         queue.enqueueWriteBuffer(clMatrix, true , 0, size*intBytes, input_itemsets);
         queue.finish();
 
-        // ============== Set Args and Run Kernels ================ 
+        // ============== Set Args and Run Kernels ================
         var localWorkSize = [ blockSize, 1];
-        var globalWorkSize = [0, 0];            
+        var globalWorkSize = [0, 0];
         var blockWidth = Math.floor((max_cols - 1) / blockSize);
 
-        for(var i=1; i<=blockWidth; ++i){            
+        for(var i=1; i<=blockWidth; ++i){
           globalWorkSize[0] = i*localWorkSize[0];
           globalWorkSize[1] = localWorkSize[1];
 
-          needle1.setArg(0, clReference);            
-          needle1.setArg(1, clMatrix);                    
+          needle1.setArg(0, clReference);
+          needle1.setArg(1, clMatrix);
           needle1.setArg(2, new Int32Array([max_cols]));
-          needle1.setArg(3, new Int32Array([penalty]));            
-          needle1.setArg(4, new Int32Array([i]));            
-          needle1.setArg(5, new Int32Array([blockWidth]));            
+          needle1.setArg(3, new Int32Array([penalty]));
+          needle1.setArg(4, new Int32Array([i]));
+          needle1.setArg(5, new Int32Array([blockWidth]));
 
           queue.enqueueNDRangeKernel(needle1, 2, null, globalWorkSize, localWorkSize);
           queue.finish();
@@ -327,12 +353,12 @@ function webclNeedle(platformIdx, deviceIdx, dimensions, penalty, options){
           globalWorkSize[0] = i*localWorkSize[0];
           globalWorkSize[1] = localWorkSize[1];
 
-          needle2.setArg(0, clReference);            
-          needle2.setArg(1, clMatrix);                    
+          needle2.setArg(0, clReference);
+          needle2.setArg(1, clMatrix);
           needle2.setArg(2, new Int32Array([max_cols]));
-          needle2.setArg(3, new Int32Array([penalty]));            
-          needle2.setArg(4, new Int32Array([i]));            
-          needle2.setArg(5, new Int32Array([blockWidth]));            
+          needle2.setArg(3, new Int32Array([penalty]));
+          needle2.setArg(4, new Int32Array([i]));
+          needle2.setArg(5, new Int32Array([blockWidth]));
 
           queue.enqueueNDRangeKernel(needle2, 2, null, globalWorkSize, localWorkSize);
           queue.finish();
@@ -341,12 +367,12 @@ function webclNeedle(platformIdx, deviceIdx, dimensions, penalty, options){
         queue.enqueueReadBuffer(clMatrix, true, 0, size*intBytes, input_itemsets);
         queue.finish();
         clReference.release();
-        clMatrix.release(); 
-        prgm.release(); 
-        needle1.release(); 
-        needle2.release(); 
-        queue.release(); 
-        ctx.release();    
+        clMatrix.release();
+        prgm.release();
+        needle1.release();
+        needle2.release();
+        queue.release();
+        ctx.release();
     }
     catch(e){
         alert(e);
@@ -382,14 +408,14 @@ function webclNeedle(platformIdx, deviceIdx, dimensions, penalty, options){
             aligned_seq_2[aligned_index_2--] = input_seq_2[j--];
         } else if (w_limit === true || traceback === n) {
             aligned_index_2--;
-            aligned_seq_1[aligned_index_1--] = input_seq_1[i--]; 
+            aligned_seq_1[aligned_index_1--] = input_seq_1[i--];
         } else { throw new Error("ERROR n_limit: " + n_limit + " w_limit: " + w_limit + " traceback: " + traceback); }
     }
 
     if (options.print_results) {
         console.log(input_seq_1);
         console.log(input_seq_2);
-        console.log("Input Seq 1  :" + Array.prototype.map.call(input_seq_1, to_char).slice(1).join(""));     
+        console.log("Input Seq 1  :" + Array.prototype.map.call(input_seq_1, to_char).slice(1).join(""));
         console.log("Input Seq 2  :" + Array.prototype.map.call(input_seq_2, to_char).slice(1).join(""));
         console.log("Aligned Seq 1:" + Array.prototype.map.call(aligned_seq_1, to_char).join(""));
         console.log("Aligned Seq 2:" + Array.prototype.map.call(aligned_seq_2, to_char).join(""));
