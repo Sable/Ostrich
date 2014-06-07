@@ -1,3 +1,24 @@
+/*
+ * Copyright July 29, 2011 by Virginia Polytechnic Institute and State University
+ * All rights reserved.
+ *
+ * Virginia Polytechnic Institute and State University (Virginia Tech) owns the
+ * OpenCL and the 13 Dwarfs software and its associated documentation (Software).
+ * You should carefully read the following terms and conditions before using this
+ * software.  Your use of this Software indicates your acceptance of this license
+ * agreement and all terms and conditions.
+ *
+ * You are hereby licensed to use the Software for Non-Commercial Purpose only.
+ * Non-Commercial Purpose means the use of the Software solely for research.
+ * Non-Commercial Purpose excludes, without limitation, any use of the Software, as
+ * part of, or in any way in connection with a product or service which is sold,
+ * offered for sale, licensed, leased, loaned, or rented.  Permission to use, copy,
+ * modify, and distribute this compilation for Non-Commercial Purpose is hereby
+ * granted without fee, subject to the following terms of this license.
+ */
+
+
+
 #include <stdio.h>
 #include <assert.h>
 #include "Event.h"
@@ -32,7 +53,7 @@ void setGlobalOption(string &arg, int fftn1, int fftn2)
 	err = clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t)*3, &wg_size, NULL);
 	CHKERR(err, "Failed to get device info!");
 	//	printf("wg_size: %d radixArr[0]: %d radixArr[1]: %d\n",wg_size[0],radixArr[0], radixArr[1]);
-	batchSize = (batchSize > wg_size[0]) ? wg_size[0] : batchSize;	
+	batchSize = (batchSize > wg_size[0]) ? wg_size[0] : batchSize;
 	Radix1 = Radix1Arr[1];
 	Radix2 = Radix2Arr[1];
 	int S = radixArr[1]*fftn1;
@@ -82,7 +103,7 @@ void getLocalDimension(size_t &localsz, size_t &globalsz, int fftn1, int fftn2)
 	if(fftn1/radix[0] > wg_size)
 		getLocalRadix(fftn1, radix, &numRadix, 32);
 	//	for(int i = 0; i < numRadix; i++)
-	//	{      
+	//	{
 	//		assert( radix[i] && !( (radix[i] - 1) & radix[i] ) );
 	//	}
 
@@ -104,13 +125,13 @@ void getLocalDimension(size_t &localsz, size_t &globalsz, int fftn1, int fftn2)
 }
 
 void getGlobalDimension(size_t  &localsz, size_t &globalsz, int BS, int n, int n_g)
-{	
+{
 	cl_int err;
 	size_t wg_size;
 	int radixArr[5], Radix1Arr[5], Radix2Arr[5];
 	int radix, Radix1, Radix2;
 	int num_radix;
-	bool v = (BS==1) ? 0 : 1;	
+	bool v = (BS==1) ? 0 : 1;
 	int R = v ? BS : 1;
 	int SI = R;
 	getGlobalRadix(n, radixArr, Radix1Arr, Radix2Arr, &num_radix);
@@ -168,7 +189,7 @@ void getLocalRadix(unsigned int n, unsigned int *radix, unsigned int *num_radix,
 		{
 			n = n / 8;
 			radix[i] = 8;
-			i++;			
+			i++;
 		}
 		else if(n >= 4)
 		{
@@ -183,7 +204,7 @@ void getLocalRadix(unsigned int n, unsigned int *radix, unsigned int *num_radix,
 			*num_radix = i;
 			return;
 		}
-	} 
+	}
 }
 
 	void
@@ -193,7 +214,7 @@ getGlobalRadix(int n, int *radix, int *Radix1, int *Radix2, int *num_radix)
 
 	int numR = 0;
 	int N = n;
-	while(N > baseRadix) 
+	while(N > baseRadix)
 	{
 		N /= baseRadix;
 		numR++;
@@ -216,7 +237,7 @@ getGlobalRadix(int n, int *radix, int *Radix1, int *Radix2, int *num_radix)
 			continue;
 		}
 
-		int r1 = 2; 
+		int r1 = 2;
 		int r2 = B / r1;
 		while(r2 > r1)
 		{
@@ -225,11 +246,11 @@ getGlobalRadix(int n, int *radix, int *Radix1, int *Radix2, int *num_radix)
 		}
 		Radix1[i] = r1;
 		Radix2[i] = r2;
-	}	
+	}
 }
 
 
-	void 
+	void
 init2(OptionParser& op, bool _do_dp, int fftn1, int fftn2)
 {
 	cl_int err;
@@ -249,15 +270,15 @@ init2(OptionParser& op, bool _do_dp, int fftn1, int fftn2)
 	{
 		char* log = NULL;
 		size_t bytesRequired = 0;
-		err = clGetProgramBuildInfo(fftProg, 
-				device_id, 
+		err = clGetProgramBuildInfo(fftProg,
+				device_id,
 				CL_PROGRAM_BUILD_LOG,
 				0,
 				NULL,
 				&bytesRequired );
 		log = (char*)malloc( bytesRequired + 1 );
-		err = clGetProgramBuildInfo(fftProg, 
-				device_id, 
+		err = clGetProgramBuildInfo(fftProg,
+				device_id,
 				CL_PROGRAM_BUILD_LOG,
 				bytesRequired,
 				log,
@@ -266,7 +287,7 @@ init2(OptionParser& op, bool _do_dp, int fftn1, int fftn2)
 		//		FILE *f;
 		//		f=fopen("log.txt","w");
 		//		fprintf(f,log);
-		//		fclose(f);	
+		//		fclose(f);
 
 		free( log );
 	}
@@ -294,7 +315,7 @@ init2(OptionParser& op, bool _do_dp, int fftn1, int fftn2)
 	CHKERR(err, "Failed to create kernels!");
 }
 
-	void 
+	void
 init(OptionParser& op, bool _do_dp, int fftn)
 {
 	cl_int err;
@@ -314,15 +335,15 @@ init(OptionParser& op, bool _do_dp, int fftn)
 	{
 		char* log = NULL;
 		size_t bytesRequired = 0;
-		err = clGetProgramBuildInfo(fftProg, 
-				device_id, 
+		err = clGetProgramBuildInfo(fftProg,
+				device_id,
 				CL_PROGRAM_BUILD_LOG,
 				0,
 				NULL,
 				&bytesRequired );
 		log = (char*)malloc( bytesRequired + 1 );
-		err = clGetProgramBuildInfo(fftProg, 
-				device_id, 
+		err = clGetProgramBuildInfo(fftProg,
+				device_id,
 				CL_PROGRAM_BUILD_LOG,
 				bytesRequired,
 				log,
@@ -330,7 +351,7 @@ init(OptionParser& op, bool _do_dp, int fftn)
 		//		FILE *f;
 		//		f=fopen("log.txt","w");
 		//		fprintf(f,log);
-		//		fclose(f);	
+		//		fclose(f);
 		free( log );
 	}
 #endif
@@ -357,7 +378,7 @@ init(OptionParser& op, bool _do_dp, int fftn)
 }
 
 
-	void 
+	void
 forward(void* workp, void *temp, int n_ffts, int fftn)
 {
 	cl_int err;
@@ -370,9 +391,9 @@ forward(void* workp, void *temp, int n_ffts, int fftn)
 	}
 	else
 	{
-		getGlobalDimension(localsz0, globalsz0, 1, fftn, 0); 
+		getGlobalDimension(localsz0, globalsz0, 1, fftn, 0);
 		globalsz0 = globalsz0*localsz0;
-		getGlobalDimension(localsz, globalsz, 1, fftn,1); 
+		getGlobalDimension(localsz, globalsz, 1, fftn,1);
 		globalsz = globalsz*localsz;
 	}
 	if(fftn> 2048)
@@ -388,8 +409,8 @@ forward(void* workp, void *temp, int n_ffts, int fftn)
 	START_KERNEL
 		if(fftn> 2048){
 			//		printf("local size0: %d global size0 %d \n",localsz0,globalsz0);
-			err = clEnqueueNDRangeKernel(commands, fftKrnl1, 1, NULL, 
-					&globalsz0, &localsz0, 0, 
+			err = clEnqueueNDRangeKernel(commands, fftKrnl1, 1, NULL,
+					&globalsz0, &localsz0, 0,
 					NULL, &ocdTempEvent);
 			err = clWaitForEvents(1, &ocdTempEvent);
 			START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "FFT Kernels fftKrnl1", ocdTempTimer)
@@ -397,8 +418,8 @@ forward(void* workp, void *temp, int n_ffts, int fftn)
 
 		}
 	//	printf("local size: %d global size %d \n",localsz,globalsz);
-	err = clEnqueueNDRangeKernel(commands, fftKrnl, 1, NULL, 
-			&globalsz, &localsz, 0, 
+	err = clEnqueueNDRangeKernel(commands, fftKrnl, 1, NULL,
+			&globalsz, &localsz, 0,
 			NULL, &ocdTempEvent);
 	err = clWaitForEvents(1, &ocdTempEvent);
 	START_TIMER(ocdTempEvent, OCD_TIMER_KERNEL, "FFT Kernels fftKrnl", ocdTempTimer)
@@ -407,7 +428,7 @@ forward(void* workp, void *temp, int n_ffts, int fftn)
 	END_KERNEL
 }
 
-	void 
+	void
 forward2(void* workp, void* temp, int n_ffts, int fftn1, int fftn2)
 {
 	cl_int err;
@@ -472,8 +493,8 @@ forward2(void* workp, void* temp, int n_ffts, int fftn1, int fftn2)
 	}
 
 	//	printf("local size: %d global size: %d \n",localsz,globalsz);
-	err = clEnqueueNDRangeKernel(commands, fftKrnl, 1, NULL, 
-			&globalsz, &localsz, 0, 
+	err = clEnqueueNDRangeKernel(commands, fftKrnl, 1, NULL,
+			&globalsz, &localsz, 0,
 			NULL, &fftEvent.CLEvent());
 	if (fftn1<4096) firstEvent = &fftEvent.CLEvent();//inserted for dual timer support
 	err = clWaitForEvents(1, &fftEvent.CLEvent());
@@ -482,8 +503,8 @@ forward2(void* workp, void* temp, int n_ffts, int fftn1, int fftn2)
 	CHKERR(err, "Failed to wait for events!");
 
 	//	printf("local size1: %d global size1: %d \n",localsz1,globalsz1);
-	err = clEnqueueNDRangeKernel(commands, fftKrnl1, 1, NULL, 
-			&globalsz1, &localsz1, 0, 
+	err = clEnqueueNDRangeKernel(commands, fftKrnl1, 1, NULL,
+			&globalsz1, &localsz1, 0,
 			NULL, &fftEvent.CLEvent());
 	err = clWaitForEvents(1, &fftEvent.CLEvent());
 	START_TIMER(fftEvent.CLEvent(), OCD_TIMER_KERNEL, "FFT Kernels fftKrnl1", ocdTempTimer)
@@ -492,8 +513,8 @@ forward2(void* workp, void* temp, int n_ffts, int fftn1, int fftn2)
 
 	if(fftn2>128){
 		//	printf("local size2: %d global size2: %d \n",localsz2,globalsz2);
-		err = clEnqueueNDRangeKernel(commands, fftKrnl2, 1, NULL, 
-				&globalsz2, &localsz2, 0, 
+		err = clEnqueueNDRangeKernel(commands, fftKrnl2, 1, NULL,
+				&globalsz2, &localsz2, 0,
 				NULL, &fftEvent.CLEvent());
 		err = clWaitForEvents(1, &fftEvent.CLEvent());
 		START_TIMER(fftEvent.CLEvent(), OCD_TIMER_KERNEL, "FFT Kernels fftKrnl2", ocdTempTimer)
@@ -551,7 +572,7 @@ allocDeviceBuffer(void** objp, unsigned long bytes)
 	cl_int err;
 
 	*(cl_mem**)objp = new cl_mem;
-	**(cl_mem**)objp = clCreateBuffer(context, CL_MEM_READ_WRITE, bytes, 
+	**(cl_mem**)objp = clCreateBuffer(context, CL_MEM_READ_WRITE, bytes,
 			NULL, &err);
 	CHKERR(err, "Failed to create buffer!");
 }
@@ -567,7 +588,7 @@ freeDeviceBuffer(void* buffer)
 	void
 copyToDevice(void* to_device, void* from_host, unsigned long bytes)
 {
-	cl_int err = clEnqueueWriteBuffer(commands, *(cl_mem*)to_device, CL_TRUE, 
+	cl_int err = clEnqueueWriteBuffer(commands, *(cl_mem*)to_device, CL_TRUE,
 			0, bytes, from_host, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
 	START_TIMER(ocdTempEvent, OCD_TIMER_H2D, "FFT Data Copy", ocdTempTimer)
@@ -579,11 +600,10 @@ copyToDevice(void* to_device, void* from_host, unsigned long bytes)
 	void
 copyFromDevice(void* to_host, void* from_device, unsigned long bytes)
 {
-	cl_int err = clEnqueueReadBuffer(commands, *(cl_mem*)from_device, CL_TRUE, 
+	cl_int err = clEnqueueReadBuffer(commands, *(cl_mem*)from_device, CL_TRUE,
 			0, bytes, to_host, 0, NULL, &ocdTempEvent);
 	clFinish(commands);
 	START_TIMER(ocdTempEvent, OCD_TIMER_D2H, "FFT Data Copy", ocdTempTimer)
 	END_TIMER(ocdTempTimer)
 	CHKERR(err, "Failed to enqueue read buffer!");
 }
-

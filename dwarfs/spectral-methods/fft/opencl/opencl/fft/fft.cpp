@@ -1,3 +1,24 @@
+/*
+ * Copyright July 29, 2011 by Virginia Polytechnic Institute and State University
+ * All rights reserved.
+ *
+ * Virginia Polytechnic Institute and State University (Virginia Tech) owns the
+ * OpenCL and the 13 Dwarfs software and its associated documentation (Software).
+ * You should carefully read the following terms and conditions before using this
+ * software.  Your use of this Software indicates your acceptance of this license
+ * agreement and all terms and conditions.
+ *
+ * You are hereby licensed to use the Software for Non-Commercial Purpose only.
+ * Non-Commercial Purpose means the use of the Software solely for research.
+ * Non-Commercial Purpose excludes, without limitation, any use of the Software, as
+ * part of, or in any way in connection with a product or service which is sold,
+ * offered for sale, licensed, leased, loaned, or rented.  Permission to use, copy,
+ * modify, and distribute this compilation for Non-Commercial Purpose is hereby
+ * granted without fee, subject to the following terms of this license.
+ */
+
+
+
 #include <cfloat>
 #include <iostream>
 #include <sstream>
@@ -29,8 +50,8 @@ using namespace std;
 // Returns:  nothing
 //
 // ****************************************************************************
-	void 
-addBenchmarkSpecOptions(OptionParser &op) 
+	void
+addBenchmarkSpecOptions(OptionParser &op)
 {
 	op.addOption("pts", OPT_INT, "0", "data size (in megabytes)");
 	op.addOption("pts1", OPT_INT, "0", "data size (in megabytes)");
@@ -59,7 +80,7 @@ addBenchmarkSpecOptions(OptionParser &op)
 //
 // ****************************************************************************
 
-template <class T2> void runTest(const string& name, cl_device_id id, 
+template <class T2> void runTest(const string& name, cl_device_id id,
 		cl_context ctx, cl_command_queue queue,
 		ResultDatabase &resultDB, OptionParser& op);
 template <class T2> void dump1D(OptionParser& op);
@@ -114,7 +135,7 @@ template <> inline bool dp<cplxdbl>(void) { return true; }
 // Function: dump
 //
 // Purpose:
-//   Dump result array to stdout after FFT and IFFT.  For correctness 
+//   Dump result array to stdout after FFT and IFFT.  For correctness
 //   checking.
 //
 // Arguments:
@@ -128,9 +149,9 @@ template <> inline bool dp<cplxdbl>(void) { return true; }
 // Modifications:
 //
 // ****************************************************************************
-	template <class T2> 
+	template <class T2>
 void dump2D(OptionParser& op)
-{	
+{
 	int i;
 	void* work, *temp;
 	T2* source, * result;
@@ -189,9 +210,9 @@ void dump2D(OptionParser& op)
 	freeHostBuffer(result);
 }
 
-	template <class T2> 
+	template <class T2>
 void dump1D(OptionParser& op)
-{	
+{
 	int i;
 	int fftn;
 	void* work, *temp;

@@ -1,3 +1,24 @@
+/*
+ * Copyright July 29, 2011 by Virginia Polytechnic Institute and State University
+ * All rights reserved.
+ *
+ * Virginia Polytechnic Institute and State University (Virginia Tech) owns the
+ * OpenCL and the 13 Dwarfs software and its associated documentation (Software).
+ * You should carefully read the following terms and conditions before using this
+ * software.  Your use of this Software indicates your acceptance of this license
+ * agreement and all terms and conditions.
+ *
+ * You are hereby licensed to use the Software for Non-Commercial Purpose only.
+ * Non-Commercial Purpose means the use of the Software solely for research.
+ * Non-Commercial Purpose excludes, without limitation, any use of the Software, as
+ * part of, or in any way in connection with a product or service which is sold,
+ * offered for sale, licensed, leased, loaned, or rented.  Permission to use, copy,
+ * modify, and distribute this compilation for Non-Commercial Purpose is hereby
+ * granted without fee, subject to the following terms of this license.
+ */
+
+
+
 //#define __CL_ENABLE_EXCEPTIONS
 //#ifdef __APPLE__
 //#include <OpenCL/cl.hpp>
@@ -27,17 +48,17 @@ const int SHOC::OpenCLNodePlatformContainer::MAGIC_KEY_OPENCL_NODE_CONTAINER = 0
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::OpenCLNodePlatformContainer
 //
-// Purpose: 
-//   Constructor. Creates a new OpenCL node container that is either 
+// Purpose:
+//   Constructor. Creates a new OpenCL node container that is either
 //   initialized with platform data or left empty.
 //
 // Arguments:
 //   do_initialize : specifies if the container should be instantiated with
 //       platform data.
 //
-// Returns: 
+// Returns:
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -45,7 +66,7 @@ const int SHOC::OpenCLNodePlatformContainer::MAGIC_KEY_OPENCL_NODE_CONTAINER = 0
 // Modifications:
 //
 // ****************************************************************************
-OpenCLNodePlatformContainer::OpenCLNodePlatformContainer (bool do_initialize) : 
+OpenCLNodePlatformContainer::OpenCLNodePlatformContainer (bool do_initialize) :
            NodePlatformContainer<OpenCLPlatform>()
 {
     // Platform
@@ -56,14 +77,14 @@ OpenCLNodePlatformContainer::OpenCLNodePlatformContainer (bool do_initialize) :
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::initialize
 //
-// Purpose: 
-//   Initializes the container with platform information. 
+// Purpose:
+//   Initializes the container with platform information.
 //
 // Arguments:
 //
-// Returns: 
+// Returns:
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -71,7 +92,7 @@ OpenCLNodePlatformContainer::OpenCLNodePlatformContainer (bool do_initialize) :
 // Modifications:
 //
 // ****************************************************************************
-void 
+void
 OpenCLNodePlatformContainer::initialize ()
 {
     cl_int err;
@@ -94,16 +115,16 @@ OpenCLNodePlatformContainer::initialize ()
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::OpenCLNodePlatformContainer
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor. Creates a new container that is an exact copy of
 //   the container specified as a parameter.
 //
 // Arguments:
 //   ondc: the OpenCL node platform container to be copied
 //
-// Returns: 
+// Returns:
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -119,17 +140,17 @@ OpenCLNodePlatformContainer::OpenCLNodePlatformContainer (const OpenCLNodePlatfo
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::operator=
 //
-// Purpose: 
+// Purpose:
 //   Copy operator. Copies the content of the specified container into
 //   this container.
 //
 // Arguments:
 //   ondc: the OpenCL node platform container to be copied
 //
-// Returns: 
+// Returns:
 //   a reference to this container
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -137,7 +158,7 @@ OpenCLNodePlatformContainer::OpenCLNodePlatformContainer (const OpenCLNodePlatfo
 // Modifications:
 //
 // ****************************************************************************
-OpenCLNodePlatformContainer& 
+OpenCLNodePlatformContainer&
 OpenCLNodePlatformContainer::operator= (const OpenCLNodePlatformContainer &ondc)
 {
     this->NodePlatformContainer<OpenCLPlatform>::operator= (ondc);
@@ -148,15 +169,15 @@ OpenCLNodePlatformContainer::operator= (const OpenCLNodePlatformContainer &ondc)
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::Print
 //
-// Purpose: 
+// Purpose:
 //   Pretty print the content of the container.
 //
 // Arguments:
 //   os: the output stream where the writing is done
 //
-// Returns: 
+// Returns:
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -173,16 +194,16 @@ OpenCLNodePlatformContainer::Print (ostream &os) const
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::writeObject
 //
-// Purpose: 
-//   Implements the serialization method of the SerializableObject 
+// Purpose:
+//   Implements the serialization method of the SerializableObject
 //   abstract class.
 //
 // Arguments:
 //   oss: an output string stream where the serialized content is written
 //
-// Returns: 
+// Returns:
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -190,7 +211,7 @@ OpenCLNodePlatformContainer::Print (ostream &os) const
 // Modifications:
 //
 // ****************************************************************************
-void 
+void
 OpenCLNodePlatformContainer::writeObject(ostringstream &oss) const
 {
     oss << " " << MAGIC_KEY_OPENCL_NODE_CONTAINER << "\n";
@@ -200,16 +221,16 @@ OpenCLNodePlatformContainer::writeObject(ostringstream &oss) const
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::readObject
 //
-// Purpose: 
-//   Implements the unserialization method of the SerializableObject 
+// Purpose:
+//   Implements the unserialization method of the SerializableObject
 //   abstract class.
 //
 // Arguments:
 //   iss: the input string stream from where the serialized content is read
 //
-// Returns: 
+// Returns:
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -217,15 +238,15 @@ OpenCLNodePlatformContainer::writeObject(ostringstream &oss) const
 // Modifications:
 //
 // ****************************************************************************
-void 
+void
 OpenCLNodePlatformContainer::readObject(istringstream &iss)
 {
     int receivedKey = 0;
-    
+
     iss >> receivedKey;
     if (receivedKey != MAGIC_KEY_OPENCL_NODE_CONTAINER)  // wrong magic key
     {
-        cerr << "Wrong magic key received " << receivedKey 
+        cerr << "Wrong magic key received " << receivedKey
              << " while unserializing an OpenCLNodePlatformContainer object." << endl;
         exit (-2);
     }
@@ -235,18 +256,18 @@ OpenCLNodePlatformContainer::readObject(istringstream &iss)
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::operator<
 //
-// Purpose: 
+// Purpose:
 //   Less operator: compares two OpenCL node container objects based on
 //   an assumed ordering.
 //
 // Arguments:
-//   ndc: the OpenCL node container object to be compared against 
+//   ndc: the OpenCL node container object to be compared against
 //   this instance.
 //
 // Returns: true - if this container precedes the specified container
 //          false - otherwise
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -254,7 +275,7 @@ OpenCLNodePlatformContainer::readObject(istringstream &iss)
 // Modifications:
 //
 // ****************************************************************************
-bool 
+bool
 OpenCLNodePlatformContainer::operator< (const OpenCLNodePlatformContainer &ndc) const
 {
     return (NodePlatformContainer<OpenCLPlatform>::operator< (ndc));
@@ -263,18 +284,18 @@ OpenCLNodePlatformContainer::operator< (const OpenCLNodePlatformContainer &ndc) 
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::operator>
 //
-// Purpose: 
+// Purpose:
 //   Greater operator: compares two OpenCL node container objects based on
 //   an assumed ordering.
 //
 // Arguments:
-//   ndc: the OpenCL node container object to be compared against 
+//   ndc: the OpenCL node container object to be compared against
 //   this instance.
 //
 // Returns: true - if this container succeeds the specified container
 //          false - otherwise
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -282,7 +303,7 @@ OpenCLNodePlatformContainer::operator< (const OpenCLNodePlatformContainer &ndc) 
 // Modifications:
 //
 // ****************************************************************************
-bool 
+bool
 OpenCLNodePlatformContainer::operator> (const OpenCLNodePlatformContainer &ndc) const
 {
     return (NodePlatformContainer<OpenCLPlatform>::operator> (ndc));
@@ -291,18 +312,18 @@ OpenCLNodePlatformContainer::operator> (const OpenCLNodePlatformContainer &ndc) 
 // ****************************************************************************
 // Method: OpenCLNodePlatformContainer::operator==
 //
-// Purpose: 
+// Purpose:
 //   Equality operator: compares two OpenCL node container objects based on
 //   an assumed ordering.
 //
 // Arguments:
-//   ndc: the OpenCL node container object to be compared against 
+//   ndc: the OpenCL node container object to be compared against
 //   this instance.
 //
 // Returns: true - if this container and the specified container are equal
 //          false - otherwise
 //
-// Note: 
+// Note:
 //
 // Programmer: Gabriel Marin
 // Creation: September 22, 2009
@@ -310,7 +331,7 @@ OpenCLNodePlatformContainer::operator> (const OpenCLNodePlatformContainer &ndc) 
 // Modifications:
 //
 // ****************************************************************************
-bool 
+bool
 OpenCLNodePlatformContainer::operator== (const OpenCLNodePlatformContainer &ndc) const
 {
     return (NodePlatformContainer<OpenCLPlatform>::operator== (ndc));
