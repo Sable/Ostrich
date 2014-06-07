@@ -292,7 +292,7 @@ int main(int argc, char** argv)
     {
         num_block_sizes=1;
         num_parallel_crcs = malloc(sizeof(int)*num_block_sizes);
-        num_parallel_crcs[0] = 16;
+        num_parallel_crcs[0] = 128;
     }
 
     num_words = page_size / 4;
