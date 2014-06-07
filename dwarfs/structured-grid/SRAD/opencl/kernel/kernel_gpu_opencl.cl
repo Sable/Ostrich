@@ -1,3 +1,16 @@
+/*
+  Copyright (c)2008-2011 University of Virginia
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted without royalty fees or other restrictions, provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+    * Neither the name of the University of Virginia, the Dept. of Computer Science, nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE UNIVERSITY OF VIRGINIA OR THE SOFTWARE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 //========================================================================================================================================================================================================200
 //	DEFINE / INCLUDE
 //========================================================================================================================================================================================================200
@@ -16,7 +29,7 @@
 //	Prepare KERNEL
 //========================================================================================================================================================================================================200
 
-__kernel void 
+__kernel void
 prepare_kernel(	long d_Ne,
 				__global fp* d_I,											// pointer to output image (DEVICE GLOBAL MEMORY)
 				__global fp* d_sums,										// pointer to input image (DEVICE GLOBAL MEMORY)
@@ -41,7 +54,7 @@ prepare_kernel(	long d_Ne,
 //	Reduce KERNEL
 //========================================================================================================================================================================================================200
 
-__kernel void 
+__kernel void
 reduce_kernel(	long d_Ne,													// number of elements in array
 				long d_no,													// number of sums to reduce
 				int d_mul,													// increment
@@ -72,7 +85,7 @@ reduce_kernel(	long d_Ne,													// number of elements in array
 
 	}
 
-	// reduction of sums if all blocks are full (rare case)	
+	// reduction of sums if all blocks are full (rare case)
 	if(nf == NUMBER_THREADS){
 		// sum of every 2, 4, ..., NUMBER_THREADS elements
 		for(i=2; i<=NUMBER_THREADS; i=2*i){
@@ -91,7 +104,7 @@ reduce_kernel(	long d_Ne,													// number of elements in array
 		}
 	}
 	// reduction of sums if last block is not full (common case)
-	else{ 
+	else{
 		// for full blocks (all except for last block)
 		if(bx != (gridDim - 1)){											//
 			// sum of every 2, 4, ..., NUMBER_THREADS elements
@@ -150,21 +163,21 @@ reduce_kernel(	long d_Ne,													// number of elements in array
 
 // BUG, IF STILL PRESENT, COULD BE SOMEWHERE IN THIS CODE, MEMORY ACCESS OUT OF BOUNDS
 
-__kernel void 
-srad_kernel(fp d_lambda, 
-			int d_Nr, 
-			int d_Nc, 
-			long d_Ne, 
-			__global int* d_iN, 
-			__global int* d_iS, 
-			__global int* d_jE, 
-			__global int* d_jW, 
-			__global fp* d_dN, 
-			__global fp* d_dS, 
-			__global fp* d_dE, 
-			__global fp* d_dW, 
-			fp d_q0sqr, 
-			__global fp* d_c, 
+__kernel void
+srad_kernel(fp d_lambda,
+			int d_Nr,
+			int d_Nc,
+			long d_Ne,
+			__global int* d_iN,
+			__global int* d_iS,
+			__global int* d_jE,
+			__global int* d_jW,
+			__global fp* d_dN,
+			__global fp* d_dS,
+			__global fp* d_dE,
+			__global fp* d_dW,
+			fp d_q0sqr,
+			__global fp* d_c,
 			__global fp* d_I){
 
 	// indexes
@@ -179,7 +192,7 @@ srad_kernel(fp d_lambda,
 	fp d_dN_loc, d_dS_loc, d_dW_loc, d_dE_loc;
 	fp d_c_loc;
 	fp d_G2,d_L,d_num,d_den,d_qsqr;
-	
+
 	// figure out row/col location in new matrix
 	row = (ei+1) % d_Nr - 1;													// (0-n) row
 	col = (ei+1) / d_Nr + 1 - 1;												// (0-n) column
@@ -187,21 +200,21 @@ srad_kernel(fp d_lambda,
 		row = d_Nr - 1;
 		col = col - 1;
 	}
-	
+
 	if(ei<d_Ne){															// make sure that only threads matching jobs run
-		
+
 		// directional derivatives, ICOV, diffusion coefficent
 		d_Jc = d_I[ei];														// get value of the current element
-		
+
 		// directional derivates (every element of IMAGE)(try to copy to shared memory or temp files)
 		d_dN_loc = d_I[d_iN[row] + d_Nr*col] - d_Jc;						// north direction derivative
 		d_dS_loc = d_I[d_iS[row] + d_Nr*col] - d_Jc;						// south direction derivative
 		d_dW_loc = d_I[row + d_Nr*d_jW[col]] - d_Jc;						// west direction derivative
 		d_dE_loc = d_I[row + d_Nr*d_jE[col]] - d_Jc;						// east direction derivative
-	         
+
 		// normalized discrete gradient mag squared (equ 52,53)
 		d_G2 = (d_dN_loc*d_dN_loc + d_dS_loc*d_dS_loc + d_dW_loc*d_dW_loc + d_dE_loc*d_dE_loc) / (d_Jc*d_Jc);	// gradient (based on derivatives)
-		
+
 		// normalized discrete laplacian (equ 54)
 		d_L = (d_dN_loc + d_dS_loc + d_dW_loc + d_dE_loc) / d_Jc;			// laplacian (based on derivatives)
 
@@ -209,11 +222,11 @@ srad_kernel(fp d_lambda,
 		d_num  = (0.5*d_G2) - ((1.0/16.0)*(d_L*d_L)) ;						// num (based on gradient and laplacian)
 		d_den  = 1 + (0.25*d_L);												// den (based on laplacian)
 		d_qsqr = d_num/(d_den*d_den);										// qsqr (based on num and den)
-	 
+
 		// diffusion coefficent (equ 33) (every element of IMAGE)
 		d_den = (d_qsqr-d_q0sqr) / (d_q0sqr * (1+d_q0sqr)) ;				// den (based on qsqr and q0sqr)
 		d_c_loc = 1.0 / (1.0+d_den) ;										// diffusion coefficient (based on den)
-	    
+
 		// saturate diffusion coefficent to 0-1 range
 		if (d_c_loc < 0){													// if diffusion coefficient < 0
 			d_c_loc = 0;													// ... set to 0
@@ -223,9 +236,9 @@ srad_kernel(fp d_lambda,
 		}
 
 		// save data to global memory
-		d_dN[ei] = d_dN_loc; 
-		d_dS[ei] = d_dS_loc; 
-		d_dW[ei] = d_dW_loc; 
+		d_dN[ei] = d_dN_loc;
+		d_dS[ei] = d_dS_loc;
+		d_dW[ei] = d_dW_loc;
 		d_dE[ei] = d_dE_loc;
 		d_c[ei] = d_c_loc;
 
@@ -239,20 +252,20 @@ srad_kernel(fp d_lambda,
 
 // BUG, IF STILL PRESENT, COULD BE SOMEWHERE IN THIS CODE, MEMORY ACCESS OUT OF BOUNDS
 
-__kernel void 
-srad2_kernel(	fp d_lambda, 
-				int d_Nr, 
-				int d_Nc, 
-				long d_Ne, 
-				__global int* d_iN, 
-				__global int* d_iS, 
-				__global int* d_jE, 
+__kernel void
+srad2_kernel(	fp d_lambda,
+				int d_Nr,
+				int d_Nc,
+				long d_Ne,
+				__global int* d_iN,
+				__global int* d_iS,
+				__global int* d_jE,
 				__global int* d_jW,
-				__global fp* d_dN, 
-				__global fp* d_dS, 
-				__global fp* d_dE, 
-				__global fp* d_dW, 
-				__global fp* d_c, 
+				__global fp* d_dN,
+				__global fp* d_dS,
+				__global fp* d_dE,
+				__global fp* d_dW,
+				__global fp* d_c,
 				__global fp* d_I){
 
 	// indexes
