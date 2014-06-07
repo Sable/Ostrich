@@ -1,3 +1,28 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
+ * Foley-Bourgon, Laurie Hendren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 Math.commonRandom = (function() {
     var seed = 49734321;
     return function() {
@@ -35,20 +60,20 @@ function source(id){
         mHttpReq.open("GET", programElement.src, false);
         mHttpReq.send(null);
         programSource = mHttpReq.responseText;
-    } 
+    }
     return programSource;
 }
 function program(ctx, src){ return ctx.createProgram(src);}
 
 function build(prgm, device){
-    try {        
+    try {
       prgm.build ([device], "");
     } catch(e) {
       alert ("Failed to build WebCL program. Error "
-             + prgm.getBuildInfo (device, 
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_STATUS)
-             + ":  " 
-             + prgm.getBuildInfo (device, 
+             + ":  "
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_LOG));
       throw e;
     }
@@ -56,7 +81,7 @@ function build(prgm, device){
 
 function webCLPlatformDevice(platformIdx, deviceIdx){
     var p = webcl.getPlatforms()[platformIdx];
-    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];    
+    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];
     return {"platform": p, "device": d};
 }
 
@@ -71,59 +96,59 @@ function isWebCL(){
                 "and the WebCL browser extension installed.");
           return false;
       }
-      return true; 
+      return true;
 }
 
 function kernel(kernel, program){ return program.createKernel(kernel);}
 
 function printM(a, m, n){
-    console.log("Printing Matrix:");    
+    console.log("Printing Matrix:");
     for(var i =0; i<m; ++i){
-        console.log("[" + 
+        console.log("[" +
             Array.prototype.join.call(Array.prototype.slice.call(a, i*m, i*m + n), ",") +
             "]");
-    }    
+    }
 }
 
 function randCRC(numPages, pageSize){
-    var numWords = pageSize/4; 
-    var page = new Uint32Array(numPages*numWords); 
-  
-    Array.prototype.forEach.call(page, function(v, i, a) { 
+    var numWords = pageSize/4;
+    var page = new Uint32Array(numPages*numWords);
+
+    Array.prototype.forEach.call(page, function(v, i, a) {
         a[i] = Math.commonRandom();
     });
 
-    return page; 
+    return page;
 }
 function webclCRC(platformIdx, deviceIdx, numpages, pagesize, numexecs, numblockSize){
     var programSourceId = "clCRC";
-    var int_bytes = 4;    
-    var blockSize = 16; 
-    var numPages = numpages || 1; 
+    var int_bytes = 4;
+    var blockSize = 16;
+    var numPages = numpages || 1;
     var pageSize = pagesize || 100000000;
-    var numBlockSize = numblockSize || 1; 
+    var numBlockSize = numblockSize || 1;
     var num_blocks, num_pages_last_block;
     var numExecs = numexecs || 0;
 
     var data = randCRC(numPages, pageSize);
     var numParallelCRCs = new Int32Array(numBlockSize);
-    numParallelCRCs[0] = 128;    
-    var numWords = pageSize / 4; 
+    numParallelCRCs[0] = 128;
+    var numWords = pageSize / 4;
     var wg_sizes;
     var ocl_remainders  = new Uint32Array(numPages);
 
     var t1 = performance.now();
-    try {      
+    try {
         //============ Setup WebCL Program ================
-        isWebCL();         
-        var pd = webCLPlatformDevice(platformIdx, deviceIdx);        
-        var ctx = webCLContext(pd.device);           
+        isWebCL();
+        var pd = webCLPlatformDevice(platformIdx, deviceIdx);
+        var ctx = webCLContext(pd.device);
         var src = source(programSourceId);
         var prgm = program(ctx, src);
-        build(prgm, pd.device);            
+        build(prgm, pd.device);
         var queue = ctx.createCommandQueue(pd.device);
 
-        // ============== Initialize Kernels ================ 
+        // ============== Initialize Kernels ================
         var crcKernel= kernel("crc32_slice8", prgm);
 
         if(!wg_sizes) {
@@ -132,8 +157,8 @@ function webclCRC(platformIdx, deviceIdx, numpages, pagesize, numexecs, numblock
           wg_sizes[0] = 1;
         }
 
-        // // ============== Setup Kernel Memory ================     
-        // memory has to be allocated in terms of bytes 
+        // // ============== Setup Kernel Memory ================
+        // memory has to be allocated in terms of bytes
         for(var h = 0; h < numBlockSize; ++h){
           num_blocks = numPages/numParallelCRCs[h];
           if((numPages % numParallelCRCs[h]) != 0) {
@@ -165,36 +190,36 @@ function webclCRC(platformIdx, deviceIdx, numpages, pagesize, numexecs, numblock
                 global_size = numParallelCRCs[h];
                 local_size = wg_sizes[0];
               }
-              // ============== Set Args and Run Kernels ================ 
+              // ============== Set Args and Run Kernels ================
               // note that __local kernel arguments have to be set to to UintArrays of length 1
-              // and the array element must contain the required size 
-              
+              // and the array element must contain the required size
+
 
               var global_work = [global_size];
               var local_work = [local_size];
 
               queue.enqueueWriteBuffer(dev_input[i], false, 0, pageSize*global_size, data.subarray(i*numParallelCRCs[h]*numWords));
-              crcKernel.setArg(0, dev_input[i]);            
-              crcKernel.setArg(1, new Uint32Array([pageSize]));                    
+              crcKernel.setArg(0, dev_input[i]);
+              crcKernel.setArg(1, new Uint32Array([pageSize]));
               crcKernel.setArg(2, new Uint32Array([numWords]));
-              crcKernel.setArg(3, dev_output[i]);            
-        
-              queue.enqueueNDRangeKernel(crcKernel, 1, null, global_work, local_work);            
+              crcKernel.setArg(3, dev_output[i]);
+
+              queue.enqueueNDRangeKernel(crcKernel, 1, null, global_work, local_work);
               queue.enqueueReadBuffer(dev_output[i], false, 0, global_size*int_bytes,ocl_remainders.subarray(i*numParallelCRCs[h]));
-              queue.finish(); 
+              queue.finish();
 
             }
           }
         }
-        // ============== Free Memory ================ 
+        // ============== Free Memory ================
         for(var i = 0; i < num_blocks; ++i){
-          dev_input[i].release(); 
-          dev_output[i].release(); 
+          dev_input[i].release();
+          dev_output[i].release();
         }
-        crcKernel.release(); 
-        queue.release(); 
-        prgm.release(); 
-        ctx.release();    
+        crcKernel.release();
+        queue.release();
+        prgm.release();
+        ctx.release();
     }
     catch(e){
         alert(e);
