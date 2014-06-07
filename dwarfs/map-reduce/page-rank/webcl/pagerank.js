@@ -1,3 +1,28 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
+ * Foley-Bourgon, Laurie Hendren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 Math.commonRandom = (function() {
     var seed = 49734321;
     return function() {
@@ -20,9 +45,9 @@ if (typeof performance === "undefined") {
     performance = Date;
 }
 var d_factor = 0.85; //damping factor
-var floatBytes = 4; 
-var intBytes = 4; 
-var uintBytes = 4; 
+var floatBytes = 4;
+var intBytes = 4;
+var uintBytes = 4;
 
 // generates an array of random pages and their links
 function random_pages(n, noutlinks, divisor){
@@ -63,20 +88,20 @@ function source(id){
         mHttpReq.open("GET", programElement.src, false);
         mHttpReq.send(null);
         programSource = mHttpReq.responseText;
-    } 
+    }
     return programSource;
 }
 function program(ctx, src){ return ctx.createProgram(src);}
 
 function build(prgm, device){
-    try {        
+    try {
       prgm.build ([device], "");
     } catch(e) {
       alert ("Failed to build WebCL program. Error "
-             + prgm.getBuildInfo (device, 
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_STATUS)
-             + ":  " 
-             + prgm.getBuildInfo (device, 
+             + ":  "
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_LOG));
       throw e;
     }
@@ -84,7 +109,7 @@ function build(prgm, device){
 
 function webCLPlatformDevice(platformIdx, deviceIdx){
     var p = webcl.getPlatforms()[platformIdx];
-    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];    
+    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];
     return {"platform": p, "device": d};
 }
 
@@ -99,18 +124,18 @@ function isWebCL(){
                 "and the WebCL browser extension installed.");
           return false;
       }
-      return true; 
+      return true;
 }
 
 function kernel(kernel, program){ return program.createKernel(kernel);}
 
 function printM(a, m, n){
-    console.log("Printing Matrix:");    
+    console.log("Printing Matrix:");
     for(var i =0; i<m; ++i){
-        console.log("[" + 
+        console.log("[" +
             Array.prototype.join.call(Array.prototype.slice.call(a, i*m, i*m + n), ",") +
             "]");
-    }    
+    }
 }
 
 function webclPR(platformIdx, deviceIdx, n, iter, thresh, divisor){
@@ -126,8 +151,8 @@ function webclPR(platformIdx, deviceIdx, n, iter, thresh, divisor){
     var max_diff=Infinity;
     var difs;
 
-    var programSourceId = "clPR";        
-    
+    var programSourceId = "clPR";
+
     page_ranks = new Float32Array(n);
     maps = new Float32Array(n*n);
     noutlinks = new Int32Array(n);
@@ -146,23 +171,23 @@ function webclPR(platformIdx, deviceIdx, n, iter, thresh, divisor){
     }
     var t1 = performance.now();
 
-    try {      
+    try {
 
         //============ Setup WebCL Program ================
-        isWebCL();         
-        var pd = webCLPlatformDevice(platformIdx, deviceIdx);        
-        var ctx = webCLContext(pd.device);           
+        isWebCL();
+        var pd = webCLPlatformDevice(platformIdx, deviceIdx);
+        var ctx = webCLContext(pd.device);
         var src = source(programSourceId);
         var prgm = program(ctx, src);
-        build(prgm, pd.device);            
+        build(prgm, pd.device);
         var queue = ctx.createCommandQueue(pd.device);
 
-        // ============== Initialize Kernels ================ 
+        // ============== Initialize Kernels ================
         var mapKernel = kernel("map_page_rank", prgm);
         var reduceKernel = kernel("reduce_page_rank", prgm);
 
-        // ============== Setup Kernel Memory ================     
-        // memory has to be allocated in terms of bytes 
+        // ============== Setup Kernel Memory ================
+        // memory has to be allocated in terms of bytes
         var pages_d = ctx.createBuffer(WebCL.MEM_READ_ONLY, intBytes*n*n);
         var page_ranks_d = ctx.createBuffer(WebCL.MEM_READ_WRITE, floatBytes*n);
         var maps_d = ctx.createBuffer(WebCL.MEM_READ_ONLY, floatBytes*n*n);
@@ -179,7 +204,7 @@ function webclPR(platformIdx, deviceIdx, n, iter, thresh, divisor){
         var localSize = [ n < maxWorkItems[0] ? n : maxWorkItems[0] ];
         var globalSize = [ n % localSize[0] === 0 ? n : ((n/localSize[0])+1)*local_size[0]];
 
-        // ============== Set Args and Run Kernels ================ 
+        // ============== Set Args and Run Kernels ================
         mapKernel.setArg(0, pages_d);
         mapKernel.setArg(1, page_ranks_d);
         mapKernel.setArg(2, maps_d);
@@ -187,7 +212,7 @@ function webclPR(platformIdx, deviceIdx, n, iter, thresh, divisor){
         mapKernel.setArg(4, new Int32Array([n]));
 
         reduceKernel.setArg(0, page_ranks_d);
-        reduceKernel.setArg(1, maps_d); 
+        reduceKernel.setArg(1, maps_d);
         reduceKernel.setArg(2, new Int32Array([n]));
         reduceKernel.setArg(3, dif_d);
 
@@ -199,28 +224,28 @@ function webclPR(platformIdx, deviceIdx, n, iter, thresh, divisor){
           queue.finish();
 
           queue.enqueueReadBuffer(dif_d, true, 0, floatBytes*n, difs);
-          queue.finish(); 
+          queue.finish();
           max_diff =  Array.prototype.reduce.call(difs, function(p, c){ return p > c ? p : c}, 0);
           queue.enqueueWriteBuffer(dif_d, true, 0, floatBytes*n, nzeros);
           queue.finish();
         }
 
-        // ============== Pull Results ================ 
-        queue.enqueueReadBuffer(maps_d, false, 0, floatBytes*n*n, maps);        
+        // ============== Pull Results ================
+        queue.enqueueReadBuffer(maps_d, false, 0, floatBytes*n*n, maps);
         queue.enqueueReadBuffer(page_ranks_d, false, 0, floatBytes*n, page_ranks);
         queue.finish();
 
-        // ============== Free Memory ================ 
-        pages_d.release(); 
-        maps_d.release(); 
+        // ============== Free Memory ================
+        pages_d.release();
+        maps_d.release();
         page_ranks_d.release();
         noutlinks_d.release();
         dif_d.release();
-        prgm.release(); 
-        mapKernel.release(); 
-        reduceKernel.release(); 
-        queue.release(); 
-        ctx.release();    
+        prgm.release();
+        mapKernel.release();
+        reduceKernel.release();
+        queue.release();
+        ctx.release();
     }
     catch(e){
         alert(e);
