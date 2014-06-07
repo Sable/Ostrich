@@ -1,3 +1,29 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
+ * Foley-Bourgon, Laurie Hendren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
 Math.commonRandom = (function() {
     var seed = 49734321;
     return function() {
@@ -35,20 +61,20 @@ function source(id){
         mHttpReq.open("GET", programElement.src, false);
         mHttpReq.send(null);
         programSource = mHttpReq.responseText;
-    } 
+    }
     return programSource;
 }
 function program(ctx, src){ return ctx.createProgram(src);}
 
 function build(prgm, device){
-    try {        
+    try {
       prgm.build ([device], "");
     } catch(e) {
       alert ("Failed to build WebCL program. Error "
-             + prgm.getBuildInfo (device, 
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_STATUS)
-             + ":  " 
-             + prgm.getBuildInfo (device, 
+             + ":  "
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_LOG));
       throw e;
     }
@@ -56,7 +82,7 @@ function build(prgm, device){
 
 function webCLPlatformDevice(platformIdx, deviceIdx){
     var p = webcl.getPlatforms()[platformIdx];
-    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];    
+    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];
     return {"platform": p, "device": d};
 }
 
@@ -71,62 +97,62 @@ function isWebCL(){
                 "and the WebCL browser extension installed.");
           return false;
       }
-      return true; 
+      return true;
 }
 
 function kernel(kernel, program){ return program.createKernel(kernel);}
 
 function printM(a, m, n){
-    console.log("Printing Matrix:");    
+    console.log("Printing Matrix:");
     for(var i =0; i<m; ++i){
-        console.log("[" + 
+        console.log("[" +
             Array.prototype.join.call(Array.prototype.slice.call(a, i*m, i*m + n), ",") +
             "]");
-    }    
+    }
 }
 
 function webclLUD(platformIdx, deviceIdx, dim){
-    var matrix = new Float32Array(dim*dim);    
-    var programSourceId = "clLUD";        
-    var blockSize = 16; 
+    var matrix = new Float32Array(dim*dim);
+    var programSourceId = "clLUD";
+    var blockSize = 16;
     randomMatrix(matrix, 0, 10000);
-    
+
     var t1 = performance.now();
-    try {      
+    try {
         //============ Setup WebCL Program ================
-        isWebCL();         
-        var pd = webCLPlatformDevice(platformIdx, deviceIdx);        
-        var ctx = webCLContext(pd.device);           
+        isWebCL();
+        var pd = webCLPlatformDevice(platformIdx, deviceIdx);
+        var ctx = webCLContext(pd.device);
         var src = source(programSourceId);
         var prgm = program(ctx, src);
-        build(prgm, pd.device);            
+        build(prgm, pd.device);
         var queue = ctx.createCommandQueue(pd.device);
 
-        // ============== Initialize Kernels ================ 
+        // ============== Initialize Kernels ================
         var ludDiagonal = kernel("lud_diagonal", prgm);
         var ludPerimeter = kernel("lud_perimeter", prgm);
         var ludInternal = kernel("lud_internal", prgm);
 
 
-        // ============== Setup Kernel Memory ================     
-        // memory has to be allocated in terms of bytes 
-        var float_bytes = 4; 
+        // ============== Setup Kernel Memory ================
+        // memory has to be allocated in terms of bytes
+        var float_bytes = 4;
         var cl_matrix = ctx.createBuffer(WebCL.MEM_READ_WRITE, dim*dim*float_bytes);
         queue.enqueueWriteBuffer(cl_matrix, false, 0, dim*dim*float_bytes, matrix);
 
-        // ============== Set Args and Run Kernels ================ 
+        // ============== Set Args and Run Kernels ================
         // note that __local kernel arguments have to be set to to UintArrays of length 1
-        // and the array element must contain the required size 
-        for(var i=0; i<dim - blockSize; i += blockSize){            
-            ludDiagonal.setArg(0, cl_matrix);            
-            ludDiagonal.setArg(1, new Uint32Array([blockSize * blockSize*float_bytes]));                    
+        // and the array element must contain the required size
+        for(var i=0; i<dim - blockSize; i += blockSize){
+            ludDiagonal.setArg(0, cl_matrix);
+            ludDiagonal.setArg(1, new Uint32Array([blockSize * blockSize*float_bytes]));
             ludDiagonal.setArg(2, new Int32Array([dim]));
-            ludDiagonal.setArg(3, new Int32Array([i]));            
-      
-            var global_work1  = [ blockSize, 1];
-            var local_work1  = [ blockSize, 1];            
+            ludDiagonal.setArg(3, new Int32Array([i]));
 
-            queue.enqueueNDRangeKernel(ludDiagonal, 2, null, global_work1, local_work1);            
+            var global_work1  = [ blockSize, 1];
+            var local_work1  = [ blockSize, 1];
+
+            queue.enqueueNDRangeKernel(ludDiagonal, 2, null, global_work1, local_work1);
 
             ludPerimeter.setArg(0, cl_matrix);
             ludPerimeter.setArg(1, new Uint32Array([blockSize * blockSize*float_bytes]));
@@ -134,47 +160,47 @@ function webclLUD(platformIdx, deviceIdx, dim){
             ludPerimeter.setArg(3, new Uint32Array([blockSize * blockSize*float_bytes]));
             ludPerimeter.setArg(4, new Int32Array([dim]));
             ludPerimeter.setArg(5, new Int32Array([i]));
-      
+
             var global_work2 = [blockSize * 2 * ((dim-i)/blockSize-1), 1];
             var local_work2  = [blockSize * 2, 1];
 
-            queue.enqueueNDRangeKernel(ludPerimeter, 2, null, global_work2, local_work2);  
+            queue.enqueueNDRangeKernel(ludPerimeter, 2, null, global_work2, local_work2);
 
             ludInternal.setArg(0, cl_matrix);
             ludInternal.setArg(1, new Uint32Array([blockSize * blockSize*float_bytes]));
             ludInternal.setArg(2, new Uint32Array([blockSize * blockSize*float_bytes]));
             ludInternal.setArg(3, new Int32Array([dim]));
-            ludInternal.setArg(4, new Int32Array([i]));      
-      
+            ludInternal.setArg(4, new Int32Array([i]));
+
             var global_work3 = [blockSize * ((dim-i)/blockSize-1), blockSize * ((dim-i)/blockSize-1)];
             var local_work3 = [blockSize, blockSize];
-            queue.enqueueNDRangeKernel(ludPerimeter, 2, null,global_work3, local_work3);                
+            queue.enqueueNDRangeKernel(ludPerimeter, 2, null,global_work3, local_work3);
         }
 
-        
 
-        ludDiagonal.setArg(0, cl_matrix);            
-        ludDiagonal.setArg(1, new Uint32Array([blockSize * blockSize*float_bytes]));                    
+
+        ludDiagonal.setArg(0, cl_matrix);
+        ludDiagonal.setArg(1, new Uint32Array([blockSize * blockSize*float_bytes]));
         ludDiagonal.setArg(2, new Int32Array([dim]));
-        ludDiagonal.setArg(3, new Int32Array([i]));            
-  
+        ludDiagonal.setArg(3, new Int32Array([i]));
+
         var global_work1  = [ blockSize, 1];
-        var local_work1  = [ blockSize, 1];            
+        var local_work1  = [ blockSize, 1];
 
-        queue.enqueueNDRangeKernel(ludDiagonal, 2, null, global_work1, local_work1); 
+        queue.enqueueNDRangeKernel(ludDiagonal, 2, null, global_work1, local_work1);
 
-        // ============== Pull Results ================ 
-        queue.enqueueReadBuffer(cl_matrix, false, 0, dim*dim*float_bytes, matrix);        
+        // ============== Pull Results ================
+        queue.enqueueReadBuffer(cl_matrix, false, 0, dim*dim*float_bytes, matrix);
 
-        // ============== Free Memory ================ 
-        queue.finish(); 
-        cl_matrix.release(); 
-        prgm.release(); 
-        ludDiagonal.release(); 
-        ludPerimeter.release(); 
-        ludInternal.release(); 
-        queue.release(); 
-        ctx.release();    
+        // ============== Free Memory ================
+        queue.finish();
+        cl_matrix.release();
+        prgm.release();
+        ludDiagonal.release();
+        ludPerimeter.release();
+        ludInternal.release();
+        queue.release();
+        ctx.release();
     }
     catch(e){
         alert(e);

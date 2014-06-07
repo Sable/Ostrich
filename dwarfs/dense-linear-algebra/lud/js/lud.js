@@ -1,3 +1,29 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
+ * Foley-Bourgon, Laurie Hendren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
 if (typeof performance === "undefined") {
     performance = Date;
 }
@@ -70,7 +96,7 @@ function randomMatrix(matrix){
     console.log("Creating temp array of size " + size);
     var l = new Float64Array(matrix.length);
     var u = new Float64Array(matrix.length);
-        
+
 
     console.log("Creating l matrix");
     for (var i=0; i<size; ++i) {
@@ -81,7 +107,7 @@ function randomMatrix(matrix){
                 l[i*size+j] = 1;
             } else {
                 l[i*size+j] = 0;
-            }  
+            }
         }
     }
     console.log("Creating u matrix");
@@ -145,7 +171,7 @@ function ludVerify(m, lu) {
                 sum+=l*u;
             }
             tmp[i*size+j] = sum;
-        } 
+        }
     }
 
     for (var i=0; i<size; i++) {
@@ -169,7 +195,7 @@ function ludRun(size, doVerify){
     if (doVerify) {
         var original = new Float64Array(matrix.length);
         for (var i=0; i < matrix.length; ++i) {
-            original[i] = matrix[i];    
+            original[i] = matrix[i];
         }
     }
 
@@ -181,18 +207,18 @@ function ludRun(size, doVerify){
         for (var i = 0; i < 100; ++i) {
             if (expected_values[i] !== matrix[expected_row_indices[i]*size + expected_col_indices[i]]) {
                 throw new Error(
-                    "ERROR: value at index (" + expected_row_indices[i] + 
+                    "ERROR: value at index (" + expected_row_indices[i] +
                     "," + expected_col_indices[i] + ") = '" +
-                    matrix[expected_row_indices[i]*size + expected_col_indices[i]] + 
-                    "' is different from the expected value '" + 
+                    matrix[expected_row_indices[i]*size + expected_col_indices[i]] +
+                    "' is different from the expected value '" +
                     expected_values[i] + "'"
                 );
             }
         }
     } else {
-        console.log("WARNING: No self-checking step for dimension '" + size + "'");     
+        console.log("WARNING: No self-checking step for dimension '" + size + "'");
     }
-    
+
     if (doVerify) {
         ludVerify(original, matrix);
     }
@@ -202,4 +228,3 @@ function ludRun(size, doVerify){
              options: "ludRun(" + size + ")",
              time: (t2-t1) / 1000 };
 }
-

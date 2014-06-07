@@ -1,11 +1,24 @@
+/*
+  Copyright (c)2008-2011 University of Virginia
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted without royalty fees or other restrictions, provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+    * Neither the name of the University of Virginia, the Dept. of Computer Science, nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE UNIVERSITY OF VIRGINIA OR THE SOFTWARE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #define BLOCK_SIZE 16
 
-__kernel void 
-lud_diagonal(__global float *m, 
+__kernel void
+lud_diagonal(__global float *m,
 			 __local  float *shadow,
-			 int   matrix_dim, 
+			 int   matrix_dim,
 			 int   offset)
-{ 
+{
 	int i,j;
 	int tx = get_local_id(0);
 
@@ -14,9 +27,9 @@ lud_diagonal(__global float *m,
 		shadow[i * BLOCK_SIZE + tx]=m[array_offset + tx];
 		array_offset += matrix_dim;
 	}
-  
+
 	barrier(CLK_LOCAL_MEM_FENCE);
-  
+
 	for(i=0; i < BLOCK_SIZE-1; i++) {
 
     if (tx>i){
@@ -31,7 +44,7 @@ lud_diagonal(__global float *m,
       for(j=0; j < i+1; j++)
         shadow[(i+1) * BLOCK_SIZE + tx] -= shadow[(i+1) * BLOCK_SIZE + j]*shadow[j * BLOCK_SIZE + tx];
     }
-    
+
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
 
@@ -40,21 +53,21 @@ lud_diagonal(__global float *m,
       m[array_offset+tx]=shadow[i * BLOCK_SIZE + tx];
       array_offset += matrix_dim;
     }
-  
+
 }
 
 __kernel void
-lud_perimeter(__global float *m, 
+lud_perimeter(__global float *m,
 			  __local  float *dia,
 			  __local  float *peri_row,
 			  __local  float *peri_col,
-			  int matrix_dim, 
+			  int matrix_dim,
 			  int offset)
 {
     int i,j, array_offset;
     int idx;
 
-    int  bx = get_group_id(0);	
+    int  bx = get_group_id(0);
     int  tx = get_local_id(0);
 
     if (tx < BLOCK_SIZE) {
@@ -64,7 +77,7 @@ lud_perimeter(__global float *m,
       dia[i * BLOCK_SIZE + idx]=m[array_offset+idx];
       array_offset += matrix_dim;
       }
-    
+
     array_offset = offset*matrix_dim+offset;
     for (i=0; i < BLOCK_SIZE; i++) {
       peri_row[i * BLOCK_SIZE+ idx]=m[array_offset+(bx+1)*BLOCK_SIZE+idx];
@@ -73,19 +86,19 @@ lud_perimeter(__global float *m,
 
     } else {
     idx = tx-BLOCK_SIZE;
-    
+
     array_offset = (offset+BLOCK_SIZE/2)*matrix_dim+offset;
     for (i=BLOCK_SIZE/2; i < BLOCK_SIZE; i++){
       dia[i * BLOCK_SIZE + idx]=m[array_offset+idx];
       array_offset += matrix_dim;
     }
-    
+
     array_offset = (offset+(bx+1)*BLOCK_SIZE)*matrix_dim+offset;
     for (i=0; i < BLOCK_SIZE; i++) {
       peri_col[i * BLOCK_SIZE + idx] = m[array_offset+idx];
       array_offset += matrix_dim;
     }
-  
+
    }
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -105,7 +118,7 @@ lud_perimeter(__global float *m,
    }
 
 	barrier(CLK_LOCAL_MEM_FENCE);
-    
+
   if (tx < BLOCK_SIZE) { //peri-row
     idx=tx;
     array_offset = (offset+1)*matrix_dim+offset;
@@ -125,16 +138,16 @@ lud_perimeter(__global float *m,
 }
 
 __kernel void
-lud_internal(__global float *m, 
+lud_internal(__global float *m,
 			 __local  float *peri_row,
 			 __local  float *peri_col,
-			int matrix_dim, 
+			int matrix_dim,
 			int offset)
 {
-  
-  int  bx = get_group_id(0);	
-  int  by = get_group_id(1);	
-  
+
+  int  bx = get_group_id(0);
+  int  by = get_group_id(1);
+
   int  tx = get_local_id(0);
   int  ty = get_local_id(1);
 
@@ -156,8 +169,3 @@ lud_internal(__global float *m,
 
 
 }
-
-
-
-
-
