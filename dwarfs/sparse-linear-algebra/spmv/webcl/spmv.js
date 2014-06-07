@@ -1,3 +1,28 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
+ * Foley-Bourgon, Laurie Hendren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 if (typeof performance === "undefined") {
     performance = Date;
 }
@@ -217,20 +242,20 @@ function source(id){
         mHttpReq.open("GET", programElement.src, false);
         mHttpReq.send(null);
         programSource = mHttpReq.responseText;
-    } 
+    }
     return programSource;
 }
 function program(ctx, src){ return ctx.createProgram(src);}
 
 function build(prgm, device){
-    try {        
+    try {
       prgm.build ([device], "");
     } catch(e) {
       alert ("Failed to build WebCL program. Error "
-             + prgm.getBuildInfo (device, 
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_STATUS)
-             + ":  " 
-             + prgm.getBuildInfo (device, 
+             + ":  "
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_LOG));
       throw e;
     }
@@ -238,7 +263,7 @@ function build(prgm, device){
 
 function webCLPlatformDevice(platformIdx, deviceIdx){
     var p = webcl.getPlatforms()[platformIdx];
-    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];    
+    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];
     return {"platform": p, "device": d};
 }
 
@@ -253,7 +278,7 @@ function isWebCL(){
                 "and the WebCL browser extension installed.");
           return false;
       }
-      return true; 
+      return true;
 }
 
 function kernel(kernel, program){ return program.createKernel(kernel);}
@@ -283,14 +308,14 @@ function spmvRun(platformIdx, deviceIdx, dim, density, stddev, iterations) {
 
     var t1 =  performance.now();
 
-    try {      
+    try {
         //============ Setup WebCL Program ================
-        isWebCL();         
-        var pd = webCLPlatformDevice(platformIdx, deviceIdx);        
-        var ctx = webCLContext(pd.device);           
+        isWebCL();
+        var pd = webCLPlatformDevice(platformIdx, deviceIdx);
+        var ctx = webCLContext(pd.device);
         var src = source(programSourceId);
         var prgm = program(ctx, src);
-        build(prgm, pd.device);            
+        build(prgm, pd.device);
         var queue = ctx.createCommandQueue(pd.device);
 
         // ============== Initialize Kernels ================
@@ -329,9 +354,9 @@ function spmvRun(platformIdx, deviceIdx, dim, density, stddev, iterations) {
           wg_sizes = default_wg_sizes(num_wg_sizes,max_wg_size,global_size);
 
           queue.enqueueNDRangeKernel(kernel_csr, 1, null, global_size, wg_sizes);
-          
+
           queue.enqueueReadBuffer(memy, true, 0, float_bytes*csr.num_rows, out);
-          // ============== Free Memory ================ 
+          // ============== Free Memory ================
           queue.finish();
         }
 

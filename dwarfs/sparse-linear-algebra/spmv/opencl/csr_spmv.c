@@ -1,3 +1,23 @@
+/*
+ * Copyright July 29, 2011 by Virginia Polytechnic Institute and State University
+ * All rights reserved.
+ *
+ * Virginia Polytechnic Institute and State University (Virginia Tech) owns the
+ * OpenCL and the 13 Dwarfs software and its associated documentation (Software).
+ * You should carefully read the following terms and conditions before using this
+ * software.  Your use of this Software indicates your acceptance of this license
+ * agreement and all terms and conditions.
+ *
+ * You are hereby licensed to use the Software for Non-Commercial Purpose only.
+ * Non-Commercial Purpose means the use of the Software solely for research.
+ * Non-Commercial Purpose excludes, without limitation, any use of the Software, as
+ * part of, or in any way in connection with a product or service which is sold,
+ * offered for sale, licensed, leased, loaned, or rented.  Permission to use, copy,
+ * modify, and distribute this compilation for Non-Commercial Purpose is hereby
+ * granted without fee, subject to the following terms of this license.
+ */
+
+
 #ifndef SERIAL
 #define SERIAL
 #endif
@@ -99,7 +119,7 @@ cl_device_id _ocd_get_device(int platform, int device, cl_int dev_type)
 			dev_type = CL_DEVICE_TYPE_CPU;
 			err = clGetDeviceIDs(platforms[platform], dev_type, 0, NULL, &nDevices);
 			if(err == CL_DEVICE_NOT_FOUND){
-				fprintf(stderr, "No CPU device available in this platform. Please, check your available OpenCL devices.\n"); 
+				fprintf(stderr, "No CPU device available in this platform. Please, check your available OpenCL devices.\n");
 				exit(-4);
 			}
 		}
@@ -119,9 +139,9 @@ cl_device_id _ocd_get_device(int platform, int device, cl_int dev_type)
     	//Get the first available device of requested type
     	err = clGetDeviceInfo(devices[0], CL_DEVICE_NAME, sizeof (DeviceName), DeviceName, NULL);
     	device=0;
-    	CHECK_ERROR(err);	
+    	CHECK_ERROR(err);
 	}
-	    
+
     //Return
     fprintf(stderr, "Device Chosen : %s\n", DeviceName);
     return devices[device];
@@ -173,7 +193,7 @@ cl_program ocdBuildProgramFromFile(cl_context context, cl_device_id device_id, c
 		err = clBuildProgram(program,1,&device_id,"-DOPENCL -I.",NULL,NULL);
 	else
 		err = clBuildProgram(program, 0, NULL, "-DOPENCL -I.", NULL, NULL);
-	
+
 	if (err == CL_BUILD_PROGRAM_FAILURE)
 	{
 		char *buildLog;
@@ -350,7 +370,7 @@ int main(int argc, char *argv[]){
     unsigned long seed = 10000;
     float *v;
     stopwatch sw;
-    int platform_idx =0; 
+    int platform_idx =0;
     int device_idx = 0;
     unsigned int iterations = 1;
     int i;
