@@ -1,3 +1,16 @@
+/*
+  Copyright (c)2008-2011 University of Virginia
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted without royalty fees or other restrictions, provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+    * Neither the name of the University of Virginia, the Dept. of Computer Science, nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE UNIVERSITY OF VIRGINIA OR THE SOFTWARE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 // #ifdef __cplusplus
 // extern "C" {
 // #endif
@@ -22,24 +35,24 @@
 //	DESCRIPTION
 //======================================================================================================================================================150
 
-// The code calculates particle potential and relocation due to mutual forces between particles within a large 3D space. This space is divided into cubes, 
-// or large boxes, that are allocated to individual cluster nodes. The large box at each node is further divided into cubes, called boxes. 26 neighbor boxes 
-// surround each box (the home box). Home boxes at the boundaries of the particle space have fewer neighbors. Particles only interact with those other 
-// particles that are within a cutoff radius since ones at larger distances exert negligible forces. Thus the box size s chosen so that cutoff radius does 
-// not span beyond any neighbor box for any particle in a home box, thus limiting the reference space to a finite number of boxes. 
-// This code [1] was derived from the ddcMD application [2] by rewriting the front end and structuring it for parallelization. This code represents MPI task 
-// that runs on a single cluster node. While the details of the code are somewhat different than the original, the code retains the structure of the MPI task 
-// in the original code. Since the rest of MPI code is not included here, the application first emulates MPI partitioning of the particle space into boxes. 
-// Then, for every particle in the home box, the nested loop processes interactions first with other particles in the home box and then with particles in all 
-// neighbor boxes. The processing of each particle consists of a single stage of calculation that is enclosed in the innermost loop. The nested loops in the 
-// application were parallelized in such a way that at any point of time GPU warp/wavefront accesses adjacent memory locations. The speedup depends on the 
-// number of boxes, particles (fixed) and the actualcal culation for each particle (fixed). The application is memory bound, and GPU speedup seems to 
-// saturate at about 16x when compared to single-core CPU. 
+// The code calculates particle potential and relocation due to mutual forces between particles within a large 3D space. This space is divided into cubes,
+// or large boxes, that are allocated to individual cluster nodes. The large box at each node is further divided into cubes, called boxes. 26 neighbor boxes
+// surround each box (the home box). Home boxes at the boundaries of the particle space have fewer neighbors. Particles only interact with those other
+// particles that are within a cutoff radius since ones at larger distances exert negligible forces. Thus the box size s chosen so that cutoff radius does
+// not span beyond any neighbor box for any particle in a home box, thus limiting the reference space to a finite number of boxes.
+// This code [1] was derived from the ddcMD application [2] by rewriting the front end and structuring it for parallelization. This code represents MPI task
+// that runs on a single cluster node. While the details of the code are somewhat different than the original, the code retains the structure of the MPI task
+// in the original code. Since the rest of MPI code is not included here, the application first emulates MPI partitioning of the particle space into boxes.
+// Then, for every particle in the home box, the nested loop processes interactions first with other particles in the home box and then with particles in all
+// neighbor boxes. The processing of each particle consists of a single stage of calculation that is enclosed in the innermost loop. The nested loops in the
+// application were parallelized in such a way that at any point of time GPU warp/wavefront accesses adjacent memory locations. The speedup depends on the
+// number of boxes, particles (fixed) and the actualcal culation for each particle (fixed). The application is memory bound, and GPU speedup seems to
+// saturate at about 16x when compared to single-core CPU.
 
 // Papers:
-// [1] L. G. Szafaryn, T. Gamblin, B. deSupinski and K. Skadron. "Experiences with Achieving Portability across Heterogeneous Architectures." Submitted to 
+// [1] L. G. Szafaryn, T. Gamblin, B. deSupinski and K. Skadron. "Experiences with Achieving Portability across Heterogeneous Architectures." Submitted to
 // WOLFHPC workshop at 25th International Conference on Supercomputing (ICS). Tucson, AZ. 2010.
-// [2] F. H. Streitz, J. N. Glosli, M. V. Patel, B. Chan, R. K. Yates, B. R. de Supinski, J. Sexton, J and A. Gunnels. "100+ TFlop Solidification Simulations 
+// [2] F. H. Streitz, J. N. Glosli, M. V. Patel, B. Chan, R. K. Yates, B. R. de Supinski, J. Sexton, J and A. Gunnels. "100+ TFlop Solidification Simulations
 // on BlueGene/L." In Proceedings of the 2005 Supercomputing Conference (SC 05). Seattle, WA. 2005.
 
 //======================================================================================================================================================150
@@ -94,8 +107,8 @@
 //	MAIN FUNCTION
 //========================================================================================================================================================================================================200
 
-int 
-main(	int argc, 
+int
+main(	int argc,
 		char *argv [])
 {
 
@@ -255,8 +268,8 @@ main(	int argc,
 								box_cpu[nh].nei[box_cpu[nh].nn].x = (k+n);
 								box_cpu[nh].nei[box_cpu[nh].nn].y = (j+m);
 								box_cpu[nh].nei[box_cpu[nh].nn].z = (i+l);
-								box_cpu[nh].nei[box_cpu[nh].nn].number =	(box_cpu[nh].nei[box_cpu[nh].nn].z * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) + 
-																			(box_cpu[nh].nei[box_cpu[nh].nn].y * dim_cpu.boxes1d_arg) + 
+								box_cpu[nh].nei[box_cpu[nh].nn].number =	(box_cpu[nh].nei[box_cpu[nh].nn].z * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) +
+																			(box_cpu[nh].nei[box_cpu[nh].nn].y * dim_cpu.boxes1d_arg) +
 																			 box_cpu[nh].nei[box_cpu[nh].nn].x;
 								box_cpu[nh].nei[box_cpu[nh].nn].offset = box_cpu[nh].nei[box_cpu[nh].nn].number * NUMBER_PAR_PER_BOX;
 
