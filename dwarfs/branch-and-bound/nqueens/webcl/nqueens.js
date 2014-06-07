@@ -1,3 +1,29 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
+ * Foley-Bourgon, Laurie Hendren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
 Math.commonRandom = (function() {
     var seed = 49734321;
     return function() {
@@ -28,20 +54,20 @@ function source(id){
         mHttpReq.open("GET", programElement.src, false);
         mHttpReq.send(null);
         programSource = mHttpReq.responseText;
-    } 
+    }
     return programSource;
 }
 function program(ctx, src){ return ctx.createProgram(src);}
 
 function build(prgm, device, options){
-    try {        
+    try {
       prgm.build ([device], options);
     } catch(e) {
       alert ("Failed to build WebCL program. Error "
-             + prgm.getBuildInfo (device, 
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_STATUS)
-             + ":  " 
-             + prgm.getBuildInfo (device, 
+             + ":  "
+             + prgm.getBuildInfo (device,
                                             WebCL.PROGRAM_BUILD_LOG));
       throw e;
     }
@@ -49,7 +75,7 @@ function build(prgm, device, options){
 
 function webCLPlatformDevice(platformIdx, deviceIdx){
     var p = webcl.getPlatforms()[platformIdx];
-    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];    
+    var d = p.getDevices(WebCL.DEVICE_TYPE_ALL)[deviceIdx];
     return {"platform": p, "device": d};
 }
 
@@ -64,30 +90,30 @@ function isWebCL(){
                 "and the WebCL browser extension installed.");
           return false;
       }
-      return true; 
+      return true;
 }
 
 function kernel(kernel, program){ return program.createKernel(kernel);}
 
 function printM(a, m, n){
-    console.log("Printing Matrix:");    
+    console.log("Printing Matrix:");
     for(var i =0; i<m; ++i){
-        console.log("[" + 
+        console.log("[" +
             Array.prototype.join.call(Array.prototype.slice.call(a, i*m, i*m + n), ",") +
             "]");
-    }    
+    }
 }
 
 function kernelWorkItems(kernel, device){
     var workItems = kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE);
     return workItems;
-}    
+}
 
 function deviceMaxWorkGroupSize(device){
   return device.getInfo(WebCL.DEVICE_MAX_WORK_GROUP_SIZE);
 }
-  
-function maxComputeUnits(device){ 
+
+function maxComputeUnits(device){
   return device.getInfo(WebCL.DEVICE_MAX_COMPUTE_UNITS);
 }
 function bitScan(x){
@@ -101,24 +127,24 @@ function bitScan(x){
 }
 
 function solverInformation(device, queue){
-  var solver = {}; 
+  var solver = {};
   solver["cpu"] = (device.getInfo(WebCL.DEVICE_TYPE) & WebCL.DEVICE_TYPE_CPU) !=0;
   solver["threads"] = 0;
   solver["queue"] = queue;
   solver["enableAtomics"] = false;
   solver["enableChar"] = false;
-  solver["forceLocal"] = false; 
-  solver["enableVectorize"] = false; 
+  solver["forceLocal"] = false;
+  solver["enableVectorize"] = false;
   solver["forceVec4"] = false;
   solver["maxThreads"] = 0;
- 
+
   var exts = device.getInfo(WebCL.DEVICE_EXTENSIONS);
 
   if(exts.search("cl_khr_global_int32_base_atomics") != -1 && !solver["cpu"]){
     solver["enableAtomics"] = true;
   }
   if(exts.search("cl_khr_global_int32_base_atomics") != -1){
-    solver["enableChar"] = true; 
+    solver["enableChar"] = true;
   }
   return solver;
 }
@@ -127,13 +153,13 @@ function enableVectorization(device, solverInfo, forceNoVectorize){
   var vectorWidth = device.getInfo(WebCL.DEVICE_PREFERRED_VECTOR_WIDTH_INT);
 
   if(!forceNoVectorize && !solverInfo.cpu && vectorWidth != 1){
-    solverInfo.enableVectorize = true; 
+    solverInfo.enableVectorize = true;
     solverInfo.enableLocal = true;
   }
 }
 
 function buildOpts(solverInfo, workItems){
-  var settings = ""; 
+  var settings = "";
 
   settings += "-D WORK_ITEMS=" + workItems;
 
@@ -150,12 +176,12 @@ function buildOpts(solverInfo, workItems){
   }
 
   if(solverInfo.enableVectorize){
-    settings += " -D ENABLE_VECTORIZE"; 
+    settings += " -D ENABLE_VECTORIZE";
 
     if(!solver.forceVec4){
       settings += " -D USE_VEC2";
     }
-  } 
+  }
 
 
   if(solverInfo.enableChar){
@@ -195,7 +221,7 @@ function download(strData, strFileName, strMimeType) {
 	if ('download' in a) { //html5 A[download]
 		if(window.URL){
 			a.href= window.URL.createObjectURL(new Blob([strData]));
-			
+
  		}else{
 			a.href = "data:" + strMimeType + "," + encodeURIComponent(strData);
 		}
@@ -210,7 +236,7 @@ function download(strData, strFileName, strMimeType) {
 		return true;
 	} /* end if('download' in a) */
 
-	
+
 	//do iframe dataURL download (old ch+FF):
 	var f = D.createElement("iframe");
 	D.body.appendChild(f);
@@ -223,23 +249,23 @@ function download(strData, strFileName, strMimeType) {
 } /* end download() */
 
 function webclNQ(platformIdx, deviceIdx, boardSize){
-    var programSourceId = "clNQueens";        
-    var blockSize = 0; 
+    var programSourceId = "clNQueens";
+    var blockSize = 0;
     var workItems;
-    var maxSize; 
-    var solutionsFinal = 0; 
+    var maxSize;
+    var solutionsFinal = 0;
     var uniqueSolutionsFinal = 0;
-    var maxPitch; 
+    var maxPitch;
     var blockMultiplier;
     var units;
     var lastTotalSize=0;
     var forceNoVectorize = false;
     var t1 = performance.now();
-    try {      
+    try {
         //============ Setup WebCL Program ================
-        isWebCL();         
-        var pd = webCLPlatformDevice(platformIdx, deviceIdx);        
-        var ctx = webCLContext(pd.device);           
+        isWebCL();
+        var pd = webCLPlatformDevice(platformIdx, deviceIdx);
+        var ctx = webCLContext(pd.device);
         var src = source(programSourceId);
         var prgm = program(ctx, src);
         var queue = ctx.createCommandQueue(pd.device);
@@ -248,11 +274,11 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
 
         enableVectorization(pd.device, solverInfo, forceNoVectorize);
 
-        workItems = solverInfo.enableVectorize ? 
+        workItems = solverInfo.enableVectorize ?
           (solverInfo.forceVec4 ? 64 : 128) : 256;
-        build(prgm, pd.device, buildOpts(solverInfo, workItems));            
+        build(prgm, pd.device, buildOpts(solverInfo, workItems));
 
-        //============== Initialize Kernels ================ 
+        //============== Initialize Kernels ================
         solverInfo["nqueen"] = kernel("nqueen", prgm);
         solverInfo["nqueen1"] = kernel("nqueen1", prgm);
 
@@ -261,10 +287,10 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
         maxSize = deviceMaxWorkGroupSize(pd.device);
         units = maxComputeUnits(pd.device);
 
-        if(solverInfo.maxWorkItems > 256) solverInfo.maxWorkItems = 256; 
+        if(solverInfo.maxWorkItems > 256) solverInfo.maxWorkItems = 256;
 
         if(blockSize != 0){
-          solverInfo.maxWorkItems = blockSize * (solverInfo.enableVectorize ? 
+          solverInfo.maxWorkItems = blockSize * (solverInfo.enableVectorize ?
           (solverInfo.forceVec4 ? 4 : 2) : 1);
         }
 
@@ -286,13 +312,13 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
 
         if(solverInfo.forceLocal && solverInfo.maxWorkItems < 256){
           // rebuild program
-          
+
           if(solverInfo.nqueen != undefined) solverInfo.nqueen.release();
           if(solverInfo.nqueen1 != undefined) solverInfo.nqueen1.release();
 
-          workItems = solverInfo.enableVectorize ? 
+          workItems = solverInfo.enableVectorize ?
             (solverInfo.forceVec4 ? Math.floor(solverInfo.maxWorkItems / 4): Math.floor(solverInfo.maxWorkItems/2)) : solverInfo.maxWorkItems;
-          build(prgm, pd.device, buildOpts(solverInfo, workItems));            
+          build(prgm, pd.device, buildOpts(solverInfo, workItems));
           solverInfo["nqueen"] = kernel("nqueen", prgm);
           solverInfo["nqueen1"] = kernel("nqueen1", prgm);
 
@@ -302,13 +328,13 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
         }
 
         //========= NQUEENS COMPUTE =======================
-        var total = 1000000000; 
+        var total = 1000000000;
         var level = 0;
         var i = boardSize;
         var enableAtomics = solverInfo.enableAtomics;
         var enableVectorize = solverInfo.enableVectorize;
         var mnThreads = solverInfo.maxThreads;
-        var lastTotalSize = 0; 
+        var lastTotalSize = 0;
         var nMaxWorkItems = solverInfo.maxWorkItems;
         var nqueen = solverInfo["nqueen"];
         var nqueen1 = solverInfo["nqueen1"];
@@ -318,7 +344,7 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
           i--;
           level++;
         }
-          
+
         if(level > boardSize - 2) {
           level = boardSize - 2;
         }
@@ -327,7 +353,7 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
           level = 11;
         }
 
-        var threads; 
+        var threads;
         var maxThreads = 0;
         var maxPitch;
 
@@ -344,16 +370,16 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
 
         maxPitch = (maxThreads + 15) & ~0xf;
 
-        // ============== Setup Kernel Memory ================     
-        // memory has to be allocated in terms of bytes 
-        var intBytes = 4; 
+        // ============== Setup Kernel Memory ================
+        // memory has to be allocated in terms of bytes
+        var intBytes = 4;
         var paramBuffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, maxPitch*intBytes*(4+32));
         var resultBuffer = ctx.createBuffer(WebCL.MEM_WRITE_ONLY , maxPitch*intBytes*4 );
         var forbiddenBuffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, intBytes*32);
         var globalIndex = ctx.createBuffer(WebCL.MEM_READ_WRITE, intBytes);
 
         // ============= NQueen Masks =======================
-        var maskVector = new Uint32Array(maxPitch*(4+32)); 
+        var maskVector = new Uint32Array(maxPitch*(4+32));
         var results = new Uint32Array(maxPitch*4);
         var forbiddenWritten = false;
         var solutions = 0;
@@ -361,7 +387,7 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
         var vecSize = solverInfo.forceVec4 ? 4 : 2;
 
         var boardMask = (1 << boardSize) - 1;
-        var totalSize = 0; 
+        var totalSize = 0;
 
         for(var j = 0; j < Math.floor(boardSize / 2); j++) {
           var masks = new Uint32Array(32);
@@ -436,8 +462,8 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
               totalSize++;
 
               if(totalSize == maxThreads) {
-                //need to take care of read belwo 
-                var nqueenKernel = j==0 ? nqueen1 : nqueen; 
+                //need to take care of read belwo
+                var nqueenKernel = j==0 ? nqueen1 : nqueen;
 
                 var argThreads = solverInfo.enableVectorize ? Math.floor((threads + vecSize - 1) / vecSize) : threads;
                 var argPitch = solverInfo.enableVectorize ? Math.floor(maxPitch / vecSize) : maxPitch;
@@ -445,19 +471,19 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
                 nqueenKernel.setArg(1, new Uint32Array([level]));
                 nqueenKernel.setArg(2, new Uint32Array([argThreads]));
                 nqueenKernel.setArg(3, new Uint32Array([argPitch]));
-                nqueenKernel.setArg(4, paramBuffer); 
+                nqueenKernel.setArg(4, paramBuffer);
                 nqueenKernel.setArg(5, resultBuffer);
                 nqueenKernel.setArg(6, forbiddenBuffer);
                 if(solverInfo.enableAtomics){
                   nqueenKernel.setArg(7, globalIndex);
                 }
 
-                if(!forbiddenWritten){              
+                if(!forbiddenWritten){
                   var forbidden_sub = new Uint32Array(level + 1);
                   for(var l = 0; l < level + 1; ++l){
                     forbidden_sub[l] = forbidden[boardSize-level-1 + l];
                   }
-                  
+
                   queue.enqueueWriteBuffer(forbiddenBuffer, true, 0, (level +1) *intBytes, forbidden_sub);
                   queue.finish();
                   forbiddenWritten = true;
@@ -468,7 +494,7 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
 
                 var workDim = [enableVectorize ? Math.floor(mnThreads / vecSize) : mnThreads];
                 var groupDim = [0];
-                var n =  Math.floor(nMaxWorkItems / vecSize); 
+                var n =  Math.floor(nMaxWorkItems / vecSize);
                 groupDim[0] = enableVectorize ? n : nMaxWorkItems;
                 var numThreads = workDim[0];
                 var nt = new Int32Array([numThreads]);
@@ -478,22 +504,22 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
                   queue.finish();
                 }
 
-                queue.enqueueNDRangeKernel(nqueenKernel, 1, null, workDim, groupDim);  
+                queue.enqueueNDRangeKernel(nqueenKernel, 1, null, workDim, groupDim);
                 queue.finish();
                 queue.flush();
 
                 lastTotalSize = maxThreads;
 
-                if(totalSize > maxThreads){ 
+                if(totalSize > maxThreads){
                   // adjust the data array
                   for(var k = 0; k < 4 + boardSize - level; k++) {
                     for(var ii = 0; ii < (totalSize - maxThreads); ++ii){
-                      maskVector[maxPitch*k + i]= maskVector[maxThreads + maxPitch*k + i] ; 
+                      maskVector[maxPitch*k + i]= maskVector[maxThreads + maxPitch*k + i] ;
                     }
                   }
                 }
                 totalSize -= threads;
-                queue.enqueueReadBuffer(resultBuffer, true, 0, maxPitch*intBytes*4, results); 
+                queue.enqueueReadBuffer(resultBuffer, true, 0, maxPitch*intBytes*4, results);
                 queue.finish();
 
                 for(var k = 0; k < lastTotalSize; k++) {
@@ -528,8 +554,8 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
               maskVector[k + maxPitch * 4] = 0;
             }
 
-            var nqueenKernel = j === 0 ? nqueen1 : nqueen; 
-            
+            var nqueenKernel = j === 0 ? nqueen1 : nqueen;
+
             var tSize = totalSize > threads ? threads : totalSize;
             var argThreads = solverInfo.enableVectorize ? Math.floor((tSize + vecSize - 1) / vecSize) : tSize;
             var argPitch = solverInfo.enableVectorize ? Math.floor(maxPitch / vecSize) : maxPitch;
@@ -537,19 +563,19 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
             nqueenKernel.setArg(1, new Int32Array([level]));
             nqueenKernel.setArg(2, new Int32Array([argThreads]));
             nqueenKernel.setArg(3, new Int32Array([argPitch]));
-            nqueenKernel.setArg(4, paramBuffer); 
+            nqueenKernel.setArg(4, paramBuffer);
             nqueenKernel.setArg(5, resultBuffer);
             nqueenKernel.setArg(6, forbiddenBuffer);
             if(solverInfo.enableAtomics){
               nqueenKernel.setArg(7, globalIndex);
             }
 
-            if(!forbiddenWritten){              
+            if(!forbiddenWritten){
               var forbidden_sub = new Uint32Array(level + 1);
               for(var l = 0; l < level + 1; ++l){
                 forbidden_sub[l] = forbidden[boardSize-level-1 + l];
               }
-              
+
               queue.enqueueWriteBuffer(forbiddenBuffer, true, 0, (level +1) *intBytes, forbidden_sub);
               //  this doesn't work for anyone with bright ideas :
               //  queue.enqueueWriteBuffer(forbiddenBuffer, true, 0, (level +1) *intBytes, forbidden.subarray(boardSize-level-1));
@@ -561,7 +587,7 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
             queue.finish();
 
             var workDim= [0];
-           
+
             if(tSize < mnThreads){
               workDim[0] = (enableVectorize ? Math.floor((tSize + vecSize -1)/ vecSize) : tSize);
             }
@@ -570,7 +596,7 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
             }
 
             var groupDim = [0];
-            var n =  enableVectorize ? Math.floor(nMaxWorkItems / vecSize) : nMaxWorkItems;            
+            var n =  enableVectorize ? Math.floor(nMaxWorkItems / vecSize) : nMaxWorkItems;
             groupDim[0] = n;
 
             if(workDim[0] % n != 0){
@@ -581,26 +607,26 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
             var nt= new Int32Array([numThreads]);
 
             if(solverInfo.enableAtomics){
-              queue.enqueueWriteBuffer(globalIndex, true, 0, intBytes, nt); 
+              queue.enqueueWriteBuffer(globalIndex, true, 0, intBytes, nt);
               queue.finish();
             }
 
-            queue.enqueueNDRangeKernel(nqueenKernel, 1, null, workDim, groupDim);  
+            queue.enqueueNDRangeKernel(nqueenKernel, 1, null, workDim, groupDim);
             queue.finish();
             queue.flush();
 
             lastTotalSize = tSize;
 
-            if(totalSize > maxThreads){ 
+            if(totalSize > maxThreads){
               // adjust the data array
               for(var k = 0; k < 4 + boardSize - level; k++) {
                 for(var ii = 0; ii < (totalSize - maxThreads); ++ii){
-                  maskVector[maxPitch*k + ii]= maskVector[maxThreads + maxPitch*k + ii] ; 
+                  maskVector[maxPitch*k + ii]= maskVector[maxThreads + maxPitch*k + ii] ;
                 }
               }
             }
             totalSize -= tSize;
-            queue.enqueueReadBuffer(resultBuffer, true, 0, maxPitch*intBytes*4, results); 
+            queue.enqueueReadBuffer(resultBuffer, true, 0, maxPitch*intBytes*4, results);
             queue.finish();
 
             for(var k = 0; k < lastTotalSize; k++) {
@@ -613,26 +639,26 @@ function webclNQ(platformIdx, deviceIdx, boardSize){
           }
         }
 
-        // // ============== Free Memory ================ 
-        queue.finish(); 
-        paramBuffer.release(); 
-        resultBuffer.release(); 
+        // // ============== Free Memory ================
+        queue.finish();
+        paramBuffer.release();
+        resultBuffer.release();
         forbiddenBuffer.release();
-        solverInfo.nqueen.release(); 
-        solverInfo.nqueen1.release(); 
-        prgm.release(); 
-        queue.release(); 
-        ctx.release();    
+        solverInfo.nqueen.release();
+        solverInfo.nqueen1.release();
+        prgm.release();
+        queue.release();
+        ctx.release();
 
-        uniqueSolutionsFinal = uniqueSolutions; 
-        solutionsFinal = solutions; 
+        uniqueSolutionsFinal = uniqueSolutions;
+        solutionsFinal = solutions;
     }
     catch(e){
         alert(e);
     }
     var t2 = performance.now();
 
-    console.log("Solutions: " + solutionsFinal + " unique solutions: " + uniqueSolutionsFinal); 
+    console.log("Solutions: " + solutionsFinal + " unique solutions: " + uniqueSolutionsFinal);
     console.log("Total time elapsed is "+ (t2-t1)/1000+ " seconds");
     return { status: 1,
              options: null,

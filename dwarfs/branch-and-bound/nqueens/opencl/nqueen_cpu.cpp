@@ -1,3 +1,23 @@
+/*
+ * Copyright July 29, 2011 by Virginia Polytechnic Institute and State University
+ * All rights reserved.
+ *
+ * Virginia Polytechnic Institute and State University (Virginia Tech) owns the
+ * OpenCL and the 13 Dwarfs software and its associated documentation (Software).
+ * You should carefully read the following terms and conditions before using this
+ * software.  Your use of this Software indicates your acceptance of this license
+ * agreement and all terms and conditions.
+ *
+ * You are hereby licensed to use the Software for Non-Commercial Purpose only.
+ * Non-Commercial Purpose means the use of the Software solely for research.
+ * Non-Commercial Purpose excludes, without limitation, any use of the Software, as
+ * part of, or in any way in connection with a product or service which is sold,
+ * offered for sale, licensed, leased, loaned, or rented.  Permission to use, copy,
+ * modify, and distribute this compilation for Non-Commercial Purpose is hereby
+ * granted without fee, subject to the following terms of this license.
+ */
+
+
 // N-queen solver for OpenCL
 // Ping-Che Chen
 
@@ -248,7 +268,7 @@ static long long nqueen_solver(int size, unsigned int board_mask, unsigned int m
 					int min_pos = size;
 					int relation = 0;
 					int j;
-						
+
 					// rotate cw
 					if(rotate1) {
 						equal = true;
@@ -259,13 +279,13 @@ static long long nqueen_solver(int size, unsigned int board_mask, unsigned int m
 								if(min_pos > size - board_array[j] - 1) {
 									relation = board_array[size - board_array[j] - 1] - j;
 									min_pos = size - board_array[j] - 1;
-								}							
+								}
 							}
 						}
 
 						repeat_times = equal ? 2 : repeat_times;
 					}
-						
+
 					if(relation >= 0 && rotate2) {
 						// rotate ccw
 						equal = true;
@@ -278,12 +298,12 @@ static long long nqueen_solver(int size, unsigned int board_mask, unsigned int m
 									relation = board_array[board_array[j]] - (size - j - 1);
 									min_pos = board_array[j];
 								}
-							}					
+							}
 						}
 
 						repeat_times = equal ? 2 : repeat_times;
 					}
-						
+
 					if(relation >= 0 && repeat_times == 8 && rotate3) {
 						// rotate 180
 						equal = true;
@@ -479,7 +499,7 @@ long long nqueen_cpu(int size, long long* unique_solutions)
 
 	bool all_finish = false;
 	while(!all_finish) {
-		WaitForMultipleObjects(threads, thread_handles, TRUE, INFINITE);	
+		WaitForMultipleObjects(threads, thread_handles, TRUE, INFINITE);
 		all_finish = true;
 		for(int i = 0; i < threads; i++) {
 			if(!thread_info[i].finish) {
@@ -519,7 +539,7 @@ long long nqueen_cpu(int size, long long* unique_solutions)
 
 //	std::cout << solutions << "\n";
 //	std::cout << *unique_solutions << "\n";
-		
+
 	for(int i = 1; i < size / 2; i++) {
 		solutions += nqueen_solver(size, (1 << size) - 1, 1 << i, 1 << (i + 1), (1 << i) >> 1, &u_solutions);
 		*unique_solutions += u_solutions;

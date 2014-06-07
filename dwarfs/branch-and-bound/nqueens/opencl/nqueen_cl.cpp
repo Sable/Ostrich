@@ -1,3 +1,23 @@
+/*
+ * Copyright July 29, 2011 by Virginia Polytechnic Institute and State University
+ * All rights reserved.
+ *
+ * Virginia Polytechnic Institute and State University (Virginia Tech) owns the
+ * OpenCL and the 13 Dwarfs software and its associated documentation (Software).
+ * You should carefully read the following terms and conditions before using this
+ * software.  Your use of this Software indicates your acceptance of this license
+ * agreement and all terms and conditions.
+ *
+ * You are hereby licensed to use the Software for Non-Commercial Purpose only.
+ * Non-Commercial Purpose means the use of the Software solely for research.
+ * Non-Commercial Purpose excludes, without limitation, any use of the Software, as
+ * part of, or in any way in connection with a product or service which is sold,
+ * offered for sale, licensed, leased, loaned, or rented.  Permission to use, copy,
+ * modify, and distribute this compilation for Non-Commercial Purpose is hereby
+ * granted without fee, subject to the following terms of this license.
+ */
+
+
 // N-queen solver for OpenCL
 // Ping-Che Chen
 // adapted for OpenDwarfs
@@ -22,7 +42,7 @@ public:
 	~CLMemAutoRelease() { clReleaseMemObject(m_Mem); }
 
 private:
-	
+
 	cl_mem m_Mem;
 };
 
@@ -35,7 +55,7 @@ public:
 	~CLEventAutoRelease() { clReleaseEvent(m_Event); }
 
 private:
-	
+
 	cl_event m_Event;
 };
 
@@ -68,10 +88,10 @@ NQueenSolver::NQueenSolver(cl_context context, std::vector<cl_device_id> devices
 
 	m_SolverInfo.resize(m_bDoubleQueue ? m_Devices.size() * 2 : m_Devices.size()); //by default will be of size 1 (since m_bDoubleQueue is false and m_Devices.size() will return 1.
 	//So, only one solver instance.
-	
+
 	cl_device_type type;
 	for(int i = 0; i < m_SolverInfo.size(); i++) { //For OpenDwarfs will only iterate once.
-		
+
 		cl_device_id device = m_Devices[i % m_Devices.size()];
 		err = clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(type), &type, 0);
 		CHECK_ERROR(err);
@@ -206,7 +226,7 @@ void NQueenSolver::InitKernels(int i, int block_size)
 			m_SolverInfo[i].m_nThreads = (m_SolverInfo[i].m_nThreads / m_SolverInfo[i].m_nMaxWorkItems) * m_SolverInfo[i].m_nMaxWorkItems;
 		}
 	}
-	
+
 }
 
 
@@ -263,7 +283,7 @@ void NQueenSolver::BuildProgram(int i, const std::string& program, int vector_wi
 		log.resize(param_size);
 		clGetProgramBuildInfo(m_SolverInfo[i].m_Program, device, CL_PROGRAM_BUILD_LOG, param_size, &log[0], 0);
 		std::cerr << log.c_str() << "\n";
-		
+
 		CHECK_ERROR(err);
 	}
 /*
@@ -292,7 +312,7 @@ void NQueenSolver::BuildProgram(int i, const std::string& program, int vector_wi
 
 	m_SolverInfo[i].m_NQueen1 = clCreateKernel(m_SolverInfo[i].m_Program, m_SolverInfo[i].m_bEnableVectorize ? "nqueen1_vec": "nqueen1", &err);
 	CHECK_ERROR(err);
-	
+
 }
 
 
@@ -311,7 +331,7 @@ void printM(int *mat, int m, int n){
   int i,j;
   for(i=0;i<m;++i){
     for(j=0;j<n;++j){
-      printf("%.4d,", mat[i*n+j]); 
+      printf("%.4d,", mat[i*n+j]);
     }
     printf("\n");
   }
@@ -319,7 +339,7 @@ void printM(int *mat, int m, int n){
 
 void printMD(cl_mem a, int m, int n, cl_command_queue queue){
     int *x = (int *)malloc(sizeof(int)*m*n);
-    clEnqueueReadBuffer(queue, a, CL_TRUE, 0, sizeof(int)*m*n, x, 0, NULL, NULL); 
+    clEnqueueReadBuffer(queue, a, CL_TRUE, 0, sizeof(int)*m*n, x, 0, NULL, NULL);
     clFinish(queue);
     printM(x, m, n);
     free(x);
@@ -330,8 +350,8 @@ long long NQueenSolver::Compute(int board_size, long long* unique){
 	long long total = 1000000000LL;
 	int level = 0;
 	int i = board_size;
-  bool enable_atomics = m_SolverInfo[0].m_bEnableAtomics; 
-  cl_mem param_d, result_d, forbidden_d, global_index_d; 
+  bool enable_atomics = m_SolverInfo[0].m_bEnableAtomics;
+  cl_mem param_d, result_d, forbidden_d, global_index_d;
   cl_kernel nqueen =  m_SolverInfo[0].m_NQueen ;
   cl_kernel nqueen1 =  m_SolverInfo[0].m_NQueen1;
   cl_command_queue queue = m_SolverInfo[0].m_Queue;
@@ -353,7 +373,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique){
 	if(level > 11) {
 		level = 11;
 	}
-  int threads = 0; 
+  int threads = 0;
 	int max_threads = 0;
 	int max_pitch;
 	cl_int err;
@@ -404,11 +424,11 @@ long long NQueenSolver::Compute(int board_size, long long* unique){
 		unsigned int border_mask = 0;
 		int idx = 0;
 		int i = 0;
-    
+
     for(int k = 0; k < 32; ++k){
       forbidden[k] = 0;
     }
-    
+
 		masks[0] = (1 << j);
 		left_masks[0] = 1 << (j + 1);
 		right_masks[0] = (1 << j) >> 1;
@@ -419,7 +439,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique){
 			border_mask |= (1 << k);
 			border_mask |= (1 << (board_size - k - 1));
 		}
-      
+
 		for(int k = 0; k < board_size; k++) {
 			if(k == board_size - 2) {
 				forbidden[k] = border_mask;
@@ -469,7 +489,7 @@ long long NQueenSolver::Compute(int board_size, long long* unique){
 				total_size++;
 				if(total_size == max_threads) {
 					cl_kernel queen = (j == 0 ? nqueen1: nqueen);
-					
+
 					cl_int arg_board_size = board_size;
 					cl_int arg_level = level;
 					cl_int arg_threads = enable_vectorize ? (threads + vec_size - 1) / vec_size : threads;

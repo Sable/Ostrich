@@ -1,3 +1,23 @@
+/*
+ * Copyright July 29, 2011 by Virginia Polytechnic Institute and State University
+ * All rights reserved.
+ *
+ * Virginia Polytechnic Institute and State University (Virginia Tech) owns the
+ * OpenCL and the 13 Dwarfs software and its associated documentation (Software).
+ * You should carefully read the following terms and conditions before using this
+ * software.  Your use of this Software indicates your acceptance of this license
+ * agreement and all terms and conditions.
+ *
+ * You are hereby licensed to use the Software for Non-Commercial Purpose only.
+ * Non-Commercial Purpose means the use of the Software solely for research.
+ * Non-Commercial Purpose excludes, without limitation, any use of the Software, as
+ * part of, or in any way in connection with a product or service which is sold,
+ * offered for sale, licensed, leased, loaned, or rented.  Permission to use, copy,
+ * modify, and distribute this compilation for Non-Commercial Purpose is hereby
+ * granted without fee, subject to the following terms of this license.
+ */
+
+
 // N-queen solver for OpenCL
 // Ping-Che Chen
 
@@ -132,7 +152,7 @@ __kernel void nqueen(int board_size, int level, int threads, int pitch, __global
 				if(rotate1 || rotate2 || rotate3) {
 					for(j = 0; j < board_size - level; j++) {
 						board_array[j] = bit_scan(params[idx + pitch * (4 + j)]);
-					}	
+					}
 					for(j = 0; j < level; j++) {
 						board_array[j + board_size - level] = bit_scan(ns[j]);
 					}
@@ -345,7 +365,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 
 	for(j = 0; j < board_size - level; j++) {
 		BOARD_ARRAY(j) = bit_scan(params[idx + pitch * (4 + j)]);
-	}	
+	}
 
 #ifdef FORCE_LOCAL
 	if(tid < 32) {
@@ -355,7 +375,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
-#endif	
+#endif
 
 	i = 0;
 
@@ -397,7 +417,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - board_array[j] - 1] = j;
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < board_array[j]) {
 							//								repeat = true;
@@ -412,13 +432,13 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAY(board_size - BOARD_ARRAY(j) - 1) != j) {
 									equal = false;
 									if(min_pos > board_size - BOARD_ARRAY(j) - 1) {
 										relation = BOARD_ARRAY(board_size - BOARD_ARRAY(j) - 1) - j;
 										min_pos = board_size - BOARD_ARRAY(j) - 1;
-									}							
+									}
 								}
 #else
 								int p = board_size - BOARD_ARRAY(j) - 1;
@@ -427,7 +447,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 								cond = cond && (min_pos > p);
 								relation = cond ? BOARD_ARRAY(p) - j : relation;
 								min_pos = cond ? p : min_pos;
-#endif								
+#endif
 							}
 
 							repeat_times = equal ? 2 : repeat_times;
@@ -457,7 +477,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 							min_pos = board_size;
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAY(BOARD_ARRAY(j)) != board_size - j - 1) {
 									equal = false;
 									if(min_pos > BOARD_ARRAY(j)) {
@@ -488,7 +508,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - j - 1] = (board_size - board_array[j] - 1);
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < board_array[j]) {
 							//								repeat = true;
@@ -571,7 +591,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 				left_mask_big = 0;
 				right_mask_big = 0;
 
-				results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion			
+				results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion
 
 				for(j = 0; j < board_size - level; j++) {
 					BOARD_ARRAY(j) = bit_scan(params[idx + pitch * (4 + j)]);
@@ -590,7 +610,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen(int 
 	}
 }
 
-#ifdef USE_ATOMICS	
+#ifdef USE_ATOMICS
 __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1(int board_size, int level, int threads, int pitch, __global uint* params, __global uint* results, __constant uint* forbidden, __global int* global_index)
 #else
 __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1(int board_size, int level, int threads, int pitch, __global uint* params, __global uint* results, __constant uint* forbidden)
@@ -712,7 +732,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1(int
 
 #ifndef USE_VEC2
 // vec4 version
-#ifdef USE_ATOMICS	
+#ifdef USE_ATOMICS
 __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec(int board_size, int level, int threads, int pitch, __global uint4* params, __global uint4* results, __constant uint* forbidden, __global int* global_index)
 #else
 __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec(int board_size, int level, int threads, int pitch, __global uint4* params, __global uint4* results, __constant uint* forbidden)
@@ -755,7 +775,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec
 			nsi.w = nsw[max(i.w, 0)][tid];
 			nsi_mask = convert_uint4((nsi & board_mask) != (uint4) 0) & convert_uint4(i >= (int4) 0);
 
-			{				
+			{
 				// for nsi_mask == true...
 				mask |= (nsi & nsi_mask);
 				left_mask_big = select(left_mask_big, (left_mask_big << (uint4) 1) | (left_mask >> (uint4) 31), nsi_mask);
@@ -800,9 +820,9 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec
 		else {
 			results[idx] = solutions * (uint4) 8;
 			results[idx + pitch] = solutions;
-			results[idx + pitch * 3] = params[idx];	// for checking kernel exeuction completion		
+			results[idx + pitch * 3] = params[idx];	// for checking kernel exeuction completion
 
-#ifdef USE_ATOMICS	
+#ifdef USE_ATOMICS
 			idx = atom_inc(global_index);
 			if(idx < threads) {
 				mask = params[idx];
@@ -822,7 +842,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec
 				nsz[0][tid] = nsi.z;
 				nsw[0][tid] = nsi.w;
 
-				results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion			
+				results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion
 			}
 			else {
 				break;
@@ -836,7 +856,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec
 
 #else
 
-#ifdef USE_ATOMICS	
+#ifdef USE_ATOMICS
 __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec(int board_size, int level, int threads, int pitch, __global uint2* params, __global uint2* results, __constant uint* forbidden, __global int* global_index)
 #else
 __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec(int board_size, int level, int threads, int pitch, __global uint2* params, __global uint2* results, __constant uint* forbidden)
@@ -865,7 +885,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec
 	nsx[0][tid] = nsi.x;
 	nsy[0][tid] = nsi.y;
 
-	results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion	
+	results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion
 
 	for(;;) {
 		if(any(i >= (int2) 0)) {
@@ -873,7 +893,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec
 			nsi.y = nsy[max(i.y, 0)][tid];
 			nsi_mask = convert_uint2((nsi & board_mask) != (uint2) 0) & convert_uint2(i >= (int2) 0);
 
-			{				
+			{
 				// for nsi_mask == true...
 				mask |= (nsi & nsi_mask);
 				left_mask_big = select(left_mask_big, (left_mask_big << (uint2) 1) | (left_mask >> (uint2) 31), nsi_mask);
@@ -912,9 +932,9 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec
 		else {
 			results[idx] = solutions * (uint2) 8;
 			results[idx + pitch] = solutions;
-			results[idx + pitch * 3] = params[idx];	// for checking kernel exeuction completion		
+			results[idx + pitch * 3] = params[idx];	// for checking kernel exeuction completion
 
-#ifdef USE_ATOMICS	
+#ifdef USE_ATOMICS
 			idx = atom_inc(global_index);
 			if(idx < threads) {
 				mask = params[idx];
@@ -930,7 +950,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen1_vec
 				ms = mask | left_mask | right_mask | (convert_uint2(i < second_row) & (uint2)2);
 				nsi = ((ms + (uint2) 1) & ~ms);
 				nsx[0][tid] = nsi.x;
-				nsy[0][tid] = nsi.y;				
+				nsy[0][tid] = nsi.y;
 
 				results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion
 			}
@@ -985,7 +1005,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 #ifdef ENABLE_CHAR
 	__local char board_array_x[32][WORK_ITEMS];
 	__local char board_array_y[32][WORK_ITEMS];
-#else	
+#else
 	__local uint board_array_x[8][WORK_ITEMS];
 	__local uint board_array_y[8][WORK_ITEMS];
 #endif
@@ -1032,14 +1052,14 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
-#endif	
+#endif
 
 	ms = mask | left_mask | right_mask | (uint2) forbidden[0][tid % 32];
 	nsi = ((ms + (uint2) 1) & ~ms);
 	nsx[0][tid] = nsi.x;
 	nsy[0][tid] = nsi.y;
 
-	for(;;) {	
+	for(;;) {
 		if(any(i >= (int2) 0)) {
 			nsi.x = nsx[max(i.x, 0)][tid];
 			nsi.y = nsy[max(i.y, 0)][tid];
@@ -1091,7 +1111,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - BOARD_ARRAYX[j] - 1] = j;
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYX[j]) {
 							//								repeat = true;
@@ -1112,7 +1132,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 									if(min_pos > board_size - BOARD_ARRAYX(j) - 1) {
 										relation = BOARD_ARRAYX(board_size - BOARD_ARRAYX(j) - 1) - j;
 										min_pos = board_size - BOARD_ARRAYX(j) - 1;
-									}							
+									}
 								}
 #else
 								int p = board_size - BOARD_ARRAYX(j) - 1;
@@ -1151,7 +1171,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							min_pos = board_size;
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYX(BOARD_ARRAYX(j)) != board_size - j - 1) {
 									equal = false;
 									if(min_pos > BOARD_ARRAYX(j)) {
@@ -1181,7 +1201,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - j - 1] = (board_size - BOARD_ARRAYX[j] - 1);
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYX[j]) {
 							//								repeat = true;
@@ -1265,7 +1285,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - BOARD_ARRAYY[j] - 1] = j;
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYY[j]) {
 							//								repeat = true;
@@ -1280,13 +1300,13 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYY(board_size - BOARD_ARRAYY(j) - 1) != j) {
 									equal = false;
 									if(min_pos > board_size - BOARD_ARRAYY(j) - 1) {
 										relation = BOARD_ARRAYY(board_size - BOARD_ARRAYY(j) - 1) - j;
 										min_pos = board_size - BOARD_ARRAYY(j) - 1;
-									}							
+									}
 								}
 #else
 								int p = board_size - BOARD_ARRAYY(j) - 1;
@@ -1325,7 +1345,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							min_pos = board_size;
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYY(BOARD_ARRAYY(j)) != board_size - j - 1) {
 									equal = false;
 									if(min_pos > BOARD_ARRAYY(j)) {
@@ -1355,7 +1375,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - j - 1] = (board_size - BOARD_ARRAYY[j] - 1);
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYY[j]) {
 							//								repeat = true;
@@ -1438,7 +1458,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 			results[idx + pitch] = unique_solutions;
 			results[idx + pitch * 3] = params[idx];	// for checking kernel exeuction completion
 
-#ifdef USE_ATOMICS	
+#ifdef USE_ATOMICS
 			idx = atom_inc(global_index);
 			if(idx < threads) {
 				solutions = (uint2) 0;
@@ -1460,7 +1480,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 					board_array_x[j][tid] = bit_scan(params[idx + pitch * (4 + j)].x);
 					board_array_y[j][tid] = bit_scan(params[idx + pitch * (4 + j)].y);
 				}
-#else		
+#else
 				for(j = 0; j < 8; j++) {
 					board_array_x[j][tid] = 0;
 					board_array_y[j][tid] = 0;
@@ -1532,7 +1552,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 	uint4 f;
 	uint4 nsi, nsi_mask;
 
-	results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion	
+	results[idx + pitch * 2] = params[idx];	// for checking kernel exeuction completion
 
 #ifdef ENABLE_CHAR
 	for(j = 0; j < board_size - level; j++) {
@@ -1565,7 +1585,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
-#endif	
+#endif
 
 	ms = mask | left_mask | right_mask | (uint4) forbidden[0][tid % 32];
 	nsi = ((ms + (uint4) 1) & ~ms);
@@ -1638,7 +1658,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 									if(min_pos > board_size - BOARD_ARRAYX(j) - 1) {
 										relation = BOARD_ARRAYX(board_size - BOARD_ARRAYX(j) - 1) - j;
 										min_pos = board_size - BOARD_ARRAYX(j) - 1;
-									}							
+									}
 								}
 #else
 								int p = board_size - BOARD_ARRAYX(j) - 1;
@@ -1677,7 +1697,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							min_pos = board_size;
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYX(BOARD_ARRAYX(j)) != board_size - j - 1) {
 									equal = false;
 									if(min_pos > BOARD_ARRAYX(j)) {
@@ -1707,7 +1727,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - j - 1] = (board_size - BOARD_ARRAYX[j] - 1);
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYX[j]) {
 							//								repeat = true;
@@ -1793,7 +1813,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - BOARD_ARRAYY[j] - 1] = j;
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYY[j]) {
 							//								repeat = true;
@@ -1808,13 +1828,13 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYY(board_size - BOARD_ARRAYY(j) - 1) != j) {
 									equal = false;
 									if(min_pos > board_size - BOARD_ARRAYY(j) - 1) {
 										relation = BOARD_ARRAYY(board_size - BOARD_ARRAYY(j) - 1) - j;
 										min_pos = board_size - BOARD_ARRAYY(j) - 1;
-									}							
+									}
 								}
 #else
 								int p = board_size - BOARD_ARRAYY(j) - 1;
@@ -1853,7 +1873,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							min_pos = board_size;
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYY(BOARD_ARRAYY(j)) != board_size - j - 1) {
 									equal = false;
 									if(min_pos > BOARD_ARRAYY(j)) {
@@ -1883,7 +1903,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - j - 1] = (board_size - BOARD_ARRAYY[j] - 1);
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYY[j]) {
 							//								repeat = true;
@@ -1969,13 +1989,13 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							equal = true;
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYZ(board_size - BOARD_ARRAYZ(j) - 1) != j) {
 									equal = false;
 									if(min_pos > board_size - BOARD_ARRAYZ(j) - 1) {
 										relation = BOARD_ARRAYZ(board_size - BOARD_ARRAYZ(j) - 1) - j;
 										min_pos = board_size - BOARD_ARRAYZ(j) - 1;
-									}							
+									}
 								}
 #else
 								int p = board_size - BOARD_ARRAYZ(j) - 1;
@@ -1999,7 +2019,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							min_pos = board_size;
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYZ(BOARD_ARRAYZ(j)) != board_size - j - 1) {
 									equal = false;
 									if(min_pos > BOARD_ARRAYZ(j)) {
@@ -2101,7 +2121,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - BOARD_ARRAYW[j] - 1] = j;
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYW[j]) {
 							//								repeat = true;
@@ -2116,13 +2136,13 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYW(board_size - BOARD_ARRAYW(j) - 1) != j) {
 									equal = false;
 									if(min_pos > board_size - BOARD_ARRAYW(j) - 1) {
 										relation = BOARD_ARRAYW(board_size - BOARD_ARRAYW(j) - 1) - j;
 										min_pos = board_size - BOARD_ARRAYW(j) - 1;
-									}							
+									}
 								}
 #else
 								int p = board_size - BOARD_ARRAYW(j) - 1;
@@ -2161,7 +2181,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							min_pos = board_size;
 							relation = 0;
 							for(j = 0; j < board_size; j++) {
-#ifndef PREDICATED							
+#ifndef PREDICATED
 								if(BOARD_ARRAYW(BOARD_ARRAYW(j)) != board_size - j - 1) {
 									equal = false;
 									if(min_pos > BOARD_ARRAYW(j)) {
@@ -2191,7 +2211,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 							//						for(j = 0; j < board_size; j++) {
 							//							t_array[board_size - j - 1] = (board_size - BOARD_ARRAYW[j] - 1);
 							//						}
-							//							
+							//
 							//						for(j = 0; j < board_size; j++) {
 							//							if(t_array[j] < BOARD_ARRAYW[j]) {
 							//								repeat = true;
@@ -2282,7 +2302,7 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
 			results[idx + pitch] = unique_solutions;
 			results[idx + pitch * 3] = params[idx];	// for checking kernel exeuction completion
 
-#ifdef USE_ATOMICS	
+#ifdef USE_ATOMICS
 			idx = atom_inc(global_index);
 			if(idx < threads) {
 				solutions = (uint4) 0;
@@ -2398,4 +2418,3 @@ __kernel __attribute__((reqd_work_group_size(WORK_ITEMS, 1,1))) void nqueen_vec(
    results[idx] = solutions * coeff;
    }
  */
-
