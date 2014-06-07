@@ -1,14 +1,27 @@
+/*
+  Copyright (c)2008-2011 University of Virginia
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted without royalty fees or other restrictions, provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+    * Neither the name of the University of Virginia, the Dept. of Computer Science, nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE UNIVERSITY OF VIRGINIA OR THE SOFTWARE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #define THREADS 256
-#define WIDTH 16  
-#define HEIGHT 16 
-#define ETA 0.3f       
-#define MOMENTUM 0.3f  
+#define WIDTH 16
+#define HEIGHT 16
+#define ETA 0.3f
+#define MOMENTUM 0.3f
 
 #ifndef _BACKPROP_CUDA_KERNEL_H_
 #define _BACKPROP_CUDA_KERNEL_H_
 #define WM(i, j)   weight_matrix[(j) + (i) * WIDTH]
 
-__kernel void 
+__kernel void
 bpnn_layerforward_ocl(__global float *input_cuda,
 	                  __global float *output_hidden_cuda,
 					  __global float *input_hidden_cuda,
@@ -16,41 +29,41 @@ bpnn_layerforward_ocl(__global float *input_cuda,
 					  __local float *input_node,
 					  __local float *weight_matrix,
 					  int in,
-					  int hid) 
+					  int hid)
 {
 
    int by = get_group_id(1);
    int tx = get_local_id(0);
    int ty = get_local_id(1);
 
-   int index =  ( hid + 1 ) * HEIGHT * by + ( hid + 1 ) * ty + tx + 1 + ( hid + 1 ) ;  
+   int index =  ( hid + 1 ) * HEIGHT * by + ( hid + 1 ) * ty + tx + 1 + ( hid + 1 ) ;
 
    int index_in = HEIGHT * by + ty + 1;
-   
+
 	if ( tx == 0 )
 		input_node[ty] = input_cuda[index_in] ;
 		barrier(CLK_LOCAL_MEM_FENCE);
 
 		weight_matrix[ty * WIDTH + tx] =  input_hidden_cuda[index];
 		barrier(CLK_LOCAL_MEM_FENCE);
-   
+
 		weight_matrix[ty * WIDTH + tx]= weight_matrix[ty * WIDTH + tx] * input_node[ty];
 		barrier(CLK_LOCAL_MEM_FENCE);
-   
+
 		for ( int i = 1 ; i <= HEIGHT ; i=i*2){
 	//for ( int i = 1 ; i <= 4 ; i++){
-      int power_two = i; 
+      int power_two = i;
 		//int power_two = 2 << (i - 1);
 
 	    if( ty % power_two == 0 )
 		  weight_matrix[ty * WIDTH + tx]= weight_matrix[ty * WIDTH + tx] + weight_matrix[(ty + power_two/2)* WIDTH + tx];
-		  
+
 		barrier(CLK_LOCAL_MEM_FENCE);
 
     }
-   
+
     input_hidden_cuda[index] =  weight_matrix[ty * WIDTH + tx];
-   
+
 	barrier(CLK_LOCAL_MEM_FENCE);
 
     if ( tx == 0 ) {
@@ -60,19 +73,19 @@ bpnn_layerforward_ocl(__global float *input_cuda,
 }
 
 
-__kernel void  bpnn_adjust_weights_ocl( __global float * delta,   
-										 int hid,         
-										__global float * ly,      
-										 int in,          
-										__global float * w,       
-										__global float * oldw)  									
+__kernel void  bpnn_adjust_weights_ocl( __global float * delta,
+										 int hid,
+										__global float * ly,
+										 int in,
+										__global float * w,
+										__global float * oldw)
 {
-   
+
    int by = get_group_id(1);
    int tx = get_local_id(0);
    int ty = get_local_id(1);
-	
-   int index =  ( hid + 1 ) * HEIGHT * by + ( hid + 1 ) * ty + tx + 1 + ( hid + 1 ) ;  
+
+   int index =  ( hid + 1 ) * HEIGHT * by + ( hid + 1 ) * ty + tx + 1 + ( hid + 1 ) ;
    int index_y = HEIGHT * by + ty + 1;
    int index_x = tx + 1;
 
@@ -87,4 +100,4 @@ __kernel void  bpnn_adjust_weights_ocl( __global float * delta,
    }
 
 }
-#endif 
+#endif
