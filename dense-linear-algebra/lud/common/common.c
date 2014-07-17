@@ -11,8 +11,8 @@ void stopwatch_start(stopwatch *sw){
     if (sw == NULL)
         return;
 
-    bzero(&sw->begin, sizeof(struct timeval));
-    bzero(&sw->end  , sizeof(struct timeval));
+    memset(&sw->begin, 0, sizeof(struct timeval));
+    memset(&sw->end  , 0, sizeof(struct timeval));
 
     gettimeofday(&sw->begin, NULL);
 }

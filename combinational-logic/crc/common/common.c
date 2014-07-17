@@ -10,8 +10,8 @@ void stopwatch_start(stopwatch *sw){
     if (sw == NULL)
         return;
 
-    bzero(&sw->begin, sizeof(struct timeval));
-    bzero(&sw->end  , sizeof(struct timeval));
+    memset(&sw->begin, 0, sizeof(struct timeval));
+    memset(&sw->end  , 0, sizeof(struct timeval));
 
     gettimeofday(&sw->begin, NULL);
 }
@@ -23,21 +23,21 @@ void stopwatch_stop(stopwatch *sw){
     gettimeofday(&sw->end, NULL);
 }
 
-double 
+double
 get_interval_by_sec(stopwatch *sw){
     if (sw == NULL)
         return 0;
     return ((double)(sw->end.tv_sec-sw->begin.tv_sec)+(double)(sw->end.tv_usec-sw->begin.tv_usec)/1000000);
 }
 
-int 
+int
 get_interval_by_usec(stopwatch *sw){
     if (sw == NULL)
         return 0;
     return ((sw->end.tv_sec-sw->begin.tv_sec)*1000000+(sw->end.tv_usec-sw->begin.tv_usec));
 }
 
-func_ret_t 
+func_ret_t
 create_matrix_from_file(float **mp, const char* filename, int *size_p){
   int i, j, size;
   float *m;
@@ -89,8 +89,8 @@ create_matrix_from_random(float **mp, int size){
 
   m = (float *)malloc(size*size*sizeof(float));
   if ( m == NULL) {
-    free(l); 
-    free(u); 
+    free(l);
+    free(u);
     return RET_FAILURE;
   }
 
@@ -111,7 +111,7 @@ create_matrix_from_random(float **mp, int size){
           if (i>j) {
               u[j*size+i] = 0;
           }else {
-              u[j*size+i] = GET_RAND_FP; 
+              u[j*size+i] = GET_RAND_FP;
           }
       }
   }
@@ -182,17 +182,17 @@ lud_verify(float *m, float *lu, int matrix_dim){
     printf("\n");
   }
 
-  int good = 1; 
+  int good = 1;
   for (i=0; i<matrix_dim; i++){
       for (j=0; j<matrix_dim; j++){
           if ( fabs(m[i*matrix_dim+j]-tmp[i*matrix_dim+j])/fabs(m[i*matrix_dim+j])> 0.00001){
             printf("dismatch at (%d, %d): (o)%f (n)%f\n", i, j, m[i*matrix_dim+j], tmp[i*matrix_dim+j]);
-            good = 0; 
+            good = 0;
           }
       }
   }
   if(good) printf("Good LUD!");
-  else printf("Bad LUD!"); 
+  else printf("Bad LUD!");
   free(tmp);
 }
 
@@ -213,4 +213,3 @@ print_matrix(float *m, int matrix_dim) {
       printf("\n");
     }
 }
-

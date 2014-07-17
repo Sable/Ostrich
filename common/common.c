@@ -11,8 +11,8 @@ void stopwatch_start(stopwatch *sw){
     if (sw == NULL)
         return;
 
-    bzero(&sw->begin, sizeof(struct timeval));
-    bzero(&sw->end  , sizeof(struct timeval));
+    memset(&sw->begin, 0, sizeof(struct timeval));
+    memset(&sw->end  , 0, sizeof(struct timeval));
 
     gettimeofday(&sw->begin, NULL);
 }
@@ -37,4 +37,3 @@ get_interval_by_usec(stopwatch *sw){
         return 0;
     return ((sw->end.tv_sec-sw->begin.tv_sec)*1000000+(sw->end.tv_usec-sw->begin.tv_usec));
 }
-
