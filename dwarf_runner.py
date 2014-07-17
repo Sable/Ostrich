@@ -33,7 +33,7 @@ import contextlib
 import sys
 from optparse import OptionParser
 
-if os.uname()[0] == "Darwin":
+if sys.platform == "darwin":
     try:
         import psutil
     except ImportError:
@@ -53,7 +53,7 @@ class LinuxEnvironment(object):
         self.sleep_time = sleep_time
 
     def can_use(self, browser):
-        return browser != "Safari"
+        return browser not in ("Safari", "IE")
 
     @contextlib.contextmanager
     def provision_browser(self, browser, url):
@@ -69,13 +69,42 @@ class LinuxEnvironment(object):
         yield
         browser.kill()
 
+class WindowsEnvironment(object):
+    def __init__(self, sleep_time):
+        self.sleep_time = sleep_time
+
+    def can_use(self, browser):
+        return browser != "Safari"
+
+    @contextlib.contextmanager
+    def provision_browser(self, browser, url):
+        if browser == "google-chrome":
+            browser_path = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+            browser_opts = ["--incognito", "--disable-extensions"]
+        elif browser == "firefox":
+            browser_path = r'C:\Program Files (x86)\Mozilla Firefox\firefox.exe'
+            browser_opts = []
+        elif browser == "ie":
+            browser_path = r'C:\Program Files\Internet Explorer\iexplore.exe'
+            browser_opts = []
+
+        invocation = [browser_path] + browser_opts
+        browser = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(self.sleep_time)
+        subprocess.Popen(invocation + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        yield
+        if browser == "ie":
+            os.system("taskkill /f /t /im iexplore.exe")
+        else:
+            browser.kill()
+
 
 class OsxEnvironment(object):
     def __init__(self, sleep_time):
         self.sleep_time = sleep_time
 
     def can_use(self, browser):
-        return True
+        return browser != "IE"
 
     @contextlib.contextmanager
     def provision_browser(self, browser, url):
@@ -125,7 +154,8 @@ class Benchmark(object):
 
     def run_js_benchmark(self, browser, version="js"):
         httpd = subprocess.Popen(["python", "webbench.py"], stdout=subprocess.PIPE)
-        url = "http://0.0.0.0:8080/static/" + os.path.join(self.dir, "build", version, "run.html")
+        url = "http://localhost:8080/static/" + os.path.join(self.dir, "build", version, "run.html")
+        url = url.replace('\\', '/') # Hack to accomodate Firefox on Windows.
         for _ in xrange(self.iters):
             with self.env.provision_browser(browser, url):
                 yield json.loads(httpd.stdout.readline())["time"]
@@ -134,8 +164,8 @@ class Benchmark(object):
     def build(self):
         """Move into the benchmark's directory and run make clean && make."""
         with cd(self.dir):
-            subprocess.call(["make", "clean"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            subprocess.call(["make", "-k"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	    subprocess.Popen(["make", "clean"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+	    subprocess.Popen(["make", "-k"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
 
 BENCHMARK_INFO = {
@@ -161,6 +191,7 @@ ENVIRONMENTS = {
     "js-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome")),
     "js-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox")),
     "js-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari")),
+    "js-ie": ("js", "IE", lambda b: b.run_js_benchmark("ie")),
     "js-nota-chrome": ("js-nota", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "js-nota")),
     "js-nota-firefox": ("js-nota", "Firefox", lambda b: b.run_js_benchmark("firefox", "js-nota")),
     "js-nota-safari": ("js-nota", "Safari", lambda b: b.run_js_benchmark("safari", "js-nota")),
@@ -175,10 +206,10 @@ def parse_options():
                       action="store", default="Desktop",
                       help="name of the machine on which the benchmarks are run")
     parser.add_option("-b", "--benchmarks", dest="benchmark_csv",
-                      metavar="bench1,bench2,...", default=",".join(BENCHMARK_INFO),
+                      metavar="bench1,bench2,...", default=",".join(sorted(BENCHMARK_INFO)),
                       help="comma-separated list of benchmarks to run (%default)")
     parser.add_option("-e", "--environments", dest="env_csv",
-                      metavar="env1,env2,...", default=",".join(ENVIRONMENTS),
+                      metavar="env1,env2,...", default=",".join(sorted(ENVIRONMENTS)),
                       help="comma-separated list of environments to use (%default)")
     parser.add_option("-i", "--iterations", dest="iters",
                       action="store", type="int", default=10,
@@ -190,7 +221,14 @@ def parse_options():
 
 def main():
     options = parse_options()
-    OS = (OsxEnvironment if os.uname()[0] == "Darwin" else LinuxEnvironment)(options.wait)
+    if sys.platform == "darwin":
+        os_env = OsxEnvironment
+    elif sys.platform == "win32":
+        os_env = WindowsEnvironment
+    else:
+        os_env = LinuxEnvironment
+        
+    OS = os_env(options.wait)
 
     benchmarks_to_run = [
         Benchmark(name, BENCHMARK_INFO[name], OS, options.iters)

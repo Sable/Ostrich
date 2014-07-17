@@ -8,7 +8,7 @@ import signal
 from bottle import route, run, static_file
 
 ITER     = 10
-HOST     = "0.0.0.0"
+HOST     = "localhost"
 PORT     = 8080
 ROOT_DIR = os.getcwd()
 
