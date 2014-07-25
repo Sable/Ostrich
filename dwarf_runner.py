@@ -79,25 +79,23 @@ class WindowsEnvironment(object):
     @contextlib.contextmanager
     def provision_browser(self, browser, url):
         if browser == "google-chrome":
-            browser_path = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+            browser_path = r'C:\Users\sable\AppData\Local\Google\Chrome SxS\Application\chrome.exe'
             browser_opts = ["--incognito", "--disable-extensions"]
         elif browser == "firefox":
-            browser_path = r'C:\Program Files (x86)\Mozilla Firefox\firefox.exe'
+            browser_path = r'C:\Program Files\Nightly\firefox.exe'
             browser_opts = []
         elif browser == "ie":
             browser_path = r'C:\Program Files\Internet Explorer\iexplore.exe'
             browser_opts = []
 
         invocation = [browser_path] + browser_opts
-        browser = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        browser_inst = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(self.sleep_time)
         subprocess.Popen(invocation + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         yield
-        if browser == "ie":
-            os.system("taskkill /f /t /im iexplore.exe")
-        else:
-            browser.kill()
+        browser_inst.kill()
 
+        
 
 class OsxEnvironment(object):
     def __init__(self, sleep_time):
@@ -158,7 +156,12 @@ class Benchmark(object):
         url = url.replace('\\', '/') # Hack to accomodate Firefox on Windows.
         for _ in xrange(self.iters):
             with self.env.provision_browser(browser, url):
-                yield json.loads(httpd.stdout.readline())["time"]
+                output = httpd.stdout.readline()
+                try:
+                    yield json.loads(output)["time"]
+                except ValueError:
+                    print >>sys.stderr, "Cannot load the following JSON string: %r" % output
+                    yield { "status": 0, "options": "", "time": -1 }
         httpd.kill()
 
     def build(self):
@@ -187,13 +190,15 @@ ENVIRONMENTS = {
     "c": ("C", "N/A", lambda b: b.run_native_benchmark()),
     "asmjs-chrome": ("asmjs", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "asmjs")),
     "asmjs-firefox": ("asmjs", "Firefox", lambda b: b.run_js_benchmark("firefox", "asmjs")),
+    "asmjs-ie": ("asmjs", "IE", lambda b: b.run_js_benchmark("ie", "asmjs")),
     "asmjs-safari": ("asmjs", "Safari", lambda b: b.run_js_benchmark("safari", "asmjs")),
     "js-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome")),
     "js-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox")),
-    "js-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari")),
     "js-ie": ("js", "IE", lambda b: b.run_js_benchmark("ie")),
+    "js-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari")),
     "js-nota-chrome": ("js-nota", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "js-nota")),
     "js-nota-firefox": ("js-nota", "Firefox", lambda b: b.run_js_benchmark("firefox", "js-nota")),
+    "js-nota-ie": ("js-nota", "IE", lambda b: b.run_js_benchmark("ie", "js-nota")),
     "js-nota-safari": ("js-nota", "Safari", lambda b: b.run_js_benchmark("safari", "js-nota")),
     "opencl": ("OpenCL", "N/A", lambda b: b.run_native_benchmark(True)),
     "webcl": ("WebCL", "Firefox", lambda b: b.run_js_benchmark("firefox", "webcl")),

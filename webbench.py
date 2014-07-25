@@ -28,4 +28,4 @@ def asmjs(json_string):
         sys.stdout.flush()
         return "FAIL"
 
-run(host=HOST, port=PORT, quiet=True)
+run(host=HOST, port=PORT, server="cherrypy", quiet=True)

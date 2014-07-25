@@ -8,13 +8,12 @@
 	<script type="text/javascript">
 		var Module = {};
 		Module["arguments"] = [RUN_ARGUMENT];
-
-                Module["print"] = function print(x) {
-                    console.log(x + "\n");
-                    var xmlhttp = new XMLHttpRequest();
-                    xmlhttp.open("GET", "/asmjs/"+x, true);
-                    xmlhttp.send();
-                };
+        Module["print"] = function print(x) {
+            console.log(x + "\n");
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", "/asmjs/"+x, true);
+            xmlhttp.send();
+        };
 	</script>
 	<script src="./FILENAME.js"></script>
 </body>
