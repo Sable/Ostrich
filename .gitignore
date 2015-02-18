@@ -7,3 +7,5 @@ rodinia_2.4/
 build/
 *.pyc
 dls14empiricalJS/
+*.pexe
+pnacl/Release

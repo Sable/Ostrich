@@ -5,9 +5,9 @@
 #include <limits.h>
 #include <vector>
 
-#include "../common/common_rand.h"
 #include "../common/common.h"
-
+#include "../../../common/common_rand.h"
+#include "bfs.h"
 
 #define MIN_NODES      20
 #define MAX_NODES      ULONG_MAX
@@ -35,26 +35,27 @@ struct edge {
     unsigned weight;
 };
 
-void BFSGraph(int argc, char** argv);
 void InitializeGraph(Node**, bool**, bool**, bool**, int**, int**, int);
 
 void Usage(char**argv) {
     fprintf(stdout,"Usage: %s <num_nodes> [<verbose>]\n", argv[0]);
 }
-////////////////////////////////////////////////////////////////////////////////
-// Main Program
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+//// Main Program
+//////////////////////////////////////////////////////////////////////////////////
+#ifdef RUN_MAIN
 int main( int argc, char** argv) {
     BFSGraph( argc, argv );
     return 0;
 }
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-//Apply BFS on a Graph using CUDA
-////////////////////////////////////////////////////////////////////////////////
-void BFSGraph( int argc, char** argv) {
+#endif
+//
+//
+//
+//////////////////////////////////////////////////////////////////////////////////
+////Apply BFS on a Graph using CUDA
+//////////////////////////////////////////////////////////////////////////////////
+double BFSGraph( int argc, char** argv) {
     unsigned int expected_no_of_nodes = 3000000;
     unsigned long int expected_total_cost = 26321966;
     int no_of_nodes;
@@ -71,7 +72,6 @@ void BFSGraph( int argc, char** argv) {
         no_of_nodes = atoi(argv[1]);
         verbose = 1;
     }
-
 
     Node *h_graph_nodes;
     bool *h_graph_mask;
@@ -165,6 +165,7 @@ void BFSGraph( int argc, char** argv) {
     free(h_cost);
 
     fprintf(stdout, "{\"options\": \"%d\", \"time\": %f, \"status\": %d}\n", no_of_nodes, get_interval_by_sec(&sw1), 1);
+    return get_interval_by_sec(&sw1);
 }
 
 
@@ -177,7 +178,6 @@ void InitializeGraph(
     int  **h_graph_edges,
     int  **h_cost,
     int numNodes) {
-
     node *graph = new node[numNodes];
     int source = 0;
     unsigned numEdges;
