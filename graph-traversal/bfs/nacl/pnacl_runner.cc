@@ -46,13 +46,13 @@ namespace {
 /// To communicate with the browser, you must override HandleMessage() to
 /// receive messages from the browser, and use PostMessage() to send messages
 /// back to the browser.  Note that this interface is asynchronous.
-class HelloTutorialInstance : public pp::Instance {
+class PnaclRunnerInstance : public pp::Instance {
 	public:
 		/// The constructor creates the plugin-side instance.
 		/// @param[in] instance the handle to the browser-side plugin instance.
-		explicit HelloTutorialInstance(PP_Instance instance) : pp::Instance(instance)
+		explicit PnaclRunnerInstance(PP_Instance instance) : pp::Instance(instance)
 	{}
-		virtual ~HelloTutorialInstance() {}
+		virtual ~PnaclRunnerInstance() {}
 
 		/// Handler for messages coming in from the browser via postMessage().  The
 		/// @a var_message can contain be any pp:Var type; for example int, string
@@ -78,16 +78,16 @@ class HelloTutorialInstance : public pp::Instance {
 /// The Module class.  The browser calls the CreateInstance() method to create
 /// an instance of your NaCl module on the web page.  The browser creates a new
 /// instance for each <embed> tag with type="application/x-pnacl".
-class HelloTutorialModule : public pp::Module {
+class PnaclRunnerModule : public pp::Module {
 	public:
-		HelloTutorialModule() : pp::Module() {}
-		virtual ~HelloTutorialModule() {}
+		PnaclRunnerModule() : pp::Module() {}
+		virtual ~PnaclRunnerModule() {}
 
-		/// Create and return a HelloTutorialInstance object.
+		/// Create and return a PnaclRunnerInstance object.
 		/// @param[in] instance The browser-side instance.
 		/// @return the plugin-side instance.
 		virtual pp::Instance* CreateInstance(PP_Instance instance) {
-			return new HelloTutorialInstance(instance);
+			return new PnaclRunnerInstance(instance);
 		}
 };
 
@@ -98,6 +98,6 @@ namespace pp {
 	/// is one instance per <embed> tag on the page.  This is the main binding
 	/// point for your NaCl module with the browser.
 	Module* CreateModule() {
-		return new HelloTutorialModule();
+		return new PnaclRunnerModule();
 	}
 }  // namespace pp

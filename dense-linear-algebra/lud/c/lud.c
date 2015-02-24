@@ -21,7 +21,8 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "common.h"
+/*#include "common.h"*/
+#include "../common/common.h"
 
 static int do_verify = 0;
 
@@ -87,13 +88,10 @@ double expected_values[100] = {-22.848189418846398979213,
 2.543604357651815917052, 5.205758093407768960503, -0.241207430471430422925,
 0.660969548700828801735, 1.781811506239100006965, 1.750625326806120041212};
 
-int
-main ( int argc, char *argv[] )
-{
+double LUD(int argc, char *argv[]) {
     int matrix_dim = 32; /* default matrix_dim */
     int opt, option_index=0, error=0;
     func_ret_t ret;
-    const char *input_file = NULL;
     double *m, *mm;
     stopwatch sw;
     int i;
@@ -139,6 +137,7 @@ main ( int argc, char *argv[] )
         exit(EXIT_FAILURE);
     }
 
+
     if (do_verify){
         //printf("Before LUD\n");
         //print_matrix(m, matrix_dim);
@@ -182,5 +181,13 @@ main ( int argc, char *argv[] )
 
     free(m);
     printf("{ \"status\": %d, \"options\": \"-s %d\", \"time\": %f }\n", 1, matrix_dim, get_interval_by_sec(&sw));
-    return EXIT_SUCCESS;
-}				/* ----------  end of function main  ---------- */
+    return get_interval_by_sec(&sw);
+}
+
+#ifdef RUN_MAIN
+int main ( int argc, char **argv)
+{
+	LUD(arc,argv);
+	return 0;
+}				
+#endif

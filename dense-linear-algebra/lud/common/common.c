@@ -5,7 +5,7 @@
 #include <math.h>
 
 #include "common.h"
-#include "common_rand.h"
+#include "../../../common/common_rand.h"
 
 void stopwatch_start(stopwatch *sw){
     if (sw == NULL)
@@ -226,6 +226,7 @@ lud_verify(double *m, double *lu, int matrix_dim){
     if(good) fprintf(stderr, "Good LUD!");
     else fprintf(stderr, "Bad LUD!");
     free(tmp);
+    return RET_SUCCESS;
 }
 
 void

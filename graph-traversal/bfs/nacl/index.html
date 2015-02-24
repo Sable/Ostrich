@@ -7,7 +7,7 @@
   -->
 <head>
 
-  <title>hello_tutorial</title>
+  <title>Benchmarking PNaCl</title>
 
   <script type="text/javascript">
     HelloTutorialModule = null;  // Global application object.
@@ -15,7 +15,7 @@
 
     // Indicate load success.
     function moduleDidLoad() {
-      HelloTutorialModule = document.getElementById('hello_tutorial');
+      HelloTutorialModule = document.getElementById('pnacl_runner');
       updateStatus('SUCCESS');
       // Send a message to the Native Client module
       HelloTutorialModule.postMessage('hello');
@@ -61,7 +61,7 @@
 </head>
 <body onload="pageDidLoad()">
 
-  <h1>NaCl C++ Tutorial: Getting Started</h1>
+  <h1>Benchmarking PNaCl</h1>
   <p>
     <!--
     Load the published pexe.
@@ -83,9 +83,9 @@
         listener.addEventListener('message', handleMessage, true);
       </script>
 
-      <embed id="hello_tutorial"
+      <embed id="pnacl_runner"
              width=0 height=0
-             src="hello_tutorial.nmf"
+             src="pnacl_runner.nmf"
              type="application/x-pnacl" />
     </div>
   </p>

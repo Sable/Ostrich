@@ -128,7 +128,6 @@ static long long nqueen_solver(int size, unsigned int board_mask, unsigned int m
 	unsigned int ms[32];
 	unsigned int ns;
 	unsigned int ns_array[32];
-	unsigned int t_array[32];
 	int board_array[32];
 	long long solutions = 0;
 	long long total_solutions = 0;
@@ -170,7 +169,7 @@ static long long nqueen_solver(int size, unsigned int board_mask, unsigned int m
 		if((ns & board_mask) != 0) {
 			ns_array[i+1] = ns;
 			if(i == size - 2) {
-				int repeat_times = 8;
+				/*int repeat_times = 8;*/
 				bool rotate1 = false;
 				bool rotate2 = false;
 				bool rotate3 = false;

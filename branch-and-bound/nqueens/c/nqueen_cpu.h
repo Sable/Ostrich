@@ -27,7 +27,18 @@
 #ifndef NQUEEN_CPU_H
 #define NQUEEN_CPU_H
 
-typedef enum {false, true} bool;
+#ifndef __cplusplus
+typedef enum BOOL {false, true} bool;
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 long long nqueen_cpu(int size, long long* unique_solutions);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
