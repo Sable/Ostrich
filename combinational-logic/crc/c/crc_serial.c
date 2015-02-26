@@ -28,9 +28,9 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <getopt.h>
-#include "common.h"
-#include "crc_formats.h"
-#include "eth_crc32_lut.h"
+#include "../common/common.h"
+#include "../common/crc_formats.h"
+#include "../common/eth_crc32_lut.h"
 
 
 // /////Slice-by-8 version of CRC///////////////////////
@@ -75,7 +75,7 @@ void usage()
     exit(0);
 }
 
-int main(int argc, char** argv){
+double CRC(int argc, char** argv) {
     unsigned int *h_num;
     unsigned int i,j,num_pages=1,num_execs=1;
     int c;
@@ -84,7 +84,7 @@ int main(int argc, char** argv){
     unsigned int final_crc, expected_crc;
     double cumulative_time=0;
     stopwatch sw;
-
+    
     while((c = getopt(argc, argv, "hs:n:r:")) != -1)
     {
         switch(c)
@@ -150,5 +150,12 @@ int main(int argc, char** argv){
     printf("{ \"status\": %d, \"options\": \"-n %d -s %d -r %d\", \"time\": %f }\n", 1, num_pages, page_size, num_execs, get_interval_by_sec(&sw));
 
     free(h_num);
+    return get_interval_by_sec(&sw);
+}
+
+#ifdef RUN_MAIN
+int main(int argc, char** argv){
+    CRC(argc, argv);
     return 0;
 }
+#endif

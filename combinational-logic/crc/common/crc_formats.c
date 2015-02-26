@@ -1,5 +1,6 @@
 #include "crc_formats.h"
-#include "common_rand.h"
+#include "common_args_serial.h"
+#include "../../../common/common_rand.h"
 
 unsigned int* read_crc(unsigned int* num_pages,unsigned int* page_size,const char* file_path)
 {

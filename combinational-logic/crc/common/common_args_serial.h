@@ -6,6 +6,10 @@
 
 #define MINIMUM(i,j) ((i)<(j) ? (i) : (j))
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void check(int b,const char* msg);
 
 void* char_new_array(const size_t N,const char* error_msg);
@@ -18,4 +22,7 @@ void* float_new_array(const size_t N,const char* error_msg);
 
 void* float_array_realloc(void* ptr,const size_t N,const char* error_msg);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

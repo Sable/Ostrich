@@ -8,4 +8,4 @@ build/
 *.pyc
 dls14empiricalJS/
 *.pexe
-pnacl/Release
+pnacl
