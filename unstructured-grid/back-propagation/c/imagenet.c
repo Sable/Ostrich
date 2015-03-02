@@ -15,19 +15,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "common_rand.h"
+#include "../../../common/common_rand.h"
 #include "backprop.h"
 
-extern int layer_size;
+//extern int layer_size;
 
-void load(net)
-BPNN *net;
+void load(BPNN *net, int layer_size)
 {
 	float *units;
-	int nr, nc, imgsize, i, j, k;
+	int nr, nc, imgsize, i, k;
 
 	nr = layer_size;
 
+	nc = 1;
 	imgsize = nr * nc;
 	units = net->input_units;
 

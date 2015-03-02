@@ -25,7 +25,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "common_rand.h"
+#include "../../../common/common_rand.h"
 #include "backprop.h"
 #define OPEN
 
@@ -46,7 +46,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 float squash(x)
 float x;
 {
-    float m;
     return (1.0 / (1.0 + exp(-x)));
 }
 

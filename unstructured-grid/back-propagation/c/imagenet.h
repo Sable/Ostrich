@@ -15,6 +15,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #ifndef imagenet_H
 #define imagenet_H
 
-void load(BPNN *net);
+void load(BPNN *net, int layer_size);
 
 #endif

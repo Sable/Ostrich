@@ -21,9 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 extern char *strcpy();
 extern void exit();
 
-int layer_size = 0;
-
-void backprop_face() {
+double backprop_face(int layer_size) {
     BPNN *net;
     int i,j;
     float out_err, hid_err;
@@ -32,7 +30,7 @@ void backprop_face() {
     double expected_sum_of_hidden_weights = 10.855641469359398;
     int expected_layer_size = 2850000;
     net = bpnn_create(layer_size, 16, 1); // (16, 1 can not be changed)
-    load(net);
+    load(net, layer_size);
     //entering the training kernel, only one iteration
     time0 = gettime();
     bpnn_train_kernel(net, &out_err, &hid_err);
@@ -57,19 +55,20 @@ void backprop_face() {
     bpnn_free(net);
     //fprintf(stderr, "Training done\n");
     printf("{ \"status\": %d, \"options\": \"%d\", \"time\": %f }\n", 1, layer_size, (float) (time1-time0) / 1000000);
+    return (time1-time0)/1000000;
 }
 
-int main(argc, argv)
-int argc;
-char *argv[];
+#ifdef RUN_MAIN
+int main(int argc, char **argv)
 {
     if(argc!=2) {
         fprintf(stderr, "usage: backprop <num of input elements>\n");
         exit(0);
     }
 
-    layer_size = atoi(argv[1]);
-    backprop_face();
+    int layer_size = atoi(argv[1]);
+    backprop_face(layer_size);
 
     exit(0);
 }
+#endif
