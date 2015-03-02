@@ -32,7 +32,7 @@
 #include <getopt.h>
 #include <string.h>
 
-#include "common.h"
+#include "../../../common/common.h"
 
 // #include "../../include/rdtsc.h"
 // #include "../../include/common_args.h"
@@ -43,10 +43,11 @@
 #define ITERATIONS  1           /* Number of iterations */
 #define EXIT_ERROR 1
 
+/* unused
 static int imax(int x, int y)
 {
     return (x > y) ? x: y;
-}
+}*/
 
 /* Subtracts time values to determine run time */
 int timeval_subtract(struct timeval *result, struct timeval *t2,
@@ -599,9 +600,8 @@ static struct option size_opts[] =
 };
 
 /* Time the forward algorithm and vary the number of states */
-int main(int argc, char *argv[])
-{
-    /* Initialize variables */
+double runHMM(int argc, char *argv[]) {
+/* Initialize variables */
     Hmm *hmm;                /* Initial HMM */
     Obs *obs;                /* Observation sequence */
     float *a;
@@ -818,5 +818,12 @@ int main(int argc, char *argv[])
     }
 
     printf("{ \"status\": %d, \"options\": \"-v %c -n %d\", \"time\": %f }\n", 1, v_model, n, get_interval_by_sec(&sw));
-    return 0;
+	return get_interval_by_sec(&sw);
 }
+#ifdef RUN_MAIN
+int main(int argc, char *argv[])
+{
+	runHMM(argc, argv);
+        return 0;
+}
+#endif
