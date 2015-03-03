@@ -7,7 +7,7 @@
 // #include <stdlib.h>
 // #include <string.h>
 #include <stdio.h>
-#include "define.c"
+#include "define.h"
 // #include <math.h>
 // #include <time.h>
 // #include <sys/types.h>
