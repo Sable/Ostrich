@@ -5,7 +5,7 @@
 #include <math.h>
 
 #include "common.h"
-#include "common_rand.h"
+#include "../../../common/common_rand.h"
 
 void stopwatch_start(stopwatch *sw) {
     if (sw == NULL)

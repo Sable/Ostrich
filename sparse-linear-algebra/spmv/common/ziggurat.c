@@ -234,7 +234,7 @@ float r4_nor ( unsigned long int *jsr, int kn[128], float fn[128],
 				{
 					x = - 0.2904764 * log ( r4_uni ( jsr ) );
 					y = - log ( r4_uni ( jsr ) );
-					if ( x * x <= y + y );
+					if ( x * x <= y + y ) // BUG? There used to be a semi-colon here
 					{
 						break;
 					}

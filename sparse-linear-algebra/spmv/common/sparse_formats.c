@@ -1,5 +1,5 @@
 #include "sparse_formats.h"
-#include "common_rand.h"
+#include "../../../common/common_rand.h"
 
 int unsigned_int_comparator(const void* v1, const void* v2) {
     const unsigned int int1 = *((unsigned int*) v1);

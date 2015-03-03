@@ -27,6 +27,7 @@
 #define SERIAL
 #endif
 
+#include "csr_spmv.h"
 #include "../common/sparse_formats.h"
 #include "../common/common.h"
 #include <getopt.h>
@@ -62,7 +63,14 @@ static struct option long_options[] = {
     {0,0,0,0}
 };
 
+#ifdef RUN_MAIN
 int main(int argc, char *argv[]){
+	SPMV(argc, argv);
+	return 0;
+}
+#endif
+
+double SPMV(int argc, char *argv[]) {
     int opt, option_index=0;
     unsigned int dim=1024, density=5000;
     double normal_stdev=0.01;
@@ -110,4 +118,5 @@ int main(int argc, char *argv[]){
     free(sum);
     free(result);
     free(v);
+    return get_interval_by_sec(&sw);
 }
