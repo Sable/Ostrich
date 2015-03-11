@@ -55,7 +55,7 @@ double backprop_face(int layer_size) {
     bpnn_free(net);
     //fprintf(stderr, "Training done\n");
     printf("{ \"status\": %d, \"options\": \"%d\", \"time\": %f }\n", 1, layer_size, (float) (time1-time0) / 1000000);
-    return (time1-time0)/1000000;
+    return (time1-time0)/1000000.0;
 }
 
 #ifdef RUN_MAIN
