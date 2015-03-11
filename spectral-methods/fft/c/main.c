@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include "fft.h"
-#include "common.h"
-#include "common_rand.h"
+#include "../common/common.h"
+#include "../../../common/common_rand.h"
 
 complex* random_complex_vector(int n){
     complex *x = malloc(sizeof(complex)*n);
@@ -27,12 +27,11 @@ void print_complex_matrix(complex **x, int n){
     fprintf(stderr, "\n");
 }
 
-int main(int argc, char** argv){
-    complex *x, **m;
+double runTest(int argc, char **argv) {
+    complex **m;
     int n = 1024;
     int i;
     stopwatch sw;
-    int c;
     int two_exp = 10;
 
     if (argc > 1) {
@@ -59,7 +58,7 @@ int main(int argc, char** argv){
     m = malloc(sizeof(complex*)*n);
     for(i=0; i<n; ++i) m[i] = random_complex_vector(n);
     stopwatch_start(&sw);
-    complex **results2D = FFT_2D(m,n);
+    FFT_2D(m,n);
     stopwatch_stop(&sw);
 
     printf("{ \"status\": %d, \"options\": \"%d\", \"time\": %f }\n", 1, two_exp, get_interval_by_sec(&sw));
@@ -76,4 +75,12 @@ int main(int argc, char** argv){
     //free(x);
     for(i=0; i<n; ++i) free(m[i]);
     free(m);
+    return get_interval_by_sec(&sw);
 }
+
+#ifdef RUN_MAIN
+int main(int argc, char** argv){
+	runTest(argc, argv);
+	return 0;
+}
+#endif

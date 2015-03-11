@@ -194,6 +194,7 @@ lud_verify(float *m, float *lu, int matrix_dim){
   if(good) printf("Good LUD!");
   else printf("Bad LUD!");
   free(tmp);
+  return RET_SUCCESS;
 }
 
 void
