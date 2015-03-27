@@ -14,7 +14,7 @@ JS_RUN_ARGUMENT = "BFSGraph("$(NB_NODES)")"
 WEBCL_CALL = "webclBFS("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_NODES)")"
 FILENAME = "bfs"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html build/pnacl/run.sh
 
 build/c:
 	mkdir -p build/c
@@ -81,5 +81,16 @@ build/js-nota/run.html: js/bfs.js
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
 
 
+build/pnacl:
+	mkdir -p build/pnacl
+
+build/pnacl/run.nexe: build/pnacl
+	make -C nacl
+	$(HOME)/src/nacl_sdk/pepper_39/toolchain/linux_pnacl/bin/pnacl-translate -arch x86-64 -o build/pnacl/run.nexe nacl/pnacl/Release/pnacl_runner.pexe
+
+build/pnacl/run.sh: build/pnacl/run.nexe
+	echo '$(HOME)/src/nacl_sdk/pepper_39/tools/sel_ldr.py build/pnacl/run.nexe '$(C_RUN_ARGUMENT) > build/pnacl/run.sh && chmod +x build/pnacl/run.sh
+
 clean:
 	rm -rf build
+	make -C nacl clean

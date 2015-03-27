@@ -95,7 +95,7 @@ class WindowsEnvironment(object):
         yield
         browser_inst.kill()
 
-        
+
 
 class OsxEnvironment(object):
     def __init__(self, sleep_time):
@@ -164,6 +164,15 @@ class Benchmark(object):
                     yield { "status": 0, "options": "", "time": -1 }
         httpd.kill()
 
+    def run_pnacl_benchmark(self):
+        runner_script = ["sh", os.path.join("build", "pnacl", "run.sh")]
+        with cd(self.dir):
+            for _ in xrange(self.iters):
+                stdout, _ = subprocess.Popen(runner_script,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE).communicate()
+                yield json.loads(stdout)["time"]
+
     def build(self):
         """Move into the benchmark's directory and run make clean && make."""
         with cd(self.dir):
@@ -200,6 +209,7 @@ ENVIRONMENTS = {
     "js-nota-firefox": ("js-nota", "Firefox", lambda b: b.run_js_benchmark("firefox", "js-nota")),
     "js-nota-ie": ("js-nota", "IE", lambda b: b.run_js_benchmark("ie", "js-nota")),
     "js-nota-safari": ("js-nota", "Safari", lambda b: b.run_js_benchmark("safari", "js-nota")),
+    "pnacl": ("pnacl", "N/A", lambda b: b.run_pnacl_benchmark()),
     "opencl": ("OpenCL", "N/A", lambda b: b.run_native_benchmark(True)),
     "webcl": ("WebCL", "Firefox", lambda b: b.run_js_benchmark("firefox", "webcl")),
 }
@@ -232,7 +242,7 @@ def main():
         os_env = WindowsEnvironment
     else:
         os_env = LinuxEnvironment
-        
+
     OS = os_env(options.wait)
 
     benchmarks_to_run = [
