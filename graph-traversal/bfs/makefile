@@ -21,7 +21,9 @@ build/c:
 
 # link objects (binaries) together
 build/c/bfs: build/c common/common.c c/bfs.cpp
-	$(CPPCOMP) -I../../common/ -Icommon/ ../../common/common_rand.c common/common.c c/bfs.cpp -lm -o build/c/bfs
+	$(CCOMP) -c ../../common/common_rand.c -o build/c/common_rand.o
+	$(CCOMP) -c common/common.c -o build/c/common.o
+	$(CPPCOMP) -DRUN_MAIN -I../../common/ -Icommon/ build/c/common_rand.o build/c/common.o c/bfs.cpp -lm -o build/c/bfs
 
 build/c/run.sh: build/c/bfs build/c
 	echo 'build/c/bfs '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
