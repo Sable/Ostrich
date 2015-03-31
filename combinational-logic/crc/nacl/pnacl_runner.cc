@@ -112,3 +112,8 @@ namespace pp {
 		return new PnaclRunnerModule();
 	}
 }  // namespace pp
+
+int main(int argc, char **argv) {
+	CRC(argc, argv);
+	return 0;
+}

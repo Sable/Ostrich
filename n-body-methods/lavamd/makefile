@@ -8,7 +8,7 @@ C_RUN_ARGUMENT = "-boxes1d "$(NB_BOXES)
 JS_RUN_ARGUMENT = "runLavaMD("$(NB_BOXES)")"
 FILENAME = "lavamd"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html build/pnacl/run.sh
 
 build/c:
 	mkdir -p build/c
@@ -85,6 +85,16 @@ build/js-nota/run.html: js/lavamd.js
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
 
+build/pnacl:
+	mkdir -p build/pnacl
+ 	 
+build/pnacl/run.nexe: build/pnacl
+	make -C nacl
+	$(HOME)/400/nacl_sdk/pepper_39/toolchain/linux_pnacl/bin/pnacl-translate -arch x86-64 -o build/pnacl/run.nexe nacl/pnacl/Release/pnacl_runner.pexe
+ 	 
+build/pnacl/run.sh: build/pnacl/run.nexe
+	echo '$(HOME)/400/nacl_sdk/pepper_39/tools/sel_ldr.py build/pnacl/run.nexe -- '$(C_RUN_ARGUMENT) > build/pnacl/run.sh && chmod +x build/pnacl/run.sh 
 
 clean:
 	rm -rf build
+	make -C nacl clean

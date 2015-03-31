@@ -116,3 +116,8 @@ namespace pp {
 		return new PnaclRunnerModule();
 	}
 }  // namespace pp
+
+int main(int argc, char **argv) {
+	runSPMV(argc, argv);
+	return 0;
+}

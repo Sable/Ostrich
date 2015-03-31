@@ -104,3 +104,7 @@ namespace pp {
 		return new PnaclRunnerModule();
 	}
 }  // namespace pp
+
+int main(int argc, char **argv) {
+	runSRAD(argc, argv);
+}
