@@ -101,3 +101,8 @@ namespace pp {
 		return new PnaclRunnerModule();
 	}
 }  // namespace pp
+
+int main(int argc, char **argv) {
+	BFSGraph(argc, argv);
+	return 0;
+}
