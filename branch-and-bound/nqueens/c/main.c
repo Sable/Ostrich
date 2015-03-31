@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "main.h"
 #include "nqueen_cpu.h"
 #include "../common/common.h"
 #include <getopt.h>
@@ -34,7 +35,14 @@ static struct option long_options[] = {
       {"size", 1, NULL, 's'},
 };
 
+#ifdef RUN_MAIN
 int main(int argc, char *argv[]){
+	nQueens(argc, argv);
+	return 0;
+}
+#endif
+
+double nQueens(int argc, char *argv[]) {
   int size = 18;
   long long us = 0;
   stopwatch sw;
@@ -70,5 +78,5 @@ int main(int argc, char *argv[]){
           "%lld and the total time it took is %lf seconds\n", solutions, us,
           get_interval_by_sec(&sw));
   printf("{ \"status\": %d, \"options\": \"-s %d\", \"time\": %f }\n", status, size, get_interval_by_sec(&sw));
-  return 0;
+  return get_interval_by_sec(&sw);
 }

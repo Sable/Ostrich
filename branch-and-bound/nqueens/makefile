@@ -9,14 +9,14 @@ JS_RUN_ARGUMENT = "runNQueens("$(SIZE)")"
 WEBCL_CALL = "webclNQ("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
 FILENAME = "nqueens"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html build/pnacl/run.sh
 
 build/c:
 	mkdir -p build/c
 
 # link objects (binaries) together
 build/c/nqueens: build/c c/main.c c/nqueen_cpu.c common/common.c
-	$(CCOMP) c/main.c c/nqueen_cpu.c common/common.c -lm -o build/c/nqueens
+	$(CCOMP) -DRUN_MAIN c/main.c c/nqueen_cpu.c common/common.c -lm -o build/c/nqueens
 
 build/c/run.sh: build/c/nqueens build/c
 	echo 'build/c/nqueens '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh
@@ -73,7 +73,16 @@ build/js-nota/run.html: js/nqueens.js
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
 
+build/pnacl:
+	mkdir -p build/pnacl
 
+build/pnacl/run.nexe: build/pnacl
+	make -C nacl
+	$(HOME)/400/nacl_sdk/pepper_39/toolchain/linux_pnacl/bin/pnacl-translate -arch x86-64 -o build/pnacl/run.nexe nacl/pnacl/Release/pnacl_runner.pexe
+
+build/pnacl/run.sh: build/pnacl/run.nexe
+	echo '$(HOME)/400/nacl_sdk/pepper_39/tools/sel_ldr.py build/pnacl/run.nexe -- '$(C_RUN_ARGUMENT) > build/pnacl/run.sh && chmod +x build/pnacl/run.sh
 
 clean:
 	rm -rf build
+	make -C nacl clean

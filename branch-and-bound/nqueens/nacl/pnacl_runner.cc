@@ -28,6 +28,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
 #include "../c/nqueen_cpu.h"
+#include "../c/main.h"
 #include "../common/common.h"
 
 namespace {
@@ -104,3 +105,8 @@ namespace pp {
 		return new PnaclRunnerModule();
 	}
 }  // namespace pp
+
+int main(int argc, char **argv) {
+	nQueens(argc, argv);	
+	return 0;
+}

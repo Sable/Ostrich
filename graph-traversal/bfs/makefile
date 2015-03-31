@@ -88,10 +88,10 @@ build/pnacl:
 
 build/pnacl/run.nexe: build/pnacl
 	make -C nacl
-	$(HOME)/src/nacl_sdk/pepper_39/toolchain/linux_pnacl/bin/pnacl-translate -arch x86-64 -o build/pnacl/run.nexe nacl/pnacl/Release/pnacl_runner.pexe
+	$(HOME)/400/nacl_sdk/pepper_39/toolchain/linux_pnacl/bin/pnacl-translate -arch x86-64 -o build/pnacl/run.nexe nacl/pnacl/Release/pnacl_runner.pexe
 
 build/pnacl/run.sh: build/pnacl/run.nexe
-	echo '$(HOME)/src/nacl_sdk/pepper_39/tools/sel_ldr.py build/pnacl/run.nexe '$(C_RUN_ARGUMENT) > build/pnacl/run.sh && chmod +x build/pnacl/run.sh
+	echo '$(HOME)/400/nacl_sdk/pepper_39/tools/sel_ldr.py build/pnacl/run.nexe '$(C_RUN_ARGUMENT) > build/pnacl/run.sh && chmod +x build/pnacl/run.sh
 
 clean:
 	rm -rf build
