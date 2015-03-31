@@ -11,6 +11,8 @@ OPENCL_LIB = $(OPENCL_DIR)/lib/x86_64/ -lOpenCL
 OPENCL_PLATFORM = 0
 OPENCL_DEVICE   = 1
 
+NACL_SDK_ROOT = $(HOME)/src/nacl_sdk/pepper_39
+
 UNAME := $(shell uname -s)
 ifeq ($(UNAME),Linux)
 OPENCL_COMPILE_OPTIONS = -I$(OPENCL_INC) -L$(OPENCL_LIB) -DOPENCL_HEADER_CL_CL -LOpenCL

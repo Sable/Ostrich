@@ -7,9 +7,7 @@
 
 VALID_TOOLCHAINS := pnacl newlib glibc
 
-NACL_SDK_ROOT ?= $(HOME)/400/nacl_sdk/pepper_39
-
-
+include ../../../common/options.mk
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 

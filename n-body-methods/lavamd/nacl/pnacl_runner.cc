@@ -106,6 +106,6 @@ namespace pp {
 }  // namespace pp
 
 int main(int argc, char **argv) {
-	runLAVAMD(argc, argv);
+	LAVAMD(argc, argv);
 	return 0;
 }

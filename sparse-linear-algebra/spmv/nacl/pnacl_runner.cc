@@ -118,6 +118,6 @@ namespace pp {
 }  // namespace pp
 
 int main(int argc, char **argv) {
-	runSPMV(argc, argv);
+	SPMV(argc, argv);
 	return 0;
 }

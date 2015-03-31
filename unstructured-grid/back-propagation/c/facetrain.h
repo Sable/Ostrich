@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 double runBP(int argc, char **argv);
+double backprop_face(int layer_size);
 
 #ifdef __cplusplus
 }
