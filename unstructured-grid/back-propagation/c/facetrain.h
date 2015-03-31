@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-double backprop_face(int);
+double runBP(int argc, char **argv);
 
 #ifdef __cplusplus
 }

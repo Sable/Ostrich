@@ -97,3 +97,9 @@ namespace pp {
 		return new PnaclRunnerModule();
 	}
 }  // namespace pp
+
+int main(int argc, char **argv)
+{
+	runBP(argc, argv);
+	return 0;
+}

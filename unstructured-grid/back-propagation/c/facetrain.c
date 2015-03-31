@@ -58,17 +58,23 @@ double backprop_face(int layer_size) {
     return (time1-time0)/1000000.0;
 }
 
-#ifdef RUN_MAIN
-int main(int argc, char **argv)
-{
+double runBP(int argc, char **argv) {
     if(argc!=2) {
         fprintf(stderr, "usage: backprop <num of input elements>\n");
         exit(0);
     }
 
     int layer_size = atoi(argv[1]);
-    backprop_face(layer_size);
+    return backprop_face(layer_size);
 
     exit(0);
 }
+
+#ifdef RUN_MAIN
+int main(int argc, char **argv)
+{
+	runBP(argc, argv);
+	return 0;
+}
 #endif
+
