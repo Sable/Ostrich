@@ -20,7 +20,7 @@ build/c:
 # link objects (binaries) together
 build/c/needle:	build/c \
             c/needle.c
-	$(CCOMP) c/needle.c \
+	$(CCOMP) -DRUN_MAIN c/needle.c \
 			 ../../common/common_rand.c \
 			 -I../../common \
 			 -lm -o build/c/needle

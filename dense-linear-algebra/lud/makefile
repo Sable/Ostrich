@@ -21,7 +21,7 @@ build/c/lud:	build/c \
             c/lud.c \
 			c/lud_base.c \
             common/common.c
-	$(CCOMP) c/lud.c \
+	$(CCOMP) -DRUN_MAIN c/lud.c \
              c/lud_base.c \
 			 common/common.c \
 			 ../../common/common_rand.c \

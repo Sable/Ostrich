@@ -21,7 +21,7 @@ build/c/fft:	build/c \
 			c/main.c \
             common/common.c \
 			common/complex_simple.c
-	$(CCOMP) c/fft.c \
+	$(CCOMP) -DRUN_MAIN c/fft.c \
              c/main.c \
 			 common/common.c \
 			 ../../common/common_rand.c \

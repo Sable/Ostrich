@@ -26,7 +26,7 @@ build/c/spmv:	build/c \
 			common/common_args_serial.c \
 			common/sparse_formats.c \
 			common/ziggurat.c
-	$(CCOMP) c/csr_spmv.c \
+	$(CCOMP) -DRUN_MAIN c/csr_spmv.c \
 			 common/common.c \
 			 common/sparse_formats.c \
 			 common/common_args_serial.c \

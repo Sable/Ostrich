@@ -32,7 +32,7 @@
 
 int timing = 0;
 
-inline int bit_scan(unsigned int x)
+int bit_scan(unsigned int x)
 {
 	int res = 0;
 	res |= (x & 0xaaaaaaaa) ? 1 : 0;
@@ -44,7 +44,7 @@ inline int bit_scan(unsigned int x)
 }
 
 
-inline void transform(const unsigned int* ns_array, int* board_array, int size)
+void transform(const unsigned int* ns_array, int* board_array, int size)
 {
   int i;
 	for(i = 0; i < size; i++) {

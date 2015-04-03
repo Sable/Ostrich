@@ -22,7 +22,7 @@ build/c/lavamd:	build/c \
 			c/util/num/num.c \
 			c/util/timer/timer.h \
 			c/util/timer/timer.c
-	$(CCOMP) c/main.c \
+	$(CCOMP) -DRUN_MAIN c/main.c \
 			 c/kernel/kernel_cpu.c \
              c/util/num/num.c \
 			 c/util/timer/timer.c \

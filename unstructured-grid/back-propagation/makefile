@@ -18,7 +18,7 @@ build/c:
 
 # link objects (binaries) together
 build/c/backprop: build/c c/imagenet.c c/backprop_kernel.c c/backprop.c c/facetrain.c
-	$(CCOMP) -I../../common/ ../../common/common.c ../../common/common_rand.c c/imagenet.c c/backprop_kernel.c c/backprop.c c/facetrain.c -lm -o build/c/backprop
+	$(CCOMP) -DRUN_MAIN -I../../common/ ../../common/common.c ../../common/common_rand.c c/imagenet.c c/backprop_kernel.c c/backprop.c c/facetrain.c -lm -o build/c/backprop
 
 build/c/run.sh: build/c/backprop build/c
 	echo 'build/c/backprop '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh

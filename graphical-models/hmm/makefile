@@ -18,7 +18,7 @@ build/c:
 # link objects (binaries) together
 build/c/hmm:	build/c \
             c/main_bwa_hmm.c
-	$(CCOMP) c/main_bwa_hmm.c \
+	$(CCOMP) -DRUN_MAIN c/main_bwa_hmm.c \
 			../../common/common.c \
 			 ../../common/common_rand.c \
 			 -I../../common \

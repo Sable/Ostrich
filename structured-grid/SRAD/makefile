@@ -21,13 +21,10 @@ build/c:
 
 # link objects (binaries) together
 build/c/srad:	build/c \
-            common/define.c \
             common/graphics.c \
             common/timer.c \
             c/main.c
-	$(CCOMP) -Icommon \
-             c/main.c \
-			 -lm -o build/c/srad
+	$(CCOMP) -DRUN_MAIN -Icommon common/graphics.c common/timer.c c/main.c -lm -o build/c/srad
 
 build/c/run.sh: build/c/srad build/c
 	echo 'build/c/srad '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh

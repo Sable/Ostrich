@@ -187,7 +187,7 @@ double LUD(int argc, char *argv[]) {
 #ifdef RUN_MAIN
 int main ( int argc, char **argv)
 {
-	LUD(arc,argv);
+	LUD(argc,argv);
 	return 0;
 }				
 #endif

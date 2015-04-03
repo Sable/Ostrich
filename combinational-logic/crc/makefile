@@ -20,7 +20,7 @@ build/c:
 
 # link objects (binaries) together
 build/c/crc: build/c c/crc_serial.c common/common.c common/crc_formats.c common/common_args_serial.c
-	$(CCOMP) -I./common/ -I../../common/ ../../common/common_rand.c c/crc_serial.c common/common.c common/crc_formats.c common/common_args_serial.c -lm -o build/c/crc
+	$(CCOMP) -DRUN_MAIN -I./common/ -I../../common/ ../../common/common_rand.c c/crc_serial.c common/common.c common/crc_formats.c common/common_args_serial.c -lm -o build/c/crc
 
 build/c/run.sh: build/c/crc build/c
 	echo 'build/c/crc '$(C_RUN_ARGUMENT) > build/c/run.sh && chmod +x build/c/run.sh

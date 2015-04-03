@@ -24,7 +24,7 @@ build/c:
 build/c/pagerank:	build/c \
                 common/common.c \
                 c/pagerank.c
-	$(CCOMP) -I../../common/ \
+	$(CCOMP) -DRUN_MAIN -I../../common/ \
              -Icommon/ \
              ../../common/common_rand.c \
              common/common.c \
