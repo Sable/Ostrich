@@ -14,7 +14,7 @@ JS_RUN_ARGUMENT = "BFSGraph("$(NB_NODES)")"
 WEBCL_CALL = "webclBFS("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_NODES)")"
 FILENAME = "bfs"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/mcnum/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -47,6 +47,17 @@ build/js/run.html: build/js build/js/bfs.js
 	cat ../../utils/js/run_template.html > build/js/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html
+
+build/mcnum:
+	mkdir -p build/mcnum
+
+build/mcnum/bfs.js:
+	cp js/bfs.js build/mcnum/$(FILENAME).js
+
+build/mcnum/run.html: build/mcnum build/mcnum/bfs.js
+	cat ../../utils/mcnum/run_template.html > build/mcnum/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/mcnum/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/mcnum/run.html
 
 build/opencl:
 	mkdir -p build/opencl

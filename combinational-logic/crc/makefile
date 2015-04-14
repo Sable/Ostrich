@@ -13,7 +13,7 @@ JS_RUN_ARGUMENT = "runCRC("$(NB_PAGES)","$(PAGE_SIZE)","$(NB_REPETITIONS)")"
 WEBCL_CALL = "webclCRC("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_PAGES)","$(PAGE_SIZE)","$(NB_REPETITIONS)")"
 FILENAME = "crc"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/mcnum/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -47,6 +47,17 @@ build/js/run.html: build/js build/js/crc.js
 	cat ../../utils/js/run_template.html > build/js/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html
+
+build/mcnum:
+	mkdir -p build/mcnum
+
+build/mcnum/crc.js:
+	cp js/crc.js build/mcnum/$(FILENAME).js
+
+build/mcnum/run.html: build/mcnum build/mcnum/crc.js
+	cat ../../utils/mcnum/run_template.html > build/mcnum/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/mcnum/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/mcnum/run.html
 
 build/opencl:
 	mkdir -p build/opencl

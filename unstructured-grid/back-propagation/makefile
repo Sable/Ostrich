@@ -11,7 +11,7 @@ JS_RUN_ARGUMENT = "runBackProp("$(NB_INPUT_ELEMS)")"
 WEBCL_CALL = "webclbackprop("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_INPUT_ELEMS)")"
 FILENAME = "backprop"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/mcnum/run.html build/numeric/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -38,6 +38,21 @@ build/asmjs/run.html: build/asmjs \
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/asmjs/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(ASMJS_RUN_ARGUMENT)/g build/asmjs/run.html
 
+build/mcnum:
+	mkdir -p build/mcnum
+
+build/mcnum/backprop.js:
+	cp mcnum/backprop.js build/mcnum/$(FILENAME).js
+
+build/mcnum/run.html: build/mcnum build/mcnum/backprop.js
+	cat ../../utils/mcnum/run_template.html > build/mcnum/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/mcnum/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/mcnum/run.html
+
+build/numeric/run.html:
+	mkdir -p build/numeric
+	cp numeric/backprop.js build/numeric/$(FILENAME).js
+	cp build/js/run.html build/numeric/
 
 build/js:
 	mkdir -p build/js

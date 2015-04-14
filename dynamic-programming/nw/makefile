@@ -12,7 +12,7 @@ JS_RUN_ARGUMENT = "runNeedle("$(DIMENSIONS)","$(PENALTY)")"
 WEBCL_CALL = "webclNeedle("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(DIMENSIONS)","$(PENALTY)")"
 FILENAME = "needle"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/mcnum/run.html build/numeric/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
 
 build/c:
 	mkdir -p build/c
@@ -55,6 +55,22 @@ build/js/run.html: build/js build/js/needle.js
 	cat ../../utils/js/run_template.html > build/js/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js/run.html
+
+build/mcnum:
+	mkdir -p build/mcnum
+
+build/mcnum/needle.js:
+	cp mcnum/needle.js build/mcnum/$(FILENAME).js
+
+build/mcnum/run.html: build/mcnum build/mcnum/needle.js
+	cat ../../utils/mcnum/run_template.html > build/mcnum/run.html
+	sed -i.bak s/FILENAME/$(FILENAME)/g build/mcnum/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/mcnum/run.html
+
+build/numeric/run.html:
+	mkdir -p build/numeric
+	cp numeric/needle.js build/numeric/$(FILENAME).js
+	cp build/js/run.html build/numeric/
 
 build/opencl:
 	mkdir -p build/opencl

@@ -58,11 +58,13 @@ class LinuxEnvironment(object):
     @contextlib.contextmanager
     def provision_browser(self, browser, url):
         if browser == "google-chrome":
+            browser_path = "google-chrome"
             browser_opts = ["--incognito", "--disable-extensions"]
         elif browser == "firefox":
+            browser_path = "/home/sable/skathr/local/bin/firefox/firefox"
             browser_opts = ["--private"]
 
-        invocation = [browser] + browser_opts
+        invocation = [browser_path] + browser_opts
         browser = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(self.sleep_time)
         subprocess.call(invocation + [url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -196,6 +198,14 @@ ENVIRONMENTS = {
     "js-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox")),
     "js-ie": ("js", "IE", lambda b: b.run_js_benchmark("ie")),
     "js-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari")),
+    "mcnum-chrome": ("mcnum", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "mcnum")),
+    "mcnum-firefox": ("mcnum", "Firefox", lambda b: b.run_js_benchmark("firefox", "mcnum")),
+    "mcnum-ie": ("mcnum", "IE", lambda b: b.run_js_benchmark("ie", "mcnum")),
+    "mcnum-safari": ("mcnum", "Safari", lambda b: b.run_js_benchmark("safari", "mcnum")),
+    "numeric-chrome": ("numeric", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "numeric")),
+    "numeric-firefox": ("numeric", "Firefox", lambda b: b.run_js_benchmark("firefox", "numeric")),
+    "numeric-ie": ("numeric", "IE", lambda b: b.run_js_benchmark("ie", "numeric")),
+    "numeric-safari": ("numeric", "Safari", lambda b: b.run_js_benchmark("safari", "numeric")),
     "js-nota-chrome": ("js-nota", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "js-nota")),
     "js-nota-firefox": ("js-nota", "Firefox", lambda b: b.run_js_benchmark("firefox", "js-nota")),
     "js-nota-ie": ("js-nota", "IE", lambda b: b.run_js_benchmark("ie", "js-nota")),
