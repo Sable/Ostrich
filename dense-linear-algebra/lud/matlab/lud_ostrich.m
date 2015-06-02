@@ -1,19 +1,17 @@
-function Ostrich_Lud(matrix_dim)
-% Online test lud
-% http://www.bluebit.gr/matrix-calculator/
-% 25 5 1
-% 64 8 1
-% 144 12 1
-% MATLAB: [L,U] = lu(A)
-global m
+function lud_ostrich(matrix_dim,do_verify)
 if matrix_dim < 2
     error('No input file or valid matrix size specified!\n');
 end
-%m = rand(matrix_dim);
-m = [25 5 1; 64 8 1; 144 12 1];
+m = rand(matrix_dim);
+
 tic
-lud_base(matrix_dim);
-%lud_test(matrix_dim);
+lu = lud_base(m,matrix_dim);
 elapsedTime = toc;
-disp(m);
+
+if do_verify ~= 0
+    lud_verify(m, lu, matrix_dim);
+end
+
+msg = sprintf('{ \"status\": %d, \"options\": \"-s %d\", \"time\": %f }\n', 1, matrix_dim, elapsedTime);
+disp(msg);
 end

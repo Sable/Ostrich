@@ -1,4 +1,4 @@
-function bpnn_layerforward(l1,l2,conn,n1,n2)
+function [l1,l2] = bpnn_layerforward(l1,l2,conn,n1,n2)
 l1(1) = 1.0;
 for j = 2:n2
     sum = 0;

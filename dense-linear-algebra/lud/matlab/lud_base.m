@@ -1,5 +1,4 @@
-function lud_base(size)
-global m
+function [m] = lud_base(m,size)
 for i = 1:size
     for j = i:size
         temp = m(i,j);

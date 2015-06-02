@@ -1,4 +1,4 @@
-function mat_vec_mul(trans,m,n,a,lda,x,offsetx,y,offsety)
+function [y] = mat_vec_mul(trans,m,n,a,lda,x,offsetx,y,offsety)
 if and(trans ~= 'n', trans ~= 't')
     return
 end
@@ -15,17 +15,17 @@ if trans == 'n'
     for i = 1:m_size
         idx_a0 = (i - 1) * n_size + 1;
         idx_a1 = idx_a0 + n_size - 1;
-        idx_b0 = offsetx;
+        idx_b0 = offsetx + 1;
         idx_b1 = idx_b0 + n_size - 1;
-        y(offsety + i - 1) = sum(a(idx_a0:idx_a1) * x(idx_b0:idx_b1));
+        y(offsety + i) = sum(a(idx_a0:idx_a1) .* x(idx_b0:idx_b1));
     end
 else
     for i = 1:m_size
         val = 0;
         for j = 1:n_size
-            val = val + a((j-1) * n_size + i) * x(offsetx + j - 1);
+            val = val + a((j-1) * n_size + i) * x(offsetx + j);
         end
-        y(offsety + i - 1) = val;
+        y(offsety + i) = val;
     end
 end
 end

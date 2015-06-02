@@ -1,4 +1,4 @@
-function [errsum] = bpnn_output_error(delta,target,output,nj)
+function [errsum,delta] = bpnn_output_error(delta,target,output,nj)
 errsum = 0.0;
 for j = 2:nj
     o = output(j);

@@ -1,4 +1,4 @@
-function bpnn_adjust_weights(delta,ndelta,ly,nly,w,oldw)
+function [ly,w,oldw] = bpnn_adjust_weights(delta,ndelta,ly,nly,w,oldw)
 ETA      = 0.3;
 MOMENTUM = 0.3;
 ly(1)    = 1.0;

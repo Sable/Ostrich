@@ -1,4 +1,4 @@
-function [rtn] = FFT_simple(x, N)
+function [rtn] = fft_simple(x, N)
 rtn = complex(zeros(1,N), zeros(1,N));
 if N == 1
     rtn(1) = x(1);
@@ -10,8 +10,8 @@ else
         e(k) = x(2*k - 1);
         d(k) = x(2*k);
     end
-    VecE = FFT_simple(e, half);
-    VecD = FFT_simple(d, half);
+    VecE = fft_simple(e, half);
+    VecD = fft_simple(d, half);
     for k=1:half
         r = 1; rad = -2.0*pi*(k-1)/N;
         c = complex(r*cos(rad),r*sin(rad));

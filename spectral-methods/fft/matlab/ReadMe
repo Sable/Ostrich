@@ -1,0 +1,7 @@
+Usage:
+    fft_ostrich(10);
+
+File structure
+    fft_ostrich.m
+    - fft_2D.m
+        + fft_simple.m

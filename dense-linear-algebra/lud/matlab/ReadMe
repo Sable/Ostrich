@@ -1,0 +1,8 @@
+Usage:
+    lud_ostrich(1024,0)  % no verify
+    lud_ostrich(1024,1)  % with verify
+
+File Structure
+    lud_ostrich.m
+    - lud_base.m
+    - lud_verify.m

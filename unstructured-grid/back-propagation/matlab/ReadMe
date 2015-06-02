@@ -1,0 +1,9 @@
+Usage:
+    facetrain(2850000);
+
+File structure
+    facetrain.m
+    - bpnn_layerforward.m
+    - bpnn_output_error.m
+    - bpnn_hidden_error.m
+    - bpnn_adjust_weights.m

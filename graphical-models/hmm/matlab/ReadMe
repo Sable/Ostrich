@@ -1,0 +1,12 @@
+Usage:
+    hmm_ostrich('n',60,2,1000);
+
+File structure
+    hmm_ostrich.m
+    - calc_alpha.m
+    - calc_beta.m
+    - calc_gamma_sum.m
+    - calc_xi_sum.m
+    - estimate_a.m
+    - estimate_b.m
+    - estimate_pi.m

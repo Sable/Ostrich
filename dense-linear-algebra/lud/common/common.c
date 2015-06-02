@@ -170,11 +170,27 @@ create_matrix_from_random_float(float **mp, int size){
     return RET_SUCCESS;
 }
 
+void print(int n, double *arr)
+{
+	int i,j;
+	for(i = 0;i < n;i++)
+	{
+		for(j = 0;j<n;j++)
+		{
+			printf("%lf ",arr[i*n+j]);
+		}
+		printf("\n");
+	}
+}
 
 func_ret_t
 lud_verify(double *m, double *lu, int matrix_dim){
     int i,j,k;
     double *tmp = (double*)malloc(matrix_dim*matrix_dim*sizeof(double));
+	double *arrl = (double*)malloc(matrix_dim*matrix_dim*sizeof(double));
+	double *arru = (double*)malloc(matrix_dim*matrix_dim*sizeof(double));
+	memset(arrl,0,sizeof(double) * matrix_dim * matrix_dim);
+	memset(arru,0,sizeof(double) * matrix_dim * matrix_dim);
 
     for (i=0; i < matrix_dim; i ++)
         for (j=0; j< matrix_dim; j++) {
@@ -186,10 +202,17 @@ lud_verify(double *m, double *lu, int matrix_dim){
                 else
                     l=lu[i*matrix_dim+k];
                 u=lu[k*matrix_dim+j];
+				arrl[i*matrix_dim+k] = l;
+				arru[k*matrix_dim+j] = u;
                 sum+=l*u;
             }
         tmp[i*matrix_dim+j] = sum;
     }
+	printf("arrl\n");
+	print(matrix_dim,arrl);
+	printf("arru\n");
+	print(matrix_dim,arru);
+	free(arrl); free(arru);
 /*
   fprintf(stderr, ">>>>>LU<<<<<<<\n");
   for (i=0; i<matrix_dim; i++){

@@ -1,4 +1,4 @@
-function [errsum] = bpnn_hidden_error(delta_h,nh,delta_o,no,who,hidden)
+function [errsum,delta_h] = bpnn_hidden_error(delta_h,nh,delta_o,no,who,hidden)
 errsum = 0.0;
 for j=2:nh
     h = hidden(j);
