@@ -29,6 +29,7 @@ Ported from V8 benchmark suite, original copyright:
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #define MAXRND 0x7fffffff
 
@@ -59,3 +60,12 @@ double common_norm_rand(){
   double R2 = common_randJS(); 
   return 0.0f + 1.0f *cos(2*3.14*R1)*sqrt(-log(R2));
 }
+/*
+void main(){
+  unsigned int temp0 = common_rand();
+  unsigned int temp1 = common_rand();
+  unsigned int temp2 = common_rand();
+  unsigned int temp3 = common_rand();
+  printf("seeds: \n%u\n%u\n%u\n%u\n", temp0, temp1, temp2, temp3);
+  printf("js: \n%f\n", common_randJS());
+}*/
