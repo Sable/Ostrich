@@ -96,7 +96,7 @@ main ( int argc, char *argv[] )
     const char *input_file = NULL;
     double *m, *mm;
     stopwatch sw;
-    int i,j;
+    int i;
 
     while ((opt = getopt_long(argc, argv, ":vs:i:",
                               long_options, &option_index)) != -1 ) {
@@ -125,7 +125,7 @@ main ( int argc, char *argv[] )
         exit(EXIT_FAILURE);
     }
 
-     /*if(matrix_dim>1) {
+     if(matrix_dim>1) {
         fprintf(stderr, "Generating matrix of size %d x %d\n", matrix_dim, matrix_dim);
         ret = create_matrix_from_random(&m, matrix_dim);
         if(ret != RET_SUCCESS){
@@ -137,11 +137,7 @@ main ( int argc, char *argv[] )
     else {
         fprintf(stderr, "No input file or valid matrix size specified!\n");
         exit(EXIT_FAILURE);
-    }*/
-	matrix_dim = 3;
-	create_matrix_from_random(&m, matrix_dim);
-	double val[] = {25,5,1,64,8,1,144,12,1};
-	for(i=0;i<9;i++) m[i] = val[i];
+    }
 
     if (do_verify){
         //printf("Before LUD\n");
@@ -152,13 +148,6 @@ main ( int argc, char *argv[] )
     stopwatch_start(&sw);
     lud_base(m, matrix_dim);
     stopwatch_stop(&sw);
-	
-	for(i = 0;i < matrix_dim; ++i){
-		for(j = 0; j < matrix_dim; ++j){
-			printf("%lf ",m[i*matrix_dim + j]);
-		}
-		printf("\n");
-	}
 
     if (matrix_dim == 1024) {
         for (i=0; i<100; ++i) {
