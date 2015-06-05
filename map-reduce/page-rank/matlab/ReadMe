@@ -1,0 +1,6 @@
+
+Usage:
+    pagerank(5000,10,0.00000001,100000);
+    
+File structure:
+    pagerank.m
