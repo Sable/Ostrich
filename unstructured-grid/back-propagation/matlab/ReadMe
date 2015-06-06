@@ -1,7 +1,7 @@
 Usage:
     facetrain(2850000);
 
-File structure
+Files:
     facetrain.m
     - bpnn_layerforward.m
     - bpnn_output_error.m

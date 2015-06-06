@@ -1,0 +1,7 @@
+
+Usage:
+    srad_ostrich(500,1);
+
+Files:
+    srad_ostrich.m
+    - ../data/image.pgm

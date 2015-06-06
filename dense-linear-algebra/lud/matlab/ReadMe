@@ -2,7 +2,10 @@ Usage:
     lud_ostrich(1024,0)  % no verify
     lud_ostrich(1024,1)  % with verify
 
-File Structure
+Files:
     lud_ostrich.m
     - lud_base.m
     - lud_verify.m
+    - indices_row.data
+    - indices_col.data
+    - expect_value.data
