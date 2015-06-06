@@ -1,0 +1,8 @@
+Usage:
+    nw_ostrich(4096,1);
+
+Files:
+    nw_ostrich.m
+    - seq1.data
+    - seq2.data
+    - nw.data
