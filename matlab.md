@@ -16,8 +16,8 @@
 |11| spmv | done | `spmv_ostrich_loop` (0.168) is faster than `spmv_ostrich` (3.067) |
 |12| srad | done | precision problem in the expected result (expected output of 52608 but received 5.285761e+04 instead) |
 
-### ###Updated June 06, 2015
-* Nw is tested with three data files (`*.data`) in the same folder.
+###Updated June 06, 2015
+* Nw is tested with three data files (`*.data`) in the same directory.
 
 ###Updated June 05, 2015
 * Lud has three data files for value checking: row indices, column indices and expected value files.
