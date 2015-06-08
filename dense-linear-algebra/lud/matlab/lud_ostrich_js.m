@@ -10,6 +10,11 @@ tic
 lu = lud_base(m,matrix_dim);
 elapsedTime = toc;
 
-msg = strcat('{ "status": 1, "options": null, "time": ', num2str(elapsedTime*1000), ' }');
-disp(msg);
+disp('{');
+disp(' "status": 1,');
+disp(' "options": null,');
+disp(' "time": ');
+disp(elapsedTime);
+disp('}');
+
 end
