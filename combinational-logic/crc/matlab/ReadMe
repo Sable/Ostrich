@@ -1,0 +1,7 @@
+Usage:
+    crc_ostrich(65536,128,1);
+
+Files:
+    crc_ostrich.m
+    - crc32_8bytes.m
+    - Lut.data

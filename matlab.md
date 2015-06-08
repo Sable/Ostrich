@@ -1,11 +1,11 @@
 #Benchmark List
 
-##List (Progress: 8/12)
+##List (Progress: 9/12)
 |ID | Benchmark | Status | Test |
 |--------|--------|--------|--------|
 |1 | back-prop  |  done  | The random value of `hidden_weights` is incorrect |
 |2 | bfs | | |
-|3 | crc | | |
+|3 | crc | done | A data file is created, `Lut.data` |
 |4 | fft | done | About 112 seconds when n = 10 |
 |5 | hmm | done | Tested |
 |6 | lavamd |   | |
@@ -16,10 +16,13 @@
 |11| spmv | done | `spmv_ostrich_loop` (0.168) is faster than `spmv_ostrich` (3.067) |
 |12| srad | done | precision problem in the expected result (expected output of 52608 but received 5.285761e+04 instead) |
 
-###Updated June 06, 2015
+###Updated on June 08, 2015
+* Crc has been tested with the data file, `Lut.data`.
+
+###Updated on June 06, 2015
 * Nw is tested with three data files (`*.data`) in the same directory.
 
-###Updated June 05, 2015
+###Updated on June 05, 2015
 * Lud has three data files for value checking: row indices, column indices and expected value files.
 * Page-rank has `pagerank.data` for data input (in the same directory, the same as Lud benchmark).
 * Srad is feeded with a fixed size image matrix, `../data/image.pgm`. **NO random number** in this benchmark
