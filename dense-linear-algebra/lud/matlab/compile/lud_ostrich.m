@@ -1,4 +1,4 @@
-function lud_ostrich_js(matrix_dim,do_verify)
+function lud_ostrich(matrix_dim,do_verify)
 if matrix_dim < 2
     disp('No input file or valid matrix size specified!\n');
     return;
@@ -10,6 +10,11 @@ tic
 lu = lud_base(m,matrix_dim);
 elapsedTime = toc;
 
-msg = strcat('{ "status": 1, "options": null, "time": ', num2str(elapsedTime*1000), ' }');
-disp(msg);
+disp('{');
+disp(' "status": 1,');
+disp(' "options": null,');
+disp(' "time": ');
+disp(elapsedTime);
+disp('}');
+
 end
