@@ -14,9 +14,29 @@ for i = 1:matrix_dim
     end
 end
 
-if L * U == m
-    disp('Good LUD!\n');
+tmp = L*U;
+good = 1;
+for i=1:matrix_dim
+    for j=1:matrix_dim
+        diff = abs(m(i,j) - tmp(i,j)) / abs(m(i,j));
+        if diff > 0.0000000001
+            if good == 1
+                fprintf(2, 'dismatch at (%d,%d): (o)%.*f (n)%.*f\n', i,j, 21, m(i,j), 21, tmp(i,j));
+            end
+            good = 0;
+        end
+    end
+end
+if good == 1 
+    fprintf(2,'Good LUD!\n');
 else
-    disp('Bad LUD!\n');
+    fprintf(2,'Bad LUD!\n');
+    max_diff = max(max(abs(tmp - m)));
+    fprintf(2, 'max_diff %.*f\n', 21, max_diff);
+    %disp(L);
+    %disp(U);
+    %disp(L*U);
+    %disp(L * U == m);
+    %disp(m);
 end
 end

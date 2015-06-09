@@ -3,11 +3,14 @@ SHELL := /bin/bash
 include ../../common/options.mk
 
 EMOPTIONS = -s TOTAL_MEMORY=450000000
+MATLAB_OPTIONS = "-nodisplay -r "
+OUTPUT_FILTER = "sed -n -e '/{/,/}/p'"
 
 NB_INPUT_ELEMS = "2850000"
 ASMJS_RUN_ARGUMENT = "['"$(NB_INPUT_ELEMS)"']"
 C_RUN_ARGUMENT = $(NB_INPUT_ELEMS)
 JS_RUN_ARGUMENT = "runBackProp("$(NB_INPUT_ELEMS)")"
+MATLAB_RUN_ARGUMENT = "cd build/matlab/; runBackProp("$(NB_INPUT_ELEMS)"); exit();"
 WEBCL_CALL = "webclbackprop("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_INPUT_ELEMS)")"
 FILENAME = "backprop"
 
@@ -79,6 +82,18 @@ build/js-nota/run.html: js/backprop.js
 	cat ../../utils/js/run_template.html > build/js-nota/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
+
+build/matlab:
+	mkdir -p build/matlab
+
+build/matlab/backprop.m:
+	cp matlab/backprop.m build/matlab/$(FILENAME).m
+
+build/matlab/runBackProp.m:
+	cp matlab/runBackProp.m build/matlab/runBackProp.m
+
+build/matlab/run.sh: build/matlab build/matlab/backprop.m build/matlab/runBackProp.m
+	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
 
 
 clean:

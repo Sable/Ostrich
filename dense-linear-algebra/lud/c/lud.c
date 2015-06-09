@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "common.h"
+#include "common_rand.h"
 
 static int do_verify = 0;
 
@@ -96,9 +97,10 @@ main ( int argc, char *argv[] )
     const char *input_file = NULL;
     double *m, *mm;
     stopwatch sw;
-    int i;
+    int i,j;
+    int debug = 0;
 
-    while ((opt = getopt_long(argc, argv, ":vs:i:",
+    while ((opt = getopt_long(argc, argv, ":dvs:i:",
                               long_options, &option_index)) != -1 ) {
         switch(opt){
         case 'v':
@@ -110,6 +112,9 @@ main ( int argc, char *argv[] )
         case '?':
             fprintf(stderr, "invalid option\n");
             error=1;
+            break;
+        case 'd':
+            debug=1;
             break;
         case ':':
             fprintf(stderr, "missing argument\n");
@@ -125,13 +130,21 @@ main ( int argc, char *argv[] )
         exit(EXIT_FAILURE);
     }
 
-     if(matrix_dim>1) {
+    if(matrix_dim>1) {
         fprintf(stderr, "Generating matrix of size %d x %d\n", matrix_dim, matrix_dim);
         ret = create_matrix_from_random(&m, matrix_dim);
         if(ret != RET_SUCCESS){
             m = NULL;
             fprintf(stderr, "error could not generate random matrix of size %d x %d!\n", matrix_dim, matrix_dim);
             exit(EXIT_FAILURE);
+        }
+        if (debug) {
+            for (i=0; i < matrix_dim; i++) {
+                for (j=0; j < matrix_dim; j++) {
+                    printf("%f ", m[i*matrix_dim + j]); 
+                }
+                printf("\n");
+            } 
         }
     }
     else {
