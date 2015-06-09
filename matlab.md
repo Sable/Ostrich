@@ -4,13 +4,13 @@
 |ID | Benchmark | Status | Compile Version | Test |
 |--------|--------|--------|--------|
 |1 | back-prop  |  done  | done | The random value of `hidden_weights` is incorrect |
-|2 | bfs | | |
+|2 | bfs | | | |
 |3 | crc | done | done  |A data file is created, `Lut.data` |
 |4 | fft | done | done  |About 112 seconds when n = 10 |
 |5 | hmm | done | done |Tested |
-|6 | lavamd |   |  ||
+|6 | lavamd |   |  | |
 |7 | lud | done | done |Get different but correct result from MATLAB `lu` function |
-|8 | nqueens| |  ||
+|8 | nqueens| |  | |
 |9 | nw | done | done |Tested |
 |10| page-rank | done |  |Read data file `pagerank.data` |
 |11| spmv | done | done |`spmv_ostrich_loop` (0.168) is faster than `spmv_ostrich` (3.067) |
