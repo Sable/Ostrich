@@ -1,20 +1,20 @@
 #Benchmark List
 
 ##List (Progress: 9/12)
-|ID | Benchmark | Status | Test |
+|ID | Benchmark | Status | Compile Version | Test |
 |--------|--------|--------|--------|
-|1 | back-prop  |  done  | The random value of `hidden_weights` is incorrect |
+|1 | back-prop  |  done  | done | The random value of `hidden_weights` is incorrect |
 |2 | bfs | | |
-|3 | crc | done | A data file is created, `Lut.data` |
-|4 | fft | done | About 112 seconds when n = 10 |
-|5 | hmm | done | Tested |
-|6 | lavamd |   | |
-|7 | lud | done | Get different but correct result from MATLAB `lu` function |
-|8 | nqueens| | |
-|9 | nw | done | Tested |
-|10| page-rank | done | Read data file `pagerank.data` |
-|11| spmv | done | `spmv_ostrich_loop` (0.168) is faster than `spmv_ostrich` (3.067) |
-|12| srad | done | precision problem in the expected result (expected output of 52608 but received 5.285761e+04 instead) |
+|3 | crc | done | done  |A data file is created, `Lut.data` |
+|4 | fft | done | done  |About 112 seconds when n = 10 |
+|5 | hmm | done | done |Tested |
+|6 | lavamd |   |  ||
+|7 | lud | done | done |Get different but correct result from MATLAB `lu` function |
+|8 | nqueens| |  ||
+|9 | nw | done | done |Tested |
+|10| page-rank | done |  |Read data file `pagerank.data` |
+|11| spmv | done | done |`spmv_ostrich_loop` (0.168) is faster than `spmv_ostrich` (3.067) |
+|12| srad | done | done  |precision problem in the expected result (expected output of 52608 but received 5.285761e+04 instead) |
 
 ###Updated on June 08, 2015
 * Crc has been tested with the data file, `Lut.data`.
