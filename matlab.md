@@ -2,7 +2,7 @@
 
 ##List (Progress: 9/12)
 |ID | Benchmark | Status | Compile Version | Test |
-|--------|--------|--------|--------|
+|--------|--------|--------|--------|--------|
 |1 | back-prop  |  done  | done | The random value of `hidden_weights` is incorrect |
 |2 | bfs | | | |
 |3 | crc | done | done  |A data file is created, `Lut.data` |
