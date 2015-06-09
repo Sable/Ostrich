@@ -1,4 +1,5 @@
 function toReturn = commonRandomJS
     toReturn = commonRandom();
-    toReturn = abs(double(toReturn) / 2147483647);
+    MAXINT32VALUE = 2147483647;
+    toReturn = abs(double(toReturn) / double(MAXINT32VALUE));
 end
