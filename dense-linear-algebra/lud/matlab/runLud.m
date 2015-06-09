@@ -64,7 +64,9 @@ if nargin < 4
 end
 
 if matrix_dim > 1
-    fprintf(2,'Generating matrix of size %d x %d\n', matrix_dim, matrix_dim);
+    if debug
+        fprintf(2,'Generating matrix of size %d x %d\n', matrix_dim, matrix_dim);
+    end
     m = createMatrixFromRandom(matrix_dim, debug);
 
     if debug
@@ -80,15 +82,21 @@ else
 end
 
 if version == 1 
-    fprintf(2, 'computing LUD with vectorized operations\n');
+    if debug
+        fprintf(2, 'computing LUD with vectorized operations\n');
+    end 
     tic
     lu = lud_base_idiomatic(m,matrix_dim);
 elseif version == 2
-    fprintf(2, 'computing LUD with the MATLAB standard library function\n');
+    if debug
+        fprintf(2, 'computing LUD with the MATLAB standard library function\n');
+    end
     tic
     lu = lud_base_native(m,matrix_dim);
 else
-    fprintf(2, 'computing LUD with the C implementation literally translated to MATLAB\n');
+    if debug
+        fprintf(2, 'computing LUD with the C implementation literally translated to MATLAB\n');
+    end
     tic
     lu = lud_base(m,matrix_dim);
 end
@@ -113,9 +121,11 @@ if matrix_dim == 1024
         exit(1);
     end
 else 
-    fprintf(2, 'WARNING: No self-checking step for dimension \"%d\"\n', matrix_dim);
+    if debug
+        fprintf(2, 'WARNING: No self-checking step for dimension \"%d\"\n', matrix_dim);
+    end
 end
 
-fprintf('{ \"status\": %d, \"options\": \"matrix_dim %d\", \"time\": %f }\n', 1, matrix_dim, elapsedTime);
+fprintf('{ \"status\": %d, \"options\": \"matrix_dim %d\", \"time\": %f }', 1, matrix_dim, elapsedTime);
 end
 
