@@ -5,6 +5,10 @@ function [m] = createMatrixFromRandom(matrix_dim,debug)
 %
 % 'matrix_dim' is the dimension of the square matrix to generate
 % 'debug'      set 1 to print intermediary generated matrices, 0 otherwise
+    if nargin < 2
+        debug = 0;
+    end
+
     if debug
         fprintf(2, 'createMatrixFromRandom(%d,%d)', matrix_dim, debug);
     end
