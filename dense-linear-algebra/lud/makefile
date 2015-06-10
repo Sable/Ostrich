@@ -4,7 +4,9 @@ include ../../common/options.mk
 
 EMOPTIONS = -s TOTAL_MEMORY=400000000
 MATLAB_OPTIONS = "-nodisplay -r "
-OUTPUT_FILTER = "sed -n -e '/{/,/}/p'"
+# 1st step filters out the MATLAB copyright notice and
+# 2nd step removes unprintable trailing characters
+OUTPUT_FILTER = "sed -n -e '/{/,/}/p' | sed 's/.*\({.*}\).*/\1/g'"
 
 SIZE = "1024"
 ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"

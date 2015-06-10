@@ -164,6 +164,18 @@ class Benchmark(object):
                     yield { "status": 0, "options": "", "time": -1 }
         httpd.kill()
 
+    def run_matlab_benchmark(self, vm):
+        """Run the MATLAB benchmark.  Assume that there is a build/<vm>/run.sh script
+           that will feed all the correct parameters."""
+        runner_script = ["sh", os.path.join("build", vm, "run.sh")]
+
+        with cd(self.dir):
+            for _ in xrange(self.iters):
+                stdout, stderr = subprocess.Popen(runner_script,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE).communicate()
+                yield json.loads(stdout)["time"]
+
     def build(self):
         """Move into the benchmark's directory and run make clean && make."""
         with cd(self.dir):
@@ -202,6 +214,12 @@ ENVIRONMENTS = {
     "js-nota-safari": ("js-nota", "Safari", lambda b: b.run_js_benchmark("safari", "js-nota")),
     "opencl": ("OpenCL", "N/A", lambda b: b.run_native_benchmark(True)),
     "webcl": ("WebCL", "Firefox", lambda b: b.run_js_benchmark("firefox", "webcl")),
+    "matlab-matlab": ("matlab", "Matlab", lambda b: b.run_matlab_benchmark("matlab")),
+    #"matlab-octave": ("matlab", "Octave", lambda b: b.run_matlab_benchmark("octave")),
+    "matjuice-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "matjuice")),
+    "matjuice-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox", "matjuice")),
+    "matjuice-ie": ("js", "IE", lambda b: b.run_js_benchmark("ie", "matjuice")),
+    "matjuice-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari", "matjuice"))
 }
 
 

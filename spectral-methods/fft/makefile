@@ -3,14 +3,19 @@ SHELL := /bin/bash
 include ../../common/options.mk
 
 EMOPTIONS = -s TOTAL_MEMORY=400000000
+MATLAB_OPTIONS = "-nodisplay -r "
+# 1st step filters out the MATLAB copyright notice and
+# 2nd step removes unprintable trailing characters
+OUTPUT_FILTER = "sed -n -e '/{/,/}/p' | sed 's/.*\({.*}\).*/\1/g'"
 
 EXPONENT = "10"
 ASMJS_RUN_ARGUMENT = "'"$(EXPONENT)"'"
 C_RUN_ARGUMENT = $(EXPONENT)
+MATLAB_RUN_ARGUMENT = "cd build/matlab/; runFFT("$(EXPONENT)"); exit();"
 JS_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
 FILENAME = "fft"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html build/matlab/run.sh
 
 build/c:
 	mkdir -p build/c
@@ -82,6 +87,16 @@ build/js-nota/run.html: js/fft.js
 	cat ../../utils/js/run_template.html > build/js-nota/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
+
+build/matlab:
+	mkdir -p build/matlab
+
+build/matlab/*.m: matlab/*.m ../../common/*.m
+	cp matlab/*.m build/matlab/
+	cp ../../common/*.m build/matlab/
+
+build/matlab/run.sh: build/matlab build/matlab/*.m
+	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
 
 
 clean:
