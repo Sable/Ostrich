@@ -13,10 +13,11 @@ ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
 C_RUN_ARGUMENT = "-s "$(SIZE)
 JS_RUN_ARGUMENT = "ludRun("$(SIZE)")"
 MATLAB_RUN_ARGUMENT = "cd build/matlab/; runLud("$(SIZE)"); exit();"
+MATLAB_NATIVE_RUN_ARGUMENT = "cd build/matlab-native/; runLud("$(SIZE)",2,0,0,0); exit();"
 WEBCL_CALL = "webclLUD("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
 FILENAME = "lud"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html
+build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html build/matlab-native/run.sh
 
 build-parallel: build/opencl/run.sh build/webcl/run.html
 
@@ -117,6 +118,16 @@ build/matjuice/run.html:
 	$(HOME)/workspace/matjuice/matjuice.sh "DOUBLE&1*1&REAL" matlab/compile/main.m build/matjuice/main.js
 	cp ../../common/matjuice_common.js build/matjuice/
 	cp ../../utils/matjuice/run.html build/matjuice/
+
+build/matlab-native:
+	mkdir -p build/matlab-native
+
+build/matlab-native/*.m: matlab/*.m ../../common/*.m
+	cp matlab/*.m build/matlab-native/
+	cp ../../common/*.m build/matlab-native/
+
+build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
+	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
 
 clean:
 	rm -rf build

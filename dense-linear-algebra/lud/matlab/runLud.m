@@ -1,4 +1,4 @@
-function runLud(matrix_dim,version,do_verify,debug)
+function runLud(matrix_dim,version,do_verify,debug,self_check)
 % runs the LUD benchmark
 %     'matrix_dim' is the size of the square matrix being generated
 %     'version'    is the version of lud to use, possible values are:
@@ -7,6 +7,7 @@ function runLud(matrix_dim,version,do_verify,debug)
 %         2:  (native) directly calls the native implementation of LUD in Matlab
 %     'do_verify': can be 0 (does not verify the result) or 1 (verify that the result of multiplying the L and U matrices gives back the original matrix
 %     'debug'       1 to print additional debugging information, 0 otherwise
+%     'self_check'  1 to perform benchmark self-check, 0 otherwise (defaults to 1)
 
 expected_row_indices = [691 10 360 37 163 516 63 36 862 336 861 549 534 959 318 515 415 334 538 421 348 934 357 715 959 649 392 537 45 966 424 963 745 435 569 464 981 906 189 542 618 217 313 528 761 518 639 149 757 607 175 984 31 221 722 1002 688 356 983 931 535 759 178 61 842 368 23 630 469 260 328 806 492 502 161 751 421 665 631 842 543 115 770 591 511 636 795 260 10 716 843 861 470 243 732 145 981 371 345 599];
 
@@ -63,6 +64,10 @@ if nargin < 4
     debug = 0;
 end
 
+if nargin < 5
+    self_check = 1;
+end
+
 if matrix_dim > 1
     if debug
         fprintf(2,'Generating matrix of size %d x %d\n', matrix_dim, matrix_dim);
@@ -86,36 +91,36 @@ if version == 1
         fprintf(2, 'computing LUD with vectorized operations\n');
     end 
     tic
-    lu = lud_base_idiomatic(m,matrix_dim);
+    res = lud_base_idiomatic(m,matrix_dim);
 elseif version == 2
     if debug
         fprintf(2, 'computing LUD with the MATLAB standard library function\n');
     end
     tic
-    lu = lud_base_native(m,matrix_dim);
+    res = lu(m);
 else
     if debug
         fprintf(2, 'computing LUD with the C implementation literally translated to MATLAB\n');
     end
     tic
-    lu = lud_base(m,matrix_dim);
+    res = lud_base(m,matrix_dim);
 end
 elapsedTime = toc;
 
 if do_verify ~= 0
-    lud_verify(m, lu, matrix_dim);
+    lud_verify(m, res, matrix_dim);
 end
 
 
 if matrix_dim == 1024
     % Convert to linear indexing
     idx = sub2ind([1024,1024],expected_row_indices,expected_col_indices);
-    if expected_values ~= lu(idx)
-        first_differing_idx = find(expected_values ~= lu(idx), 1)
+    if and(self_check==1, expected_values ~= res(idx))
+        first_differing_idx = find(expected_values ~= res(idx), 1)
         fprintf(2, 'ERROR: value at index (%d,%d) = \"%.*f\" is different from the expected value \"%.*f\"\n',...
             expected_row_indices(first_differing_idx),...
             expected_col_indices(first_differing_idx),...
-            21, lu(first_differing_idx),...
+            21, res(first_differing_idx),...
             21, expected_values(first_differing_idx)...
         );
         exit(1);

@@ -12,10 +12,11 @@ EXPONENT = "10"
 ASMJS_RUN_ARGUMENT = "'"$(EXPONENT)"'"
 C_RUN_ARGUMENT = $(EXPONENT)
 MATLAB_RUN_ARGUMENT = "cd build/matlab/; runFFT("$(EXPONENT)"); exit();"
+MATLAB_NATIVE_RUN_ARGUMENT = "cd build/matlab-native/; runFFT("$(EXPONENT)",2); exit();"
 JS_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
 FILENAME = "fft"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html build/matlab/run.sh
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html build/matlab/run.sh build/matlab-native/run.sh
 
 build/c:
 	mkdir -p build/c
@@ -97,6 +98,16 @@ build/matlab/*.m: matlab/*.m ../../common/*.m
 
 build/matlab/run.sh: build/matlab build/matlab/*.m
 	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
+
+build/matlab-native:
+	mkdir -p build/matlab-native
+
+build/matlab-native/*.m: matlab/*.m ../../common/*.m
+	cp matlab/*.m build/matlab-native/
+	cp ../../common/*.m build/matlab-native/
+
+build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
+	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
 
 
 clean:
