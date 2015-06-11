@@ -16,7 +16,7 @@ MATLAB_RUN_ARGUMENT = "cd build/matlab/; runLud("$(SIZE)"); exit();"
 WEBCL_CALL = "webclLUD("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
 FILENAME = "lud"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html build/matlab/run.sh
+build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html
 
 build-parallel: build/opencl/run.sh build/webcl/run.html
 
@@ -111,6 +111,12 @@ build/matlab/*.m: matlab/*.m ../../common/*.m
 
 build/matlab/run.sh: build/matlab build/matlab/*.m
 	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
+
+build/matjuice/run.html:
+	mkdir -p build/matjuice
+	$(HOME)/workspace/matjuice/matjuice.sh "DOUBLE&1*1&REAL" matlab/compile/main.m build/matjuice/main.js
+	cp ../../common/matjuice_common.js build/matjuice/
+	cp ../../utils/matjuice/run.html build/matjuice/
 
 clean:
 	rm -rf build
