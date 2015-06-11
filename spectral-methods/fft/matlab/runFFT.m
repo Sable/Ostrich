@@ -7,6 +7,12 @@ function runFFT(twoExp, version, verify, debug)
 % 'verify' checks the output of the algorithm to ensure it is correct
 % 'debug'  prints extra information for debugging purposes
 
+expected_input_values = [...
+0.481573149786131970984 0.301748808388446920770 0.340183073820948256305 ...
+0.180649106785259638830 0.431881071961759344102 0.436196878628739070916 ...
+0.269685438940934441021 0.310521185448687342401 0.332082255015251515129 ...
+0.405592626389080113114];
+
 if nargin < 2
     version = 0;
 end
@@ -24,8 +30,22 @@ if or(twoExp < 0, twoExp > 30)
 end
 
 if version == 0
-    mR = createMatrixFromRandom(n);
-    mI = createMatrixFromRandom(n);
+    filename = strcat('data-', num2str(twoExp), '.mat');
+    if exist(fullfile(cd, filename))
+        load(filename, 'mR', 'mI');
+
+        for i=1:10
+            if mR(i) ~= expected_input_values(i)
+                error('Invalid cached data\n');
+                exit(1);
+            end
+        end
+    else 
+        mR = createMatrixFromRandom(n);
+        mI = createMatrixFromRandom(n);
+        save(filename, 'mR', 'mI');
+    end
+
     if debug
         fprintf('Input: \n');
         disp(mR);
@@ -33,14 +53,29 @@ if version == 0
     end
     tic;
     [resR,resI] = fft2D(mR,mI,n);
-elseif version == 1
-    m = complex(createMatrixFromRandom(n),createMatrixFromRandom(n));
-    tic;
-    res = fft2DComplex(m,n);
 else
-    m = complex(createMatrixFromRandom(n),createMatrixFromRandom(n));
-    tic;
-    res = fft2(m);
+    filename = strcat('data-', num2str(twoExp), '-complex.mat');
+    if exist(fullfile(cd, filename))
+        load(filename, 'm');
+
+        mR = real(m);
+        for i=1:10
+            if mR(i) ~= expected_input_values(i)
+                error('Invalid cached data\n');
+                exit(1);
+            end
+        end
+    else 
+        m = complex(createMatrixFromRandom(n),createMatrixFromRandom(n));
+        save(filename, 'm');
+    end
+    if version == 1
+        tic;
+        res = fft2DComplex(m,n);
+    else
+        tic;
+        res = fft2(m);
+    end
 end
 elapsedTime = toc;
 

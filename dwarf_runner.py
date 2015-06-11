@@ -215,6 +215,7 @@ ENVIRONMENTS = {
     "opencl": ("OpenCL", "N/A", lambda b: b.run_native_benchmark(True)),
     "webcl": ("WebCL", "Firefox", lambda b: b.run_js_benchmark("firefox", "webcl")),
     "matlab-matlab": ("matlab", "Matlab", lambda b: b.run_matlab_benchmark("matlab")),
+    "matlab-native-matlab": ("matlab-native", "Matlab", lambda b: b.run_matlab_benchmark("matlab-native")),
     #"matlab-octave": ("matlab", "Octave", lambda b: b.run_matlab_benchmark("octave")),
     "matjuice-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "matjuice")),
     "matjuice-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox", "matjuice")),

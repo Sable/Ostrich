@@ -48,6 +48,13 @@ expected_values = [-22.848189418846398979213 ...
 2.543604357651815917052 5.205758093407768960503 -0.241207430471430422925 ...
 0.660969548700828801735 1.781811506239100006965 1.750625326806120041212];
 
+expected_input_values = [...
+0.481573149786131970984 0.301748808388446920770 0.340183073820948256305 ...
+0.180649106785259638830 0.431881071961759344102 0.436196878628739070916 ...
+0.269685438940934441021 0.310521185448687342401 0.332082255015251515129 ...
+0.405592626389080113114];
+
+
 if nargin < 1
    error('Missing matrix_dim argument\n');
 end
@@ -72,7 +79,22 @@ if matrix_dim > 1
     if debug
         fprintf(2,'Generating matrix of size %d x %d\n', matrix_dim, matrix_dim);
     end
-    m = createMatrixFromRandom(matrix_dim, debug);
+
+    filename = strcat('data-', num2str(matrix_dim), '.mat');
+    if exist(fullfile(cd, filename))
+        load(filename, 'm');
+
+        % Sanity check for data
+        for i=1:10
+            if m(i) ~= expected_input_values(i)
+                error('Invalid cached data\n');
+                exit(1);
+            end
+        end
+    else 
+        m = createMatrixFromRandom(matrix_dim, debug);
+        save(filename, 'm');
+    end
 
     if debug
         for i=1:matrix_dim
