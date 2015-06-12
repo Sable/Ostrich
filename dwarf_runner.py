@@ -220,7 +220,11 @@ ENVIRONMENTS = {
     "matjuice-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "matjuice")),
     "matjuice-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox", "matjuice")),
     "matjuice-ie": ("js", "IE", lambda b: b.run_js_benchmark("ie", "matjuice")),
-    "matjuice-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari", "matjuice"))
+    "matjuice-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari", "matjuice")),
+    "matjuice-nobc-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "matjuice-nobc")),
+    "matjuice-nobc-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox", "matjuice-nobc")),
+    "matjuice-nobc-ie": ("js", "IE", lambda b: b.run_js_benchmark("ie", "matjuice-nobc")),
+    "matjuice-nobc-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari", "matjuice-nobc"))
 }
 
 
