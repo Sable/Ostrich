@@ -80,7 +80,7 @@ if matrix_dim > 1
         fprintf(2,'Generating matrix of size %d x %d\n', matrix_dim, matrix_dim);
     end
 
-    filename = strcat('data-', num2str(matrix_dim), '.mat');
+    filename = strcat('input-data-', num2str(matrix_dim), '.mat');
     if exist(fullfile(cd, filename))
         load(filename, 'm');
 
