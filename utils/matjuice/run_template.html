@@ -4,23 +4,14 @@
 	<title></title>
     </head>
     <body>
-        <script src='../../../../common/matjuice_common.js'></script>
 	<!--PREAMBLE-->
-	<script src='./main.js'></script>
+    MATJUICE_FILES	
 	<script type='text/javascript'>
          // Hot swap some functionality
          createMatrixFromRandom = mj_randomMatrix;
 
          // Run benchmark and get timing
-         var elapsed_time = main(0);
-
-         // Create JSON response
-         var resp = {
-             'time': elapsed_time,
-             'status': 1,
-             'options': null
-         };
-         var json_resp = JSON.stringify(resp);
+         var json_resp = JSON.stringify(RUN_ARGUMENT);
 
          // Send response
          var xmlhttp = new XMLHttpRequest();

@@ -1,7 +1,7 @@
 Usage:
-    fft_ostrich(10);
+    runFFT(10);
 
 Files:
-    fft_ostrich.m
+    runFFT.m
     - fft_2D.m
         + fft_simple.m

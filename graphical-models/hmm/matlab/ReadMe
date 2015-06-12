@@ -1,8 +1,8 @@
 Usage:
-    hmm_ostrich('n',60,2,1000);
+    bwa_hmm('n',60,2,1000);
 
 Files:
-    hmm_ostrich.m
+    bwa_hmm.m
     - calc_alpha.m
     - calc_beta.m
     - calc_gamma_sum.m
@@ -10,3 +10,5 @@ Files:
     - estimate_a.m
     - estimate_b.m
     - estimate_pi.m
+	- mat_vec_mul.m
+	- run_hmm_bwa.m
