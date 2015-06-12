@@ -217,14 +217,14 @@ ENVIRONMENTS = {
     "matlab-matlab": ("matlab", "Matlab", lambda b: b.run_matlab_benchmark("matlab")),
     "matlab-native-matlab": ("matlab-native", "Matlab", lambda b: b.run_matlab_benchmark("matlab-native")),
     #"matlab-octave": ("matlab", "Octave", lambda b: b.run_matlab_benchmark("octave")),
-    "matjuice-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "matjuice")),
-    "matjuice-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox", "matjuice")),
-    "matjuice-ie": ("js", "IE", lambda b: b.run_js_benchmark("ie", "matjuice")),
-    "matjuice-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari", "matjuice")),
-    "matjuice-nobc-chrome": ("js", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "matjuice-nobc")),
-    "matjuice-nobc-firefox": ("js", "Firefox", lambda b: b.run_js_benchmark("firefox", "matjuice-nobc")),
-    "matjuice-nobc-ie": ("js", "IE", lambda b: b.run_js_benchmark("ie", "matjuice-nobc")),
-    "matjuice-nobc-safari": ("js", "Safari", lambda b: b.run_js_benchmark("safari", "matjuice-nobc"))
+    "matjuice-chrome": ("matjuice", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "matjuice")),
+    "matjuice-firefox": ("matjuice", "Firefox", lambda b: b.run_js_benchmark("firefox", "matjuice")),
+    "matjuice-ie": ("matjuice", "IE", lambda b: b.run_js_benchmark("ie", "matjuice")),
+    "matjuice-safari": ("matjuice", "Safari", lambda b: b.run_js_benchmark("safari", "matjuice")),
+    "matjuice-nobc-chrome": ("matjuice-nobc", "Chrome", lambda b: b.run_js_benchmark("google-chrome", "matjuice-nobc")),
+    "matjuice-nobc-firefox": ("matjuice-nobc", "Firefox", lambda b: b.run_js_benchmark("firefox", "matjuice-nobc")),
+    "matjuice-nobc-ie": ("matjuice-nobc", "IE", lambda b: b.run_js_benchmark("ie", "matjuice-nobc")),
+    "matjuice-nobc-safari": ("matjuice-nobc", "Safari", lambda b: b.run_js_benchmark("safari", "matjuice-nobc"))
 }
 
 
