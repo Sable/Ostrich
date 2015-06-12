@@ -12,11 +12,21 @@ EXPONENT = "10"
 ASMJS_RUN_ARGUMENT = "'"$(EXPONENT)"'"
 C_RUN_ARGUMENT = $(EXPONENT)
 MATLAB_RUN_ARGUMENT = "cd build/matlab/; runFFT("$(EXPONENT)"); exit();"
-MATLAB_NATIVE_RUN_ARGUMENT = "cd build/matlab-native/; runFFT("$(EXPONENT)",2); exit();"
+MATLAB_NATIVE_RUN_ARGUMENT = "cd build/matlab-native/; runFFT("$(EXPONENT)"); exit();"
 JS_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
 FILENAME = "fft"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html build/matlab/run.sh build/matlab-native/run.sh
+MATJUICE_SHAPES = "DOUBLE&1*1&REAL"
+MATJUICE_ENTRY_FILE = fft2D
+MATJUICE_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
+MATJUICE_FILES = "\n\
+<script src='..\/..\/..\/..\/common\/matjuice_common.js'><\/script>\n\
+<script src='.\/runFFT.js'><\/script>\n\
+<script src='.\/"$(MATJUICE_ENTRY_FILE)".js'><\/script>\n\
+<script src='.\/fftSimple.js'><\/script>\n\
+"
+
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html build/matlab-native/run.sh
 
 build/c:
 	mkdir -p build/c
@@ -89,6 +99,7 @@ build/js-nota/run.html: js/fft.js
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
 
+
 build/matlab:
 	mkdir -p build/matlab
 
@@ -99,6 +110,27 @@ build/matlab/*.m: matlab/*.m ../../common/*.m
 build/matlab/run.sh: build/matlab build/matlab/*.m
 	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
 
+
+build/matjuice:
+	mkdir -p build/matjuice
+
+build/matjuice/*.m: matlab/*.m ../../common/*.m build/matjuice
+	cp matlab/*.m build/matjuice/
+	cp ../../common/*.m build/matjuice/
+
+build/matjuice/*.js:  build/matjuice ../../common/*.js matjuice/*.js
+	cp ../../common/*.js build/matjuice/
+	cp matjuice/*.js build/matjuice/
+
+build/matjuice/$(MATJUICE_ENTRY_FILE).js: matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice
+	../../dependencies/matjuice/matjuice.sh matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice/$(MATJUICE_ENTRY_FILE).js $(MATJUICE_SHAPES) 2>&1 >/dev/null
+
+build/matjuice/run.html: build/matjuice build/matjuice/*.m build/matjuice/*.js build/matjuice/$(MATJUICE_ENTRY_FILE).js
+	cat ../../utils/matjuice/run_template.html > build/matjuice/run.html
+	sed -i.bak s/MATJUICE_FILES/$(MATJUICE_FILES)/g build/matjuice/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(MATJUICE_RUN_ARGUMENT)/g build/matjuice/run.html
+
+	
 build/matlab-native:
 	mkdir -p build/matlab-native
 
@@ -108,7 +140,6 @@ build/matlab-native/*.m: matlab/*.m ../../common/*.m
 
 build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
 	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
-
 
 clean:
 	rm -rf build

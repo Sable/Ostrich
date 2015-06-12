@@ -12,9 +12,13 @@
 |7 | lud | done | done |Get different but correct result from MATLAB `lu` function |
 |8 | nqueens| |  | |
 |9 | nw | done | done |Tested |
-|10| page-rank | done |  |Read data file `pagerank.data` |
+|10| page-rank | done | done |Read data file `pagerank.data` |
 |11| spmv | done | done |`spmv_ostrich_loop` (0.168) is faster than `spmv_ostrich` (3.067) |
 |12| srad | done | done  |precision problem in the expected result (expected output of 52608 but received 5.285761e+04 instead) |
+
+## Updated on June 12, 2015
+* `spmv` is `spmvRun` in c, webcl ..., keep consistant in Matlab version, maybe change it later.
+* Not sure about the char argument in `hmm`.  Is `"CHAR&1*1&STRING"` correct?
 
 ###Updated on June 08, 2015
 * Crc has been tested with the data file, `Lut.data`.

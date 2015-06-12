@@ -1,4 +1,4 @@
-function hmm_ostrich(v_model,n,s,t)
+function bwa_hmm(v_model,n,s,t)
 N = 60;
 T = 1000;
 S = 2;

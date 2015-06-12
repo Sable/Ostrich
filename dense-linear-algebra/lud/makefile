@@ -11,7 +11,7 @@ OUTPUT_FILTER = "sed -n -e '/{/,/}/p' | sed 's/.*\({.*}\).*/\1/g'"
 SIZE = "1024"
 ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
 C_RUN_ARGUMENT = "-s "$(SIZE)
-JS_RUN_ARGUMENT = "ludRun("$(SIZE)")"
+JS_RUN_ARGUMENT = "runLud("$(SIZE)")"
 MATLAB_RUN_ARGUMENT = "cd build/matlab/; runLud("$(SIZE)"); exit();"
 MATLAB_NATIVE_RUN_ARGUMENT = "cd build/matlab-native/; runLud("$(SIZE)",2,0,0,0); exit();"
 WEBCL_CALL = "webclLUD("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(SIZE)")"
@@ -19,7 +19,7 @@ FILENAME = "lud"
 
 MATJUICE_SHAPES = "DOUBLE&?*?&REAL" "DOUBLE&1*1&REAL"
 MATJUICE_ENTRY_FILE = lud_base
-MATJUICE_RUN_ARGUMENT = "ludRun("$(SIZE)")"
+MATJUICE_RUN_ARGUMENT = "runLud("$(SIZE)")"
 MATJUICE_FILES = "\n\
 <script src='..\/..\/..\/..\/common\/matjuice_common.js'><\/script>\n\
 <script src='.\/runLud.js'><\/script>\n\
