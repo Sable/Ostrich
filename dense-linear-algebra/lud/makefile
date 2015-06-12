@@ -19,14 +19,19 @@ FILENAME = "lud"
 
 MATJUICE_SHAPES = "DOUBLE&?*?&REAL" "DOUBLE&1*1&REAL"
 MATJUICE_ENTRY_FILE = lud_base
+<<<<<<< HEAD
 MATJUICE_RUN_ARGUMENT = "runLud("$(SIZE)")"
+=======
+MATJUICE_RUN_ARGUMENT = "ludRun("$(SIZE)")"
+MATJUICE_NOBC_COMPILATION_OPTIONS = "--enable-bounds-checking=false"
+>>>>>>> origin/matlab-version
 MATJUICE_FILES = "\n\
 <script src='..\/..\/..\/..\/common\/matjuice_common.js'><\/script>\n\
 <script src='.\/runLud.js'><\/script>\n\
 <script src='.\/"$(MATJUICE_ENTRY_FILE)".js'><\/script>\n\
 "
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html build/matlab-native/run.sh
+build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html build/matlab/run.sh build/matlab-native/run.sh build/matjuice/run.html build/matjuice-nobc/run.html
 
 build-parallel: build/opencl/run.sh build/webcl/run.html
 
@@ -121,17 +126,19 @@ build/matlab/*.m: matlab/*.m ../../common/*.m
 
 build/matlab/run.sh: build/matlab build/matlab/*.m
 	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
+    
+build/matlab-native:
+	mkdir -p build/matlab-native
+
+build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
+	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
+
+build/matlab-native/*.m: matlab/*.m ../../common/*.m
+	cp matlab/*.m build/matlab-native/
+	cp ../../common/*.m build/matlab-native/
 
 build/matjuice:
 	mkdir -p build/matjuice
-
-build/matjuice/*.m: matlab/*.m ../../common/*.m build/matjuice
-	cp matlab/*.m build/matjuice/
-	cp ../../common/*.m build/matjuice/
-
-build/matjuice/*.js:  build/matjuice ../../common/*.js matjuice/*.js
-	cp ../../common/*.js build/matjuice/
-	cp matjuice/*.js build/matjuice/
 
 build/matjuice/$(MATJUICE_ENTRY_FILE).js: matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice
 	../../dependencies/matjuice/matjuice.sh matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice/$(MATJUICE_ENTRY_FILE).js $(MATJUICE_SHAPES) 2>&1 >/dev/null
@@ -141,25 +148,27 @@ build/matjuice/run.html: build/matjuice build/matjuice/*.m build/matjuice/*.js b
 	sed -i.bak s/MATJUICE_FILES/$(MATJUICE_FILES)/g build/matjuice/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(MATJUICE_RUN_ARGUMENT)/g build/matjuice/run.html
 
-build/matlab-native:
-	mkdir -p build/matlab-native
+build/matjuice/*.m: matlab/*.m ../../common/*.m build/matjuice
+	cp matlab/*.m build/matjuice/
+	cp ../../common/*.m build/matjuice/
 
-build/matlab-native/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab-native/
-	cp ../../common/*.m build/matlab-native/
+build/matjuice/*.js:  build/matjuice ../../common/*.js matjuice/*.js
+	cp ../../common/*.js build/matjuice/
+	cp matjuice/*.js build/matjuice/
 
-build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
-	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
+build/matjuice-nobc:
+	mkdir -p build/matjuice-nobc
 
-build/matlab-native:
-	mkdir -p build/matlab-native
+build/matjuice-nobc/$(MATJUICE_ENTRY_FILE).js: matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice-nobc
+	../../dependencies/matjuice/matjuice.sh $(MATJUICE_NOBC_COMPILATION_OPTIONS) matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice-nobc/$(MATJUICE_ENTRY_FILE).js $(MATJUICE_SHAPES) 2>&1 >/dev/null
 
-build/matlab-native/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab-native/
-	cp ../../common/*.m build/matlab-native/
+build/matjuice-nobc/run.html: build/matjuice-nobc build/matjuice-nobc/*  build/matjuice/run.html build/matjuice-nobc/$(MATJUICE_ENTRY_FILE).js 
 
-build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
-	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
+build/matjuice-nobc/*: build/matjuice/run.html
+	cp build/matjuice/*.m build/matjuice-nobc/
+	cp build/matjuice/*.js build/matjuice-nobc/
+	cp build/matjuice/*.html build/matjuice-nobc/
+	rm build/matjuice-nobc/$(MATJUICE_ENTRY_FILE).js
 
 clean:
 	rm -rf build

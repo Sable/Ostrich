@@ -16,17 +16,30 @@ MATLAB_NATIVE_RUN_ARGUMENT = "cd build/matlab-native/; runFFT("$(EXPONENT)"); ex
 JS_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
 FILENAME = "fft"
 
+<<<<<<< HEAD
 MATJUICE_SHAPES = "DOUBLE&1*1&REAL"
 MATJUICE_ENTRY_FILE = fft2D
 MATJUICE_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
+=======
+MATJUICE_SHAPES = "DOUBLE&?*?&REAL" "DOUBLE&?*?&REAL" "DOUBLE&1*1&REAL"
+MATJUICE_ENTRY_FILE = fft2D
+MATJUICE_RUN_ARGUMENT = "runFFT("$(EXPONENT)")"
+MATJUICE_NOBC_COMPILATION_OPTIONS = "--enable-bounds-checking=false"
+>>>>>>> origin/matlab-version
 MATJUICE_FILES = "\n\
 <script src='..\/..\/..\/..\/common\/matjuice_common.js'><\/script>\n\
 <script src='.\/runFFT.js'><\/script>\n\
 <script src='.\/"$(MATJUICE_ENTRY_FILE)".js'><\/script>\n\
+<<<<<<< HEAD
 <script src='.\/fftSimple.js'><\/script>\n\
 "
 
 build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html build/matlab-native/run.sh
+=======
+"
+
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl build/webcl build/js-nota/run.html build/matlab/run.sh build/matlab-native/run.sh build/matjuice/run.html build/matjuice-nobc/run.html
+>>>>>>> origin/matlab-version
 
 build/c:
 	mkdir -p build/c
@@ -141,5 +154,41 @@ build/matlab-native/*.m: matlab/*.m ../../common/*.m
 build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
 	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
 
+<<<<<<< HEAD
+=======
+build/matjuice:
+	mkdir -p build/matjuice
+
+build/matjuice/$(MATJUICE_ENTRY_FILE).js: matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice
+	../../dependencies/matjuice/matjuice.sh matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice/$(MATJUICE_ENTRY_FILE).js $(MATJUICE_SHAPES) 2>&1 >/dev/null
+
+build/matjuice/run.html: build/matjuice build/matjuice/*.m build/matjuice/*.js build/matjuice/$(MATJUICE_ENTRY_FILE).js
+	cat ../../utils/matjuice/run_template.html > build/matjuice/run.html
+	sed -i.bak s/MATJUICE_FILES/$(MATJUICE_FILES)/g build/matjuice/run.html
+	sed -i.bak s/RUN_ARGUMENT/$(MATJUICE_RUN_ARGUMENT)/g build/matjuice/run.html
+
+build/matjuice/*.m: matlab/*.m ../../common/*.m build/matjuice
+	cp matlab/*.m build/matjuice/
+	cp ../../common/*.m build/matjuice/
+
+build/matjuice/*.js:  build/matjuice ../../common/*.js matjuice/*.js
+	cp ../../common/*.js build/matjuice/
+	cp matjuice/*.js build/matjuice/
+
+build/matjuice-nobc:
+	mkdir -p build/matjuice-nobc
+
+build/matjuice-nobc/$(MATJUICE_ENTRY_FILE).js: matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice-nobc
+	../../dependencies/matjuice/matjuice.sh $(MATJUICE_NOBC_COMPILATION_OPTIONS) matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice-nobc/$(MATJUICE_ENTRY_FILE).js $(MATJUICE_SHAPES) 2>&1 >/dev/null
+
+build/matjuice-nobc/run.html: build/matjuice-nobc build/matjuice-nobc/*  build/matjuice/run.html build/matjuice-nobc/$(MATJUICE_ENTRY_FILE).js 
+
+build/matjuice-nobc/*: build/matjuice/run.html
+	cp build/matjuice/*.m build/matjuice-nobc/
+	cp build/matjuice/*.js build/matjuice-nobc/
+	cp build/matjuice/*.html build/matjuice-nobc/
+	rm build/matjuice-nobc/$(MATJUICE_ENTRY_FILE).js
+
+>>>>>>> origin/matlab-version
 clean:
 	rm -rf build
