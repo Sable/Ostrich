@@ -32,11 +32,7 @@ include ../../common/matlab.mk
 MATJUICE_SHAPES = "DOUBLE&?*?&REAL" "DOUBLE&1*1&REAL"
 MATJUICE_ENTRY_FILE = lud_base
 MATJUICE_RUN_ARGUMENT = "runLud("$(SIZE)")"
-MATJUICE_FILES = "\n\
-<script src='common\/matjuice_common.js'><\/script>\n\
-<script src='common\/runLud.js'><\/script>\n\
-<script src='.\/"$(MATJUICE_ENTRY_FILE)".js'><\/script>\n\
-"
+MATJUICE_FILES = ../../common/matjuice_common.js matjuice/runLud.js 
 include ../../common/matjuice.mk
 
 build/c:
