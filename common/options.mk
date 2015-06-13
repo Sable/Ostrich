@@ -20,3 +20,9 @@ endif
 ifeq ($(UNAME),Darwin)
 OPENCL_COMPILE_OPTIONS = -framework OpenCL -DOPENCL_HEADER_LONG -D__APPLE__
 endif
+
+.DEFAULT_GOAL := build
+
+.PHONY: clean
+clean:
+	rm -rf build

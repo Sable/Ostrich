@@ -127,7 +127,7 @@ function ludVerify(m, lu) {
     console.log("For all practical purposes, the original matrix and the one computed from the LUD are identical");
 }
 
-function ludRun(size, doVerify){
+function runLud(size, doVerify){
     doVerify = doVerify === undefined ? false : doVerify;
     console.log("Creating random matrix");
     var matrix = createMatrixFromRandom(size);
