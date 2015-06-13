@@ -46,7 +46,7 @@ function BFSGraph(no_of_nodes, verbose) {
 
     t1 = performance.now();
     do {
-        stop = false;
+        running = false;
 
         for(var tid = 0; tid < no_of_nodes; ++tid) {
             if (h_graph_mask[tid]) {
@@ -67,13 +67,13 @@ function BFSGraph(no_of_nodes, verbose) {
             if (h_updating_graph_mask[tid]) {
                 h_graph_mask[tid] = true;
                 h_graph_visited[tid] = true;
-                stop = true;
+                running = true;
                 h_updating_graph_mask[tid] = false;
             }
         }
         ++k;
     }
-    while(stop);
+    while(running);
     t2 = performance.now();
     var traversal_time = t2 - t1;
 

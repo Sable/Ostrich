@@ -82,7 +82,7 @@ if matrix_dim > 1
 
     filename = strcat('data-', num2str(matrix_dim), '.mat');
     if exist(fullfile(cd, filename))
-        load(filename, 'm');
+        load(filename,   'm');
 
         % Sanity check for data
         for i=1:10

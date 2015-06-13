@@ -14,7 +14,12 @@ JS_RUN_ARGUMENT = "BFSGraph("$(NB_NODES)")"
 WEBCL_CALL = "webclBFS("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_NODES)")"
 FILENAME = "bfs"
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html
+OUTPUT_FILTER = " | grep status"
+MATLAB_OPTIONS = "-nosplash -nodesktop -r"
+MATLAB_RUN_ARGUMENT = "cd build/matlab/; runBfs("$(NB_NODES)", 0); exit();"
+
+
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html
 
 build/c:
 	mkdir -p build/c
@@ -80,6 +85,24 @@ build/js-nota/run.html: js/bfs.js
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
 
+build/matlab:
+	mkdir -p build/matlab
+
+build/matlab/*.m: matlab/*.m ../../common/*.m
+	cp matlab/*.m build/matlab/
+	cp matlab/*.mat build/matlab/
+	cp ../../common/*.m build/matlab/
+
+build/matlab/run.sh: build/matlab build/matlab/*.m
+	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
+
+
+build/matjuice/run.html:
+	mkdir -p build/matjuice
+	cp matlab/BFSGraph.m build/matjuice
+	cp matjuice/* build/matjuice
+	cp ../../common/matjuice_common.js build/matjuice
+	$(HOME)/workspace/matjuice/matjuice.sh --enable-bounds-checking=false build/matjuice/BFSGraph.m build/matjuice/BFSGraph.js "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL"
 
 clean:
 	rm -rf build

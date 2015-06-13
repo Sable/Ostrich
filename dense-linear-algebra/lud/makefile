@@ -19,12 +19,8 @@ FILENAME = "lud"
 
 MATJUICE_SHAPES = "DOUBLE&?*?&REAL" "DOUBLE&1*1&REAL"
 MATJUICE_ENTRY_FILE = lud_base
-<<<<<<< HEAD
-MATJUICE_RUN_ARGUMENT = "runLud("$(SIZE)")"
-=======
 MATJUICE_RUN_ARGUMENT = "ludRun("$(SIZE)")"
 MATJUICE_NOBC_COMPILATION_OPTIONS = "--enable-bounds-checking=false"
->>>>>>> origin/matlab-version
 MATJUICE_FILES = "\n\
 <script src='..\/..\/..\/..\/common\/matjuice_common.js'><\/script>\n\
 <script src='.\/runLud.js'><\/script>\n\

@@ -11,6 +11,19 @@ function [h_graph_nodes, h_graph_mask, h_updating_graph_mask, h_graph_visited, h
   STARTING = 1;
   NO_OF_EDGES = 2;
 
+
+  % Try to load data from disk if it exists
+  if exist(fullfile(cd, 'h_graph_nodes.mat'))
+    load('h_graph_nodes.mat', 'h_graph_nodes');
+    load('h_graph_mask.mat', 'h_graph_mask');
+    load('h_updating_graph_mask.mat', 'h_updating_graph_mask');
+    load('h_graph_visited.mat', 'h_graph_visited');
+    load('h_cost.mat', 'h_cost');
+    load('h_graph_edges.mat', 'h_graph_edges');
+    return;
+  end
+
+
   h_graph_nodes = zeros(no_of_nodes, 2);
   h_graph_mask = zeros(no_of_nodes, 1);
   h_updating_graph_mask = zeros(no_of_nodes, 1);
@@ -27,7 +40,7 @@ function [h_graph_nodes, h_graph_mask, h_updating_graph_mask, h_graph_visited, h
     no_of_edges = abs(mod(commonRandom(), MAX_INIT_EDGES - MIN_EDGES + 1)) + MIN_EDGES;
     for j = 1:no_of_edges
       node_id = abs(mod(commonRandom(), no_of_nodes)) + 1;
-      weight = abs(mod(commonRandom(), MAX_WEIGHT - MIN_WEIGHT + 1)) + MIN_WEIGHT;
+      weight = abs(mod(commonRandom(), (MAX_WEIGHT - MIN_WEIGHT + 1))) + MIN_WEIGHT;
 
       graph{i}{end+1} = edge(node_id, weight);
       graph{node_id}{end+1} = edge(i, weight);
@@ -59,4 +72,12 @@ function [h_graph_nodes, h_graph_mask, h_updating_graph_mask, h_graph_visited, h
   end
 
   h_cost(source) = 0;
+
+  % Save data to disk
+  save('h_graph_nodes.mat', 'h_graph_nodes');
+  save('h_graph_mask.mat', 'h_graph_mask');
+  save('h_updating_graph_mask.mat', 'h_updating_graph_mask');
+  save('h_graph_visited.mat', 'h_graph_visited');
+  save('h_cost.mat', 'h_cost');
+  save('h_graph_edges.mat', 'h_graph_edges');
 end
