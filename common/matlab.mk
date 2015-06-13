@@ -25,7 +25,7 @@ build/matlab-native:
 	mkdir -p build/matlab-native
 
 build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
-	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_FULL_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
+	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_FULL_RUN_ARGUMENT)\'' | '$(MATLAB_OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
 
 build/matlab-native/*.m: matlab/*.m ../../common/*.m
 	cp matlab/*.m build/matlab-native/
