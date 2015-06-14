@@ -16,7 +16,7 @@ ROOT_DIR = os.getcwd()
 def index(filename):
     return static_file(filename, root=ROOT_DIR)
 
-@route("/asmjs/<json_string>")
+@route("/result/<json_string>")
 def asmjs(json_string):
     try:
         obj = json.loads(json_string)

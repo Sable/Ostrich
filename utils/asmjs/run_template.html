@@ -11,7 +11,7 @@
         Module["print"] = function print(x) {
             console.log(x + "\n");
             var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("GET", "/asmjs/"+x, true);
+            xmlhttp.open("GET", "/result/"+x, true);
             xmlhttp.send();
         };
 	</script>

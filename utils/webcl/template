@@ -1,5 +1,5 @@
 var result = JSON.stringify(WEBCL_CALL);
 var xmlhttp = new XMLHttpRequest(); 
-xmlhttp.open("GET", "/asmjs/" + result, false); 
+xmlhttp.open("GET", "/result/" + result, false); 
 xmlhttp.send();
 
