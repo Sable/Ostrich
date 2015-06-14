@@ -80,9 +80,10 @@ if matrix_dim > 1
         fprintf(2,'Generating matrix of size %d x %d\n', matrix_dim, matrix_dim);
     end
 
-    filename = strcat('input-data-', num2str(matrix_dim), '.mat');
-    if exist(fullfile(cd, filename))
-        load(filename,   'm');
+    filename = strcat('input-data-', num2str(matrix_dim), '.csv');
+    filepath = fullfile(cd, '../data/', filename);
+    if exist(filepath)
+        m = dlmread(filepath,',');
 
         % Sanity check for data
         for i=1:10
@@ -93,7 +94,7 @@ if matrix_dim > 1
         end
     else 
         m = createMatrixFromRandom(matrix_dim, debug);
-        save(filename, 'm');
+        dlmwrite(filepath, m, 'precision', '%.21f');
     end
 
     if debug

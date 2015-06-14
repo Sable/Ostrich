@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 include ../../common/options.mk
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html matlab/all matjuice/all
+build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html matlab/all matjuice/all data/all
 
 build-parallel: build/opencl/run.sh build/webcl/run.html
 
@@ -10,6 +10,18 @@ EMOPTIONS = -s TOTAL_MEMORY=400000000
 
 SIZE = "1024"
 FILENAME = "lud"
+
+INPUT_DATA_FILE = input-data-$(SIZE).csv
+
+# ------- DATA GENERATION -------
+.PHONY:
+data/all: build/data/$(INPUT_DATA_FILE)
+
+build/data:
+	mkdir -p build/data
+
+build/data/$(INPUT_DATA_FILE): build/matlab/run.sh build/data
+	build/matlab/run.sh
 
 # ------- ASMJS SUPPORT ---------------
 ASMJS_RUN_ARGUMENT = "'-s', '"$(SIZE)"'"
