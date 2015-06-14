@@ -4,28 +4,60 @@ include ../../common/options.mk
 
 # Original options used by Vince
 EMOPTIONS = -s TOTAL_MEMORY=400000000
-NB_PAGES = "5000"
-NB_ITERATIONS = "10"
-THRESHOLD = "0.00000001"
-DIVISOR = "100000"
 
+NB_PAGES = 5000
+NB_ITERATIONS = 10
+# Using exponential notation for THRESHOLD because it needs to print and read the same to
+# use it in the file name for caching the generated input data and the exponential notation is
+# the easiest to make consistent
+THRESHOLD = 1e-08
+DIVISOR = 100000
+FILENAME = pagerank
+
+INPUT_DATA_FILE = input-data-$(NB_PAGES)-$(DIVISOR).csv
+OUTPUT_DATA_FILE = output-data-$(NB_PAGES)-$(NB_ITERATIONS)-$(THRESHOLD)-$(DIVISOR).csv
+
+build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html data/all matlab/all
+
+build-parallel: build/opencl/run.sh build/webcl/run.html
+
+# ------- DATA GENERATION -------
+.PHONY:
+data/all: build/data/$(INPUT_DATA_FILE) build/data/$(OUTPUT_DATA_FILE)
+
+build/data:
+	mkdir -p build/data
+
+.PHONY:
+build/data/all: build/c/$(FILENAME) build/data 
+	build/c/$(FILENAME)  $(C_RUN_ARGUMENT) -d build/data/$(INPUT_DATA_FILE) -o build/data/$(OUTPUT_DATA_FILE)
+
+build/data/$(INPUT_DATA_FILE): build/data/all
+build/data/$(OUTPUT_DATA_FILE): build/data/all
+	
+# ------- ASMJS SUPPORT ---------------
 ASMJS_RUN_ARGUMENT = "'-n', '"$(NB_PAGES)"', '-i', '"$(NB_ITERATIONS)"', '-t', '"$(THRESHOLD)"', '-q', '"$(DIVISOR)"'"
-C_RUN_ARGUMENT = "-n "$(NB_PAGES)" -i "$(NB_ITERATIONS)" -t "$(THRESHOLD)" -q "$(DIVISOR)
+
+# ------- C SUPPORT -------------------
+C_RUN_ARGUMENT = -n $(NB_PAGES) -i $(NB_ITERATIONS) -t $(THRESHOLD) -q $(DIVISOR)
+
+# ------- JS SUPPORT ------------------
 JS_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)", "$(NB_ITERATIONS)", "$(THRESHOLD)", "$(DIVISOR)")"
-MATLAB_NATIVE_RUN_ARGUMENT = "cd build/matlab-native/; runPageRank("$(NB_PAGES)","$(NB_ITERATIONS)","$(THRESHOLD)","$(DIVISOR)"); exit();"
+
+# ------- WEBCL SUPPORT ---------------
 WEBCL_CALL = "webclPR("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_PAGES)", "$(NB_ITERATIONS)", "$(THRESHOLD)", "$(DIVISOR)")"
-FILENAME = "pagerank"
 
-MATJUICE_SHAPES = "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL"
-MATJUICE_ENTRY_FILE = pagerank
-MATJUICE_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)","$(NB_ITERATIONS)","$(THRESHOLD)","$(DIVISOR)")"
-MATJUICE_FILES = "\n\
-<script src='..\/..\/..\/..\/common\/matjuice_common.js'><\/script>\n\
-<script src='.\/runPageRank.js'><\/script>\n\
-<script src='.\/"$(MATJUICE_ENTRY_FILE)".js'><\/script>\n\
-"
+# ------- MATLAB SUPPORT ---------------
+MATLAB_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)","$(NB_ITERATIONS)","$(THRESHOLD)","$(DIVISOR)")"
+MATLAB_NATIVE_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)","$(NB_ITERATIONS)","$(THRESHOLD)","$(DIVISOR)")"
+include ../../common/matlab.mk
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html build/matlab-native/run.sh
+# ------- MATJUICE SUPPORT ---------------
+#MATJUICE_SHAPES = "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL"
+#MATJUICE_ENTRY_FILE = pagerank
+#MATJUICE_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)","$(NB_ITERATIONS)","$(THRESHOLD)","$(DIVISOR)")"
+#MATJUICE_FILES = ../../common/matjuice_common.js matjuice/runPageRank.js 
+#include ../../common/matjuice.mk
 
 build/c:
 	mkdir -p build/c
@@ -97,7 +129,6 @@ build/webcl/run.html: build/webcl
 	cat ../../utils/webcl/template >> build/webcl/pagerank.js
 	sed -i.bak s/WEBCL_CALL/$(WEBCL_CALL)/ build/webcl/pagerank.js
 
-
 build/js-nota/run.html: js/pagerank.js
 	mkdir -p build/js-nota/
 	cp js/pagerank.js build/js-nota/$(FILENAME).js
@@ -105,55 +136,3 @@ build/js-nota/run.html: js/pagerank.js
 	cat ../../utils/js/run_template.html > build/js-nota/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
-
-build/matlab:
-	mkdir -p build/matlab
-	
-build/matlab/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab/
-	cp ../../common/*.m build/matlab/
-
-build/matlab/run.sh: build/matlab build/matlab/*.m
-	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
-
-build/matjuice:
-	mkdir -p build/matjuice
-	
-build/matjuice/*.m: matlab/*.m ../../common/*.m build/matjuice
-	cp matlab/*.m build/matjuice/
-	cp ../../common/*.m build/matjuice/
-
-build/matjuice/*.js:  build/matjuice ../../common/*.js matjuice/*.js
-	cp ../../common/*.js build/matjuice/
-	cp matjuice/*.js build/matjuice/
-
-build/matjuice/$(MATJUICE_ENTRY_FILE).js: matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice
-	../../dependencies/matjuice/matjuice.sh matlab/$(MATJUICE_ENTRY_FILE).m build/matjuice/$(MATJUICE_ENTRY_FILE).js $(MATJUICE_SHAPES) 2>&1 >/dev/null
-
-build/matjuice/run.html: build/matjuice build/matjuice/*.m build/matjuice/*.js build/matjuice/$(MATJUICE_ENTRY_FILE).js
-	cat ../../utils/matjuice/run_template.html > build/matjuice/run.html
-	sed -i.bak s/MATJUICE_FILES/$(MATJUICE_FILES)/g build/matjuice/run.html
-	sed -i.bak s/RUN_ARGUMENT/$(MATJUICE_RUN_ARGUMENT)/g build/matjuice/run.html
-	
-build/matlab-native:
-	mkdir -p build/matlab-native
-
-build/matlab-native/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab-native/
-	cp ../../common/*.m build/matlab-native/
-
-build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
-	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
-
-build/matlab-native:
-	mkdir -p build/matlab-native
-
-build/matlab-native/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab-native/
-	cp ../../common/*.m build/matlab-native/
-
-build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
-	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_NATIVE_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab-native/run.sh && chmod +x build/matlab-native/run.sh
-
-clean:
-	rm -rf build

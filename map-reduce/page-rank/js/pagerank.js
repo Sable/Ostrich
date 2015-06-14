@@ -130,6 +130,10 @@ function runPageRank(n, iter, thresh, divisor){
 
     console.log("The total time taken for a random web of " + n + " pages is " +(t2-t1)/1000 + " seconds\n");
 
+    // Put input and output on global variable to facilitate inspection when debugging
+    this.pages = pages;
+    this.page_ranks = page_ranks;
+
     return { status: 1,
              options: "runPageRank(" + [n, iter, thresh, divisor].join(",") + ")",
              time: (t2-t1)/1000 };

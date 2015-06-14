@@ -39,6 +39,8 @@ double expected_page_ranks[5000] = {0.00005550000000000001, 0.000030000000000000
 const double d_factor = 0.85; //damping factor
 const int max_iter = 1000;
 const double threshold= 0.00001;
+char *input_data_file_path = NULL;
+char *output_data_file_path = NULL;
 
 
 // generates an array of random pages and their links
@@ -139,9 +141,10 @@ int main(int argc, char *argv[]){
     double thresh = threshold;
     int divisor = 2;
     int nb_links = 0;
+    char *data_directoy_path = NULL;
 
     int opt, opt_index = 0;
-    while((opt = getopt_long(argc, argv, "::n:i:t:q:", size_opts, &opt_index)) != -1)
+    while((opt = getopt_long(argc, argv, "::n:i:t:q:d:o:", size_opts, &opt_index)) != -1)
     {
         switch(opt)
         {
@@ -157,6 +160,14 @@ int main(int argc, char *argv[]){
         case 'q':
             divisor = atoi(optarg);
             break;
+        case 'd':
+            // Save generated data into a csv file 
+            input_data_file_path = optarg; 
+            break;
+        case 'o':
+            // Save output data into a csv file
+            output_data_file_path = optarg;
+            break;
         default:
             usage(argv);
             exit(EXIT_FAILURE);
@@ -171,6 +182,21 @@ int main(int argc, char *argv[]){
         noutlinks[i] = 0;
     }
     pages = random_pages(n,noutlinks,divisor);
+
+    if (input_data_file_path != NULL) {
+        FILE *fp = fopen(input_data_file_path, "w");
+        for (i=0; i<n; ++i) {
+            for (j=0; j<n; ++j) {
+                fprintf(fp, "%d", (int)floor(pages[i*n+j]));
+
+                if (j != n-1) {
+                    fprintf(fp, ",");
+                }
+            }
+            fprintf(fp, "\n");
+        }
+        fclose(fp);
+    }
     init_array(page_ranks, n, 1.0 / (double) n);
 
     /*
@@ -214,6 +240,15 @@ int main(int argc, char *argv[]){
         */
     }
     stopwatch_stop(&sw);
+
+    // Save output
+    if (output_data_file_path != NULL) {
+        FILE *fp = fopen(output_data_file_path, "w");
+        for (i=0; i<n; ++i) {
+            fprintf(fp, "%.*f\n", 21, page_ranks[i]);
+        }
+        fclose(fp);
+    }
 
     if (n == 5000 && iter == 10 && thresh == 0.00000001 && divisor == 100000) {
         for (i=0; i<n; ++i) {
