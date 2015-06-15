@@ -9,6 +9,9 @@ The main design goals of the suite are:
  3. **Breadth** of support for both languages and benchmarks by simplifying its extension and maintenance across numerical languages and benchmarks;
  4. **Easy exploration of compilation strategies** by factorizing the core computation from the runners to minimize the non-core functions necessary to validate the output of compilers;
  5. **Ease of use** by automating the deployment of benchmarks, their test on virtual (web browser and others) and native platforms, as well as the gathering and reporting of relative performance data;
+ 6. **Fast** by making the setup (data generation and loading) and teardown as quick as possible so that most of the time is spent in the core computation in every language;
+ 7. **Small** by minimizing the amount of data needed to download the suite;
+ 8. **Simple** by minimizing the amount of external dependencies and tools required to run the suite;
 
 Getting Started
 ------------------------
