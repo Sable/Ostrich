@@ -49,7 +49,7 @@ WEBCL_CALL = "webclPR("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_PAGES)", "
 
 # ------- MATLAB SUPPORT ---------------
 MATLAB_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)","$(NB_ITERATIONS)","$(THRESHOLD)","$(DIVISOR)")"
-MATLAB_NATIVE_RUN_ARGUMENT = "runPageRank("$(NB_PAGES)","$(NB_ITERATIONS)","$(THRESHOLD)","$(DIVISOR)")"
+MATLAB_NATIVE_RUN_ARGUMENT = "error('Unsupported')"
 include ../../common/matlab.mk
 
 # ------- MATJUICE SUPPORT ---------------
