@@ -87,3 +87,7 @@ function mj_randomMatrix(size){
     }
     return matrix;
 }
+
+function mc_size(a) {
+    return mj_create(new Float64Array(a.mj_size()), [a.mj_size().length, 1]);
+}
