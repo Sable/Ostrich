@@ -36,10 +36,10 @@ struct edge {
 };
 
 void BFSGraph(int argc, char** argv);
-void InitializeGraph(Node**, bool**, bool**, bool**, int**, int**, int);
+void InitializeGraph(Node**, bool**, bool**, bool**, int**, int**, int, char*, char*);
 
 void Usage(char**argv) {
-    fprintf(stdout,"Usage: %s <num_nodes> [<verbose>]\n", argv[0]);
+    fprintf(stdout,"Usage: %s <num_nodes> [<vertices_file_path> <edges_file_path> <cost_file_path>]\n", argv[0]);
 }
 ////////////////////////////////////////////////////////////////////////////////
 // Main Program
@@ -55,21 +55,30 @@ int main( int argc, char** argv) {
 //Apply BFS on a Graph using CUDA
 ////////////////////////////////////////////////////////////////////////////////
 void BFSGraph( int argc, char** argv) {
+    char *vertice_file_path = NULL;
+    char *edge_file_path = NULL;
+    char *cost_file_path = NULL;
     unsigned int expected_no_of_nodes = 3000000;
     unsigned long int expected_total_cost = 26321966;
     int no_of_nodes;
-    int verbose;
     if (argc == 1) {
+        fprintf(stderr, "Using default number of nodes %d\n", NUM_NODES);
         no_of_nodes = NUM_NODES;
-        verbose = 0;
     }
     else if (argc == 2) {
         no_of_nodes = atoi(argv[1]);
-        verbose = 0;
+        fprintf(stderr, "Using %d nodes\n", no_of_nodes);
+    }
+    else if (argc == 5) {
+        no_of_nodes = atoi(argv[1]);
+        vertice_file_path = argv[2];
+        edge_file_path = argv[3];
+        cost_file_path = argv[4];
+        fprintf(stderr, "Using %d nodes and saving inputs and output in files:\n%s\n%s\n%s\n", no_of_nodes, vertice_file_path, edge_file_path, cost_file_path);
     }
     else {
-        no_of_nodes = atoi(argv[1]);
-        verbose = 1;
+        fprintf(stderr, "Missing vertice_file_path, edge_file_path and/or cost_file_path argument\n");
+        exit(1);
     }
 
 
@@ -89,7 +98,9 @@ void BFSGraph( int argc, char** argv) {
         &h_graph_visited,
         &h_graph_edges,
         &h_cost,
-        no_of_nodes);
+        no_of_nodes,
+        vertice_file_path,
+        edge_file_path);
     stopwatch_stop(&sw2);
 
     int k=0;
@@ -150,12 +161,13 @@ void BFSGraph( int argc, char** argv) {
 
     fprintf(stderr, "// Init time     : %f s\n", get_interval_by_sec(&sw2));
 
-    if (verbose) {
-        for(int i=0;i<no_of_nodes;i++) {
-            fprintf(stderr, "%d) cost:%d\n",i,h_cost[i]);
+    if (cost_file_path != NULL) {
+        FILE *fp = fopen(cost_file_path, "w");
+        for (int i=0; i<no_of_nodes; ++i) {
+            fprintf(fp, "%d\n", h_cost[i]);
         }
+        fclose(fp);
     }
-
 
     free(h_graph_nodes);
     free(h_graph_edges);
@@ -176,7 +188,9 @@ void InitializeGraph(
     bool **h_graph_visited,
     int  **h_graph_edges,
     int  **h_cost,
-    int numNodes) {
+    int numNodes,
+    char  *vertice_file_path,
+    char  *edge_file_path) {
 
     node *graph = new node[numNodes];
     int source = 0;
@@ -236,4 +250,18 @@ void InitializeGraph(
     (*h_cost)[source] = 0;
 
     delete[] graph;
+
+    if (vertice_file_path != NULL && edge_file_path != NULL) {
+        FILE *fp = fopen(vertice_file_path, "w");
+        for (int i=0; i<numNodes; ++i) {
+            fprintf(fp, "%d,%d\n", (*h_graph_nodes)[i].starting, (*h_graph_nodes)[i].no_of_edges);
+        }
+        fclose(fp);
+
+        fp = fopen(edge_file_path, "w");
+        for (int i=0; i<totalEdges; ++i) {
+            fprintf(fp, "%d\n", (*h_graph_edges)[i]);
+        }
+        fclose(fp);
+    }
 }

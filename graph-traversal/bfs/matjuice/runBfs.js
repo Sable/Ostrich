@@ -89,3 +89,39 @@ function mj_InitializeGraph(no_of_nodes) {
         h_graph_edges
     ];
 }
+
+function runBfs(no_nodes) {
+    expected_no_nodes = 3000000;
+    expected_total_cost = 26321966;
+
+    console.log("Initializing Graph");
+    graph = mj_InitializeGraph(no_nodes);
+
+    h_graph_nodes = graph[0];
+    h_graph_mask = graph[1];
+    h_updating_graph_mask = graph[2];
+    h_graph_visited = graph[3];
+    h_cost = graph[4];
+    h_graph_edges = graph[5];
+    
+    var t1 = performance.now();
+    h_cost = BFSGraph(h_graph_nodes, h_graph_mask, h_updating_graph_mask, h_graph_visited, h_cost, h_graph_edges);
+    var t2 = performance.now();
+
+    var total_cost = 0;
+    for (var i = 0; i < h_cost.length; ++i) {
+        total_cost += h_cost[i];
+    }
+
+    if (no_nodes === expected_no_nodes) {
+        if (expected_total_cost !== total_cost) {
+            throw new Error("Invalid total_cost " + total_cost + ", expected " + expected_total_cost);
+        }
+    } else {
+        console.log("WARNING: No self-checking for graph of size " + no_nodes);
+    }
+
+    return { status: 1,
+             options: "runLud(" + no_nodes + ")",
+             time: (t2-t1) / 1000 };
+}

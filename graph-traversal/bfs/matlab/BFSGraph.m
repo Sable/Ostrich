@@ -1,16 +1,10 @@
-function traversal_time = BFSGraph( no_of_nodes, verbose )
+function [h_cost] = BFSGraph(h_graph_nodes, h_graph_mask, h_updating_graph_mask, h_graph_visited, h_cost, h_graph_edges)
+    h_graph_nodes_size = size(h_graph_nodes);
+    no_of_nodes = h_graph_nodes_size(1);
+    
     starting = 1;
     no_of_edges = 2;
 
-    dest = 1;
-    weight = 2;
-
-    expected_no_of_nodes = 3000000;
-    expected_total_cost = 26321966;
-
-    [h_graph_nodes, h_graph_mask, h_updating_graph_mask, h_graph_visited, h_cost, h_graph_edges] = InitializeGraph(no_of_nodes);
-
-    tic();
     while 1
         running = 0;
         for tid = 1:no_of_nodes
@@ -38,19 +32,5 @@ function traversal_time = BFSGraph( no_of_nodes, verbose )
         if running ~= 1
             break;
         end
-    end
-    traversal_time = toc();
-
-    total_cost = 0;
-    for i = 1:no_of_nodes
-      total_cost = total_cost + h_cost(i);
-    end
-
-    if no_of_nodes == expected_no_of_nodes
-      if total_cost ~= expected_total_cost
-        disp('Error: wrong total cost');
-        disp(total_cost);
-        disp(expected_total_cost);
-      end
     end
 end

@@ -11,19 +11,6 @@ function [h_graph_nodes, h_graph_mask, h_updating_graph_mask, h_graph_visited, h
   STARTING = 1;
   NO_OF_EDGES = 2;
 
-
-  % Try to load data from disk if it exists
-  if exist(fullfile(cd, 'h_graph_nodes.mat'))
-    load('h_graph_nodes.mat', 'h_graph_nodes');
-    load('h_graph_mask.mat', 'h_graph_mask');
-    load('h_updating_graph_mask.mat', 'h_updating_graph_mask');
-    load('h_graph_visited.mat', 'h_graph_visited');
-    load('h_cost.mat', 'h_cost');
-    load('h_graph_edges.mat', 'h_graph_edges');
-    return;
-  end
-
-
   h_graph_nodes = zeros(no_of_nodes, 2);
   h_graph_mask = zeros(no_of_nodes, 1);
   h_updating_graph_mask = zeros(no_of_nodes, 1);

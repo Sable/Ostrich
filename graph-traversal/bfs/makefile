@@ -2,24 +2,60 @@ SHELL := /bin/bash
 
 include ../../common/options.mk
 
+build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html matlab/all matjuice/all data/all
+
+build-parallel: build/opencl/run.sh build/webcl/run.html
+
 # Original options used by Vince
 #EMOPTIONS = -s TOTAL_MEMORY=1000000000
 #NB_NODES = "4194304"
+
 EMOPTIONS = -s TOTAL_MEMORY=400000000
 NB_NODES = "3000000"
-
-ASMJS_RUN_ARGUMENT = "'"$(NB_NODES)"'"
-C_RUN_ARGUMENT = $(NB_NODES)
-JS_RUN_ARGUMENT = "BFSGraph("$(NB_NODES)")"
-WEBCL_CALL = "webclBFS("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_NODES)")"
 FILENAME = "bfs"
 
-OUTPUT_FILTER = " | grep status"
-MATLAB_OPTIONS = "-nosplash -nodesktop -r"
-MATLAB_RUN_ARGUMENT = "cd build/matlab/; runBfs("$(NB_NODES)", 0); exit();"
+INPUT_DATA_FILE_NODES = input-data-$(NB_NODES)-nodes.csv
+INPUT_DATA_FILE_EDGES = input-data-$(NB_NODES)-edges.csv
+OUTPUT_DATA_FILE = output-data-$(NB_NODES).csv
 
+# ------- DATA GENERATION -------
+.PHONY:
+data/all: build/data/all
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html
+build/data:
+	mkdir -p build/data
+
+build/data/all: build/data build/c/bfs
+	build/c/bfs $(NB_NODES) build/data/$(INPUT_DATA_FILE_NODES) build/data/$(INPUT_DATA_FILE_EDGES) build/data/$(OUTPUT_DATA_FILE)
+
+build/data/$(INPUT_DATA_FILE_NODES): build/data/all
+build/data/$(INPUT_DATA_FILE_EDGES): build/data/all
+build/data/$(OUTPUT_DATA_FILE): build/data/all
+
+# ------- ASMJS SUPPORT ---------------
+ASMJS_RUN_ARGUMENT = "'"$(NB_NODES)"'"
+
+# ------- C SUPPORT -------------------
+C_RUN_ARGUMENT = $(NB_NODES)
+
+# ------- JS SUPPORT ------------------
+JS_RUN_ARGUMENT = "BFSGraph("$(NB_NODES)")"
+
+# ------- WEBCL SUPPORT ---------------
+WEBCL_CALL = "webclBFS("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(NB_NODES)")"
+
+# ------- MATLAB SUPPORT ---------------
+MATLAB_RUN_ARGUMENT = "runBfs("$(NB_NODES)")"
+MATLAB_NATIVE_RUN_ARGUMENT = "error('Unsupported')"
+include ../../common/matlab.mk
+
+# ------- MATJUICE SUPPORT ---------------
+MATJUICE_SHAPES = "DOUBLE&?*2&REAL" "DOUBLE&?*1&REAL" "DOUBLE&?*1&REAL" "DOUBLE&?*1&REAL" "DOUBLE&?*1&REAL" "DOUBLE&?*1&REAL"
+MATJUICE_ENTRY_FILE = BFSGraph
+MATJUICE_RUN_ARGUMENT = "runBfs("$(NB_NODES)")"
+MATJUICE_FILES = ../../common/matjuice_common.js matjuice/runBfs.js 
+include ../../common/matjuice.mk
+
 
 build/c:
 	mkdir -p build/c
@@ -84,25 +120,3 @@ build/js-nota/run.html: js/bfs.js
 	cat ../../utils/js/run_template.html > build/js-nota/run.html
 	sed -i.bak s/FILENAME/$(FILENAME)/g build/js-nota/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(JS_RUN_ARGUMENT)/g build/js-nota/run.html
-
-build/matlab:
-	mkdir -p build/matlab
-
-build/matlab/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab/
-	cp matlab/*.mat build/matlab/
-	cp ../../common/*.m build/matlab/
-
-build/matlab/run.sh: build/matlab build/matlab/*.m
-	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
-
-
-build/matjuice/run.html:
-	mkdir -p build/matjuice
-	cp matlab/BFSGraph.m build/matjuice
-	cp matjuice/* build/matjuice
-	cp ../../common/matjuice_common.js build/matjuice
-	$(HOME)/workspace/matjuice/matjuice.sh --enable-bounds-checking=false build/matjuice/BFSGraph.m build/matjuice/BFSGraph.js "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL"
-
-clean:
-	rm -rf build
