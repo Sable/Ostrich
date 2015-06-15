@@ -154,6 +154,6 @@ else
     end
 end
 
-fprintf('{ \"status\": %d, \"options\": \"matrix_dim %d\", \"time\": %f }', 1, matrix_dim, elapsedTime);
+fprintf(1, '{ \"status\": %d, \"options\": \"matrix_dim %d\", \"time\": %f }\n', 1, matrix_dim, elapsedTime);
 end
 

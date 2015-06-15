@@ -37,5 +37,5 @@ function runPageRank(n, iter, thresh, divisor)
         warning('WARNING: No validation data found at %s, no self-checking for n = %d, iter = %d, thresh = %f, and divisor = %d\n', validation_data_path, n, iter, 10, thresh, divisor);
     end
 
-    fprintf('{ \"status\": %d, \"options\": \"-n %d -i %d -t %f\", \"time\": %f }', 1, n, iter, thresh, elapsedTime);
+    fprintf(1, '{ \"status\": %d, \"options\": \"-n %d -i %d -t %f\", \"time\": %f }\n', 1, n, iter, thresh, elapsedTime);
 end

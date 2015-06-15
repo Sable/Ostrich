@@ -89,5 +89,5 @@ if debug
     end
 end
 
-fprintf('{ \"status\": %d, \"options\": \"%d\", \"time\": %f }', 1, twoExp, elapsedTime);
+fprintf('{ \"status\": %d, \"options\": \"%d\", \"time\": %f }\n', 1, twoExp, elapsedTime);
 end

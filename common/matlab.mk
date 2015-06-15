@@ -1,7 +1,5 @@
-MATLAB_OPTIONS = "-nodisplay -r "
-# 1st step filters out the MATLAB copyright notice and
-# 2nd step removes unprintable trailing characters
-MATLAB_OUTPUT_FILTER = "sed -n -e '/{/,/}/p' | sed 's/.*\({.*}\).*/\1/g'"
+MATLAB_OPTIONS = "-nodisplay -nodesktop -r "
+MATLAB_OUTPUT_FILTER = "grep status"
 
 MATLAB_FULL_RUN_ARGUMENT = "cd build/matlab/; "$(MATLAB_RUN_ARGUMENT)"; exit();"
 MATLAB_NATIVE_FULL_RUN_ARGUMENT = "cd build/matlab-native/; "$(MATLAB_NATIVE_RUN_ARGUMENT)"; exit();"
