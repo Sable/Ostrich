@@ -159,7 +159,7 @@ var max_rows = 0;
 var reference, input_itemsets, aligned_seq_1, aligned_seq_2, input_seq_1, input_seq_2;
 
 function needle(penalty, options) {
-	for (i = 1 ; i < max_cols; i++){
+    for (i = 1 ; i < max_cols; i++){
         for (j = 1 ; j < max_rows; j++){
             reference[input_index(i,j)] = blosum62[(input_seq_1[i]*24) + input_seq_2[j]];
         }
@@ -184,8 +184,8 @@ function needle(penalty, options) {
             for (l = 0; l < 2*(max_rows-1) - k + 1; ++l) {
                 index = input_index(max_rows-1-l,k-max_cols+1+l);
                 input_itemsets[index]= maximum( input_itemsets[index-1-max_cols]+ reference[index],
-                        input_itemsets[index-1]         - penalty,
-                        input_itemsets[index-max_cols]  - penalty);
+                                                input_itemsets[index-1]         - penalty,
+                                                input_itemsets[index-max_cols]  - penalty);
             }
         }
     } else {
@@ -208,7 +208,7 @@ function runNeedle(dimensions, penalty, options)
         nb_possible_items: 10,
         print_results: false,
         print_intermediary_results: false,
-        use_parallelizable_version: true
+        use_parallelizable_version: false
     };
 
     if (dimensions === undefined) {

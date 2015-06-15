@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <unistd.h>
 #include <vector>
 
 #include "../common/common_rand.h"
@@ -103,10 +104,6 @@ void BFSGraph( int argc, char** argv) {
         edge_file_path);
     stopwatch_stop(&sw2);
 
-    int k=0;
-
-
-
     stopwatch_start(&sw1);
     bool stop;
     do
@@ -139,7 +136,6 @@ void BFSGraph( int argc, char** argv) {
                 h_updating_graph_mask[tid]=false;
             }
         }
-        k++;
     }
     while(stop);
     stopwatch_stop(&sw1);
@@ -180,7 +176,8 @@ void BFSGraph( int argc, char** argv) {
 }
 
 
-
+// TODO(vfoley): this should be moved into a different program that is run
+// once before all benchmarks.
 void InitializeGraph(
     Node **h_graph_nodes,
     bool **h_graph_mask,
@@ -248,6 +245,33 @@ void InitializeGraph(
         (*h_cost)[i] = -1;
     }
     (*h_cost)[source] = 0;
+
+    // Save all data structures to disk
+    if (access("/tmp/h_graph_nodes.csv", F_OK) == -1) {
+	FILE *graph_nodes_fd = fopen("/tmp/h_graph_nodes.csv", "w");
+	FILE *graph_mask_fd = fopen("/tmp/h_graph_mask.csv", "w");
+	FILE *updating_graph_mask_fd = fopen("/tmp/h_updating_graph_mask.csv", "w");
+	FILE *graph_visited_fd = fopen("/tmp/h_graph_visited.csv", "w");
+	FILE *cost_fd = fopen("/tmp/h_cost.csv", "w");
+	for (int i = 0; i < numNodes; ++i) {
+	    fprintf(graph_nodes_fd, "%d,%d\n", (*h_graph_nodes)[i].starting, (*h_graph_nodes)[i].no_of_edges);
+	    fprintf(graph_mask_fd, "%d\n", (*h_graph_mask)[i]);
+	    fprintf(updating_graph_mask_fd, "%d\n", (*h_updating_graph_mask)[i]);
+	    fprintf(graph_visited_fd, "%d\n", (*h_graph_visited)[i]);
+	    fprintf(cost_fd, "%d\n", (*h_cost)[i]);
+	}
+	fclose(graph_nodes_fd);
+	fclose(graph_mask_fd);
+	fclose(updating_graph_mask_fd);
+	fclose(graph_visited_fd);
+	fclose(cost_fd);
+
+	FILE *graph_edges_fd = fopen("/tmp/h_graph_edges.csv", "w");
+	for (int i = 0; i < totalEdges; ++i) {
+	    fprintf(graph_edges_fd, "%d\n", (*h_graph_edges)[i]);
+	}
+	fclose(graph_edges_fd);
+    }
 
     delete[] graph;
 

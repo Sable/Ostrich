@@ -199,7 +199,7 @@ runTest( int argc, char** argv)
     int n_limit = 0;
     int print_results = 0;
     int print_intermediary_results = 0;
-    int use_parallelizable_version = 1;
+    int use_parallelizable_version = 0;
 
     int expected_aligned_seq_1_size = strlen(expected_aligned_seq_1_chars);
     int expected_aligned_seq_2_size = strlen(expected_aligned_seq_2_chars);

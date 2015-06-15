@@ -9,9 +9,11 @@ PENALTY = "1"
 ASMJS_RUN_ARGUMENT = "'-n', '"$(DIMENSIONS)"', '-g', '"$(PENALTY)"'"
 C_RUN_ARGUMENT = "-n "$(DIMENSIONS)" -g "$(PENALTY)
 JS_RUN_ARGUMENT = "runNeedle("$(DIMENSIONS)","$(PENALTY)")"
-MATLAB_RUN_ARGUMENT = "cd build/matlab/; runNeedle("$(DIMENSIONS)","$(PENALTY)"); exit();"
+MATLAB_RUN_ARGUMENT = "cd build/matlab/; nw_ostrich("$(DIMENSIONS)","$(PENALTY)"); exit();"
 WEBCL_CALL = "webclNeedle("$(OPENCL_PLATFORM)", "$(OPENCL_DEVICE)", "$(DIMENSIONS)","$(PENALTY)")"
 FILENAME = "needle"
+
+OUTPUT_FILTER = "grep status"
 
 MATJUICE_SHAPES = "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL"
 MATJUICE_ENTRY_FILE = nw_ostrich
@@ -22,7 +24,7 @@ MATJUICE_FILES = "\n\
 <script src='.\/"$(MATJUICE_ENTRY_FILE)".js'><\/script>\n\
 "
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html build/matlab-native/run.sh
+build: build/c/run.sh build/asmjs/run.html build/js/run.html build/opencl/run.sh build/webcl/run.html build/js-nota/run.html build/matlab/run.sh build/matjuice/run.html build/matlab-native/run.sh matjuice_build
 
 build/c:
 	mkdir -p build/c
@@ -98,17 +100,17 @@ build/js-nota/run.html: js/needle.js
 
 build/matlab:
 	mkdir -p build/matlab
-	
+
 build/matlab/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab/
+	cp -r matlab/* build/matlab/
 	cp ../../common/*.m build/matlab/
 
 build/matlab/run.sh: build/matlab build/matlab/*.m
-	echo 'matlab '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
+	echo 'matlab -nodesktop -nosplash -r '$(MATLAB_OPTIONS)' '\'$(MATLAB_RUN_ARGUMENT)\'' | '$(OUTPUT_FILTER) > build/matlab/run.sh && chmod +x build/matlab/run.sh
 
 build/matjuice:
 	mkdir -p build/matjuice
-	
+
 build/matjuice/*.m: matlab/*.m ../../common/*.m build/matjuice
 	cp matlab/*.m build/matjuice/
 	cp ../../common/*.m build/matjuice/
@@ -124,12 +126,12 @@ build/matjuice/run.html: build/matjuice build/matjuice/*.m build/matjuice/*.js b
 	cat ../../utils/matjuice/run_template.html > build/matjuice/run.html
 	sed -i.bak s/MATJUICE_FILES/$(MATJUICE_FILES)/g build/matjuice/run.html
 	sed -i.bak s/RUN_ARGUMENT/$(MATJUICE_RUN_ARGUMENT)/g build/matjuice/run.html
-	
+
 build/matlab-native:
 	mkdir -p build/matlab-native
 
 build/matlab-native/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab-native/
+	cp -r matlab/* build/matlab-native/
 	cp ../../common/*.m build/matlab-native/
 
 build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
@@ -139,7 +141,7 @@ build/matlab-native:
 	mkdir -p build/matlab-native
 
 build/matlab-native/*.m: matlab/*.m ../../common/*.m
-	cp matlab/*.m build/matlab-native/
+	cp -r matlab/* build/matlab-native/
 	cp ../../common/*.m build/matlab-native/
 
 build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
@@ -147,3 +149,11 @@ build/matlab-native/run.sh: build/matlab-native build/matlab-native/*.m
 
 clean:
 	rm -rf build
+
+matjuice_build:
+	mkdir -p build/matjuice
+	cp ../../common/matjuice_common.js build/matjuice
+	cp matlab/needle.m build/matjuice
+	cp matlab/max3.m build/matjuice
+	cp matjuice/* build/matjuice
+	MCLAB_CORE_PATH=$(HOME)/workspace/mclab-core matjuice.sh --enable-bounds-checking=false --rename-array-indexing=true build/matjuice/needle.m build/matjuice/needle.js "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL" "DOUBLE&1*1&REAL" "DOUBLE&?*1&REAL" "DOUBLE&?*1&REAL" "DOUBLE&?*?&REAL" "DOUBLE&?*?&REAL" "DOUBLE&24*24&REAL"
