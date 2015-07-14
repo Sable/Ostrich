@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 include ../../common/options.mk
 
-build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html matlab/all data/all
+build: build/c/run.sh build/asmjs/run.html build/js/run.html  build/js-nota/run.html build/matjuice/run.html matlab/all data/all
 
 build-parallel: build/opencl/run.sh build/webcl/run.html
 

@@ -1,5 +1,8 @@
 function [rtnR,rtnI] = fft2D(xR, xI, N)
 % rtn -> return value
+rtnR = zeros(N, N);
+rtnI = zeros(N, N);
+
 for i=1:N
     [resR,resI] = fftSimple(xR(i,:),xI(i,:),N);
     for k=1:N

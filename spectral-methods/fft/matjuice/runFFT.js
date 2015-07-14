@@ -37,11 +37,12 @@ function runFFT(twoExp){
         throw new Error("ERROR: invalid exponent of '" + twoExp + "' for input size");
     }
     var n = 1 << twoExp;
-    var data2D = createMatrixFromRandom(n);
+    var data2DReals = createMatrixFromRandom(n);
+    var data2DImags = createMatrixFromRandom(n);
     var t1, t2;
 
     t1 = performance.now();
-    var results2D = fft2D(data2D);
+    var results2D = fft2D(data2DReals, data2DImags, n);
     t2 = performance.now();
     console.log("The total 2D FFT time for " + n + " x " + n + " was " + (t2-t1)/1000 + " s");
     return { status: 1,
