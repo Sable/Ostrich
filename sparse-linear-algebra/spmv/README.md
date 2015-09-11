@@ -1,4 +1,4 @@
-SPMV (SParse Matrix-Vector Multiplication)
+SPMV (Sparse Matrix-Vector Multiplication)
 ===========================================
 
 Compressed Sparse Row, or CSR, is a format for storing sparse matrices by storing only non-zero values and their positions. CSR uses three different
