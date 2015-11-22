@@ -12,6 +12,14 @@ We aim to make the suite:
  6. **Fast** by making the setup (data generation and loading) and teardown as quick as possible so that most of the time is spent in the core computation in every language;
  7. **Small** by minimizing the amount of data needed to download the suite;
  8. **Simple** by minimizing the amount of external dependencies and tools required to run the suite;
+ 
+Dependencies
+------------------------
+Although we tried our best to minimize external dependencies, the suite still depends on the following external tools:
+ 1. Node.js
+ 2. Python
+
+
 
 Getting Started
 ------------------------
