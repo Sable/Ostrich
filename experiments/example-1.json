@@ -1,0 +1,6 @@
+{
+    "input-size":".benchmark['small']",
+    "benchmarks":["lud"],
+    "implementations":["c"],
+    "compilers":["gcc"]
+}

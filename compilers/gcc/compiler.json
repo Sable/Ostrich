@@ -1,0 +1,22 @@
+{
+    "short-name":"gcc",
+    "supported-languages":[
+        "c"
+    ],
+    "runner-name":"runner",
+    "options":[
+        "-O3",
+        ".implementation['runner-source-file']",
+        ".implementation['core-source-files']",
+        ".implementation['libraries']",
+        {
+            "prefix":"-I",
+            "value":".implementation['include-directories']"
+        },
+        "-lm",
+        {   
+            "prefix":"-o ",
+            "value":".compiler['runner-name']"
+        }
+    ]
+}

@@ -1,6 +1,0 @@
-Usage:
-	runLavaMD(6);
-	
-Files:
-	runLavaMD.m
-	- kernel_cpu.m

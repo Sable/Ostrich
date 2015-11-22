@@ -1,0 +1,166 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'install', '-g', 'json' ]
+2 info using npm@1.4.28
+3 info using node@v0.10.32
+4 verbose cache add [ 'json', null ]
+5 verbose cache add name=undefined spec="json" args=["json",null]
+6 verbose parsed url { protocol: null,
+6 verbose parsed url   slashes: null,
+6 verbose parsed url   auth: null,
+6 verbose parsed url   host: null,
+6 verbose parsed url   port: null,
+6 verbose parsed url   hostname: null,
+6 verbose parsed url   hash: null,
+6 verbose parsed url   search: null,
+6 verbose parsed url   query: null,
+6 verbose parsed url   pathname: 'json',
+6 verbose parsed url   path: 'json',
+6 verbose parsed url   href: 'json' }
+7 silly lockFile 05d97e6e-json json
+8 verbose lock json /Users/erick/.npm/05d97e6e-json.lock
+9 silly lockFile 05d97e6e-json json
+10 silly lockFile 05d97e6e-json json
+11 verbose addNamed [ 'json', '' ]
+12 verbose addNamed [ null, '*' ]
+13 silly lockFile 869b257a-json json@
+14 verbose lock json@ /Users/erick/.npm/869b257a-json.lock
+15 silly addNameRange { name: 'json', range: '*', hasData: false }
+16 verbose request where is /json
+17 verbose request registry https://registry.npmjs.org/
+18 verbose request id dab2150c14a75293
+19 verbose url raw /json
+20 verbose url resolving [ 'https://registry.npmjs.org/', './json' ]
+21 verbose url resolved https://registry.npmjs.org/json
+22 verbose request where is https://registry.npmjs.org/json
+23 info trying registry request attempt 1 at 16:39:14
+24 http GET https://registry.npmjs.org/json
+25 http 200 https://registry.npmjs.org/json
+26 silly registry.get cb [ 200,
+26 silly registry.get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+26 silly registry.get     etag: '"9WCCPX5OGA88T0UGXKI2MDIFC"',
+26 silly registry.get     'content-type': 'application/json',
+26 silly registry.get     'cache-control': 'max-age=60',
+26 silly registry.get     'content-length': '20650',
+26 silly registry.get     'accept-ranges': 'bytes',
+26 silly registry.get     date: 'Mon, 16 Nov 2015 21:39:15 GMT',
+26 silly registry.get     via: '1.1 varnish',
+26 silly registry.get     age: '0',
+26 silly registry.get     connection: 'keep-alive',
+26 silly registry.get     'x-served-by': 'cache-ord1726-ORD',
+26 silly registry.get     'x-cache': 'HIT',
+26 silly registry.get     'x-cache-hits': '1',
+26 silly registry.get     'x-timer': 'S1447709955.408719,VS0,VE298',
+26 silly registry.get     vary: 'Accept' } ]
+27 silly addNameRange number 2 { name: 'json', range: '*', hasData: true }
+28 silly addNameRange versions [ 'json',
+28 silly addNameRange   [ '0.0.8',
+28 silly addNameRange     '0.0.9',
+28 silly addNameRange     '0.0.10',
+28 silly addNameRange     '0.0.11',
+28 silly addNameRange     '0.0.12',
+28 silly addNameRange     '0.0.13',
+28 silly addNameRange     '0.0.14',
+28 silly addNameRange     '8.0.0',
+28 silly addNameRange     '9.0.0',
+28 silly addNameRange     '9.0.1',
+28 silly addNameRange     '9.0.2',
+28 silly addNameRange     '9.0.3' ] ]
+29 verbose addNamed [ 'json', '9.0.3' ]
+30 verbose addNamed [ '9.0.3', '9.0.3' ]
+31 silly lockFile 0a2cc244-json-9-0-3 json@9.0.3
+32 verbose lock json@9.0.3 /Users/erick/.npm/0a2cc244-json-9-0-3.lock
+33 silly lockFile 9a11811f-ry-npmjs-org-json-json-9-0-3-tgz https://registry.npmjs.org/json/-/json-9.0.3.tgz
+34 verbose lock https://registry.npmjs.org/json/-/json-9.0.3.tgz /Users/erick/.npm/9a11811f-ry-npmjs-org-json-json-9-0-3-tgz.lock
+35 verbose addRemoteTarball [ 'https://registry.npmjs.org/json/-/json-9.0.3.tgz',
+35 verbose addRemoteTarball   '08dd0eda9dda30a40d978cc8823c2ce72df5d4f1' ]
+36 info retry fetch attempt 1 at 16:39:15
+37 verbose fetch to= /var/folders/vf/c5mfj_5j6qdc2tdtw21dg14c0000gn/T/npm-2059-qY8tFTK5/registry.npmjs.org/json/-/json-9.0.3.tgz
+38 http GET https://registry.npmjs.org/json/-/json-9.0.3.tgz
+39 http 200 https://registry.npmjs.org/json/-/json-9.0.3.tgz
+40 silly lockFile 9a11811f-ry-npmjs-org-json-json-9-0-3-tgz https://registry.npmjs.org/json/-/json-9.0.3.tgz
+41 silly lockFile 9a11811f-ry-npmjs-org-json-json-9-0-3-tgz https://registry.npmjs.org/json/-/json-9.0.3.tgz
+42 silly lockFile 0a2cc244-json-9-0-3 json@9.0.3
+43 silly lockFile 0a2cc244-json-9-0-3 json@9.0.3
+44 silly lockFile 869b257a-json json@
+45 silly lockFile 869b257a-json json@
+46 silly resolved [ { name: 'json',
+46 silly resolved     description: 'a \'json\' command for massaging and processing JSON on the command line',
+46 silly resolved     version: '9.0.3',
+46 silly resolved     repository: { type: 'git', url: 'git://github.com/trentm/json.git' },
+46 silly resolved     author:
+46 silly resolved      { name: 'Trent Mick',
+46 silly resolved        email: 'trentm@gmail.com',
+46 silly resolved        url: 'http://trentm.com' },
+46 silly resolved     main: './lib/json.js',
+46 silly resolved     directories: { man: './man/man1' },
+46 silly resolved     bin: { json: './lib/json.js' },
+46 silly resolved     scripts: { test: 'make test' },
+46 silly resolved     engines: [ 'node >=0.6.0' ],
+46 silly resolved     keywords: [ 'json', 'jsontool', 'filter', 'command', 'shell' ],
+46 silly resolved     devDependencies:
+46 silly resolved      { 'uglify-js': '1.1.x',
+46 silly resolved        nodeunit: '0.8.x',
+46 silly resolved        ansidiff: '1.0',
+46 silly resolved        ben: '0.0.x',
+46 silly resolved        async: '0.1.22',
+46 silly resolved        semver: '1.1.0' },
+46 silly resolved     man: [ '/Users/trentm/.npm/json/9.0.3/package/man/man1/json.1' ],
+46 silly resolved     contributors:
+46 silly resolved      [ [Object],
+46 silly resolved        [Object],
+46 silly resolved        [Object],
+46 silly resolved        [Object],
+46 silly resolved        [Object],
+46 silly resolved        [Object],
+46 silly resolved        [Object],
+46 silly resolved        [Object] ],
+46 silly resolved     bugs: { url: 'https://github.com/trentm/json/issues' },
+46 silly resolved     homepage: 'https://github.com/trentm/json',
+46 silly resolved     _id: 'json@9.0.3',
+46 silly resolved     _shasum: '08dd0eda9dda30a40d978cc8823c2ce72df5d4f1',
+46 silly resolved     _from: 'json@',
+46 silly resolved     _npmVersion: '1.4.9',
+46 silly resolved     _npmUser: { name: 'trentm', email: 'trentm@gmail.com' },
+46 silly resolved     maintainers: [ [Object] ],
+46 silly resolved     dist:
+46 silly resolved      { shasum: '08dd0eda9dda30a40d978cc8823c2ce72df5d4f1',
+46 silly resolved        tarball: 'http://registry.npmjs.org/json/-/json-9.0.3.tgz' },
+46 silly resolved     _resolved: 'https://registry.npmjs.org/json/-/json-9.0.3.tgz' } ]
+47 info install json@9.0.3 into /usr/local/lib
+48 info installOne json@9.0.3
+49 verbose lib/node_modules/json unbuild
+50 verbose tar unpack /Users/erick/.npm/json/9.0.3/package.tgz
+51 silly lockFile 30d018ee--usr-local-lib-node-modules-json tar:///usr/local/lib/node_modules/json
+52 verbose lock tar:///usr/local/lib/node_modules/json /Users/erick/.npm/30d018ee--usr-local-lib-node-modules-json.lock
+53 silly lockFile 8e8a5183-erick-npm-json-9-0-3-package-tgz tar:///Users/erick/.npm/json/9.0.3/package.tgz
+54 verbose lock tar:///Users/erick/.npm/json/9.0.3/package.tgz /Users/erick/.npm/8e8a5183-erick-npm-json-9-0-3-package-tgz.lock
+55 silly gunzTarPerm modes [ '755', '644' ]
+56 error Error: EACCES, mkdir '/usr/local/lib/node_modules/json'
+56 error  { [Error: EACCES, mkdir '/usr/local/lib/node_modules/json']
+56 error   errno: 3,
+56 error   code: 'EACCES',
+56 error   path: '/usr/local/lib/node_modules/json',
+56 error   fstream_type: 'Directory',
+56 error   fstream_path: '/usr/local/lib/node_modules/json',
+56 error   fstream_class: 'DirWriter',
+56 error   fstream_stack:
+56 error    [ '/usr/local/lib/node_modules/npm/node_modules/fstream/lib/dir-writer.js:36:23',
+56 error      '/usr/local/lib/node_modules/npm/node_modules/mkdirp/index.js:46:53',
+56 error      'Object.oncomplete (fs.js:107:15)' ] }
+57 error Please try running this command again as root/Administrator.
+58 error System Darwin 13.4.0
+59 error command "node" "/usr/local/bin/npm" "install" "-g" "json"
+60 error cwd /Users/erick/Documents/Recherche/Ostrich/src/lud
+61 error node -v v0.10.32
+62 error npm -v 1.4.28
+63 error path /usr/local/lib/node_modules/json
+64 error fstream_path /usr/local/lib/node_modules/json
+65 error fstream_type Directory
+66 error fstream_class DirWriter
+67 error code EACCES
+68 error errno 3
+69 error stack Error: EACCES, mkdir '/usr/local/lib/node_modules/json'
+70 error fstream_stack /usr/local/lib/node_modules/npm/node_modules/fstream/lib/dir-writer.js:36:23
+70 error fstream_stack /usr/local/lib/node_modules/npm/node_modules/mkdirp/index.js:46:53
+70 error fstream_stack Object.oncomplete (fs.js:107:15)
+71 verbose exit [ 3, true ]

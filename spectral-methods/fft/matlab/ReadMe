@@ -1,7 +1,0 @@
-Usage:
-    runFFT(10);
-
-Files:
-    runFFT.m
-    - fft_2D.m
-        + fft_simple.m
