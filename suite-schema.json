@@ -59,7 +59,7 @@
     "languages": { "type": "string", "enum": ["c", "js", "matlab", "opencl", "webcl"] },
     "language-list": {
       "type": "array",
-      "items": { "$ref", "#/definitions/languages" },
+      "items": { "$ref": "#/definitions/languages" },
       "uniqueItems": true
     },
     "input-size": { 
