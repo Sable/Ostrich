@@ -1,0 +1,89 @@
+#!/usr/bin/env node
+var path = require('path')
+var configLib = require(path.join(__dirname, '../lib/config'))
+var nopt = require('nopt')
+var noptUsage = require('nopt-usage')
+var pointer = require('json-pointer')
+var extend = require('extend')
+var shelljs = require('shelljs')
+
+var knownOpts = {
+  // 'benchmark': [String, Array],
+  'build': [String, Array],
+  // 'compiler': [String, Array],
+  // 'experiment': String,
+  'help': Boolean,
+  // 'implementation': [String, Array],
+  'input-size': String,
+  'verbose': Boolean
+}
+var shortHands = {
+  'b': ['--benchmark'],
+  'bu': ['--build'],
+  'c': ['--compiler'],
+  'e': ['--experiment'],
+  'h': ['--help'],
+  'i': ['--implementation'],
+  'is': ['--input-size', 'medium'],
+  'v': ['--verbose']
+}
+
+var suiteRoot = path.join(__dirname, '../../../')
+
+function deepcopy (o) {
+  if (Array.prototype.isPrototypeOf(o)) {
+    return extend(true, [], o)
+  } else {
+    return extend(true, {}, o)
+  }
+}
+
+configLib.config(suiteRoot, function (err, config) {
+  if (err) {
+    console.log(err)
+    process.exit(1)
+  }
+
+  var description = {
+    'benchmark': 'One of [' + config['benchmark-list'] + '], repeat to specify multiple benchmarks',
+    'build': 'Build hash value, repeat to specify multiple builds',
+    'compiler': 'One of [' + config['compiler-list'] + '], repeat to specify multiple compilers',
+    'experiment': 'Path to experiment configuration file',
+    'help': 'Display this help',
+    'implementation': 'One of [' + config['implementation-list'] + '], repeat to specify multiple implementations',
+    'input-size': 'One of [' + pointer.get(config.schema, '/definitions/experiment/properties/input-size/enum') + '], defaults to medium'
+  }
+  var parsed = nopt(knownOpts, shortHands)
+
+  if (parsed.help) {
+    var usage = noptUsage(knownOpts, shortHands, description)
+    console.log(usage)
+    process.exit(1)
+  }
+
+  /*
+    var options = {
+      'benchmarks': parsed.hasOwnProperty('benchmark') ? parsed['benchmark'] : config['benchmark-list'],
+      'implementations': parsed.hasOwnProperty('implementation') ? parsed['implementation'] : config['implementation-list'],
+      'compilers': parsed.hasOwnProperty('compiler') ? parsed['compiler'] : config['compiler-list']
+    }
+    */
+
+  // Build benchmarks if built versions are not available
+
+  // Load builds
+  var builds = parsed.build
+  builds.forEach(function (buildConfigPath) {
+    var buildConfig = deepcopy(pointer.get(config, '/' + buildConfigPath))
+    buildConfig.experiment = {
+      'type': 'experiment',
+      'input-size': parsed['input-size'] || 'medium'
+    }
+    // Expand run-time arguments
+    configLib.expand(buildConfig, {strict: true})
+    var runnerPath = path.join(buildConfig.location, '/' + buildConfig.compiler['runner-name'])
+    var runnerArguments = buildConfig.implementation['runner-arguments'].join(' ')
+    shelljs.exec(runnerPath + ' ' + runnerArguments, {silent: !parsed.verbose})
+  // console.log(JSON.stringify(buildConfig, null, '  '))
+  })
+})

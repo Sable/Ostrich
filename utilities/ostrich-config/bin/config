@@ -1,0 +1,48 @@
+#!/usr/bin/env node
+var path = require('path')
+var config = require(path.join(__dirname, '../lib/config.js'))
+var nopt = require('nopt')
+var noptUsage = require('nopt-usage')
+var knownOpts = {
+  'output-config': Boolean,
+  'help': Boolean
+}
+var shortHands = {
+  'o': ['--output-config'],
+  'h': ['--help']
+}
+var description = {
+  'output-config': 'Output the JSON configuration on the standard output',
+  'help': 'Display this help'
+}
+var parsed = nopt(knownOpts, shortHands, process.argv, 2)
+var dirRoot = parsed.argv.remain.length > 0 ? parsed.argv.remain[0] : process.cwd()
+
+if (parsed.help) {
+  var usage = noptUsage(knownOpts, shortHands, description)
+  console.log('Usage: config [root directory path] [options]')
+  console.log(usage)
+  process.exit(1)
+}
+
+// Convert to absolute path if the path is relative
+if (dirRoot[0] !== '/') {
+  dirRoot = path.join(process.cwd(), dirRoot)
+}
+
+config.config(dirRoot, function (err, config) {
+  if (err) {
+    console.log(JSON.stringify(err, null, '  '))
+    process.exit(1)
+  }
+
+  if (parsed['output-config']) {
+    console.log(JSON.stringify(config, null, '  '))
+  } else {
+    console.log('Available benchmarks: ' + config['benchmark-list'])
+    console.log('Available implementations: ' + config['implementation-list'])
+    console.log('Available compilers: ' + config['compiler-list'])
+    console.log("Add '-h' for possible options")
+  }
+  process.exit(0)
+})

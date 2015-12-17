@@ -1,0 +1,15 @@
+{
+	"name": "ostrich-config",
+	"version": "0.1.0",
+	"bin": "bin/main.js",
+	"dependencies": {
+		"node-dir": ">=0.1.11",
+		"nopt": ">=3.0.6",
+		"nopt-usage": ">=0.1.0",
+		"json-pointer": ">=0.3.0",
+		"is-my-json-valid": ">=2.12.3",
+		"extend": ">= 3.0.0",
+		"hash-files": ">= 1.0.0",
+		"shelljs": ">= 0.5.3"
+	}
+}

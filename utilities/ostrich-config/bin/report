@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+var knownOpts = {}
+var shortHands = {}
+var nopt = require('nopt')
+var parsed = nopt(knownOpts, shortHands, process.argv, 2)
+
+console.log('Not implemented yet. Called with options: ' + JSON.stringify(parsed))

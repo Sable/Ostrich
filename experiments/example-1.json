@@ -1,6 +1,11 @@
 {
-    "input-size":".benchmark['small']",
-    "benchmarks":["lud"],
-    "implementations":["c"],
-    "compilers":["gcc"]
+	"type": "experiment",
+	"repetition": 10,
+	"input-size":"small",
+	"configuration": {
+	    "benchmarks": ["lud"],
+	    "implementations": ["c"],
+	    "compilers": ["gcc"],
+	    "platforms": ["mba-2011"] 	
+	}
 }

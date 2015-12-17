@@ -1,0 +1,34 @@
+{
+    "type": "implementation",
+    "short-name":"c",
+    "description":"Reference C implementation ported from Rodinia suite",
+    "language":"c",
+    "supported-compilers":[
+        "gcc", 
+        "emcc"
+    ],
+    "core-source-files":[
+       { "file": "./lud_base.c"}
+    ],
+    "runner-source-file": { "file": "./runner.c" },
+    "runner-arguments": [
+        {
+            "prefix":"-s ",
+            "value": { "expand": "/experiment/input-size" }
+        }
+    ],
+    "libraries":[
+        { "suite-root": "/implementations/c/common_rand.c"},
+        { "file": "./misc/common.c"}
+    ],
+    "include-directories":[
+        {"suite-root": "/implementations/c/"},
+        { "file": "./misc/"}
+    ],
+    "dependencies": [
+        { "config": "/implementation/core-source-files" },
+        { "config": "/implementation/runner-source-file" },
+        { "config": "/implementation/libraries" },
+        { "config": "/implementation/include-directories"}
+    ]
+}
