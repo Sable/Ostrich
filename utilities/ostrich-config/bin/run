@@ -6,6 +6,7 @@ var noptUsage = require('nopt-usage')
 var pointer = require('json-pointer')
 var extend = require('extend')
 var shelljs = require('shelljs')
+var moment = require('moment')
 
 var knownOpts = {
   // 'benchmark': [String, Array],
@@ -15,6 +16,7 @@ var knownOpts = {
   'help': Boolean,
   // 'implementation': [String, Array],
   'input-size': String,
+  'iteration-number': Number,
   'verbose': Boolean
 }
 var shortHands = {
@@ -24,7 +26,8 @@ var shortHands = {
   'e': ['--experiment'],
   'h': ['--help'],
   'i': ['--implementation'],
-  'is': ['--input-size', 'medium'],
+  'is': ['--input-size'],
+  'n': ['--iteration-number'],
   'v': ['--verbose']
 }
 
@@ -36,6 +39,46 @@ function deepcopy (o) {
   } else {
     return extend(true, {}, o)
   }
+}
+
+var runOutputSchemaPath = '/definitions/run-output'
+var validRunOutput = configLib.createMatcher(runOutputSchemaPath)
+function run (config, options) {
+  var runnerPath = path.join(config.location, '/' + config.compiler['runner-name'])
+  var runnerArguments = config.implementation['runner-arguments'].join(' ')
+  var status = shelljs.exec(runnerPath + ' ' + runnerArguments, {silent: !options.verbose})
+  if (status.code !== 0) {
+    console.log('Execution error for ' + runnerPath + ' with ' + runnerArguments + ':')
+    console.log(status.output)
+    process.exit(1)
+  }
+
+  var jsonOutputMatch = status.output.match(/\{.*\}/)
+  var jsonOutput
+  if (jsonOutputMatch === null) {
+    console.log('Invalid output for ' + runnerPath + ' with ' + runnerArguments + ',')
+    console.log('missing json result:')
+    console.log(status.output)
+    process.exit(1)
+  }
+
+  try {
+    jsonOutput = JSON.parse(jsonOutputMatch)
+  } catch (e) {
+    console.log('Invalid output for ' + runnerPath + ' with ' + runnerArguments + ',')
+    console.log('improperly formatted json result:')
+    console.log(status.output)
+    process.exit(1)
+  }
+
+  if (!validRunOutput(jsonOutput)) {
+    console.log('Invalid output for ' + runnerPath + ' with ' + runnerArguments + ',')
+    console.log('json object does not conform to ' + runOutputSchemaPath + ' schema:')
+    console.log(status.output)
+    process.exit(1)
+  }
+
+  return jsonOutput
 }
 
 configLib.config(suiteRoot, function (err, config) {
@@ -51,7 +94,8 @@ configLib.config(suiteRoot, function (err, config) {
     'experiment': 'Path to experiment configuration file',
     'help': 'Display this help',
     'implementation': 'One of [' + config['implementation-list'] + '], repeat to specify multiple implementations',
-    'input-size': 'One of [' + pointer.get(config.schema, '/definitions/experiment/properties/input-size/enum') + '], defaults to medium'
+    'input-size': 'One of [' + pointer.get(config.schema, '/definitions/experiment/properties/input-size/enum') + '], defaults to medium',
+    'iteration-number': 'Number of times to execute the benchmark'
   }
   var parsed = nopt(knownOpts, shortHands)
 
@@ -72,18 +116,49 @@ configLib.config(suiteRoot, function (err, config) {
   // Build benchmarks if built versions are not available
 
   // Load builds
-  var builds = parsed.build
-  builds.forEach(function (buildConfigPath) {
-    var buildConfig = deepcopy(pointer.get(config, '/' + buildConfigPath))
-    buildConfig.experiment = {
+  var results = {
+    builds: {},
+    experiment: {
       'type': 'experiment',
-      'input-size': parsed['input-size'] || 'medium'
+      'short-name': 'default',
+      'input-size': parsed['input-size'] || 'medium',
+      'iteration-number': parsed['iteration-number'] || 1
     }
+  }
+  var builds = parsed.build
+  builds.forEach(function (configPath) {
+    var runConfig = deepcopy(pointer.get(config, '/' + configPath))
+    runConfig.experiment = results.experiment
     // Expand run-time arguments
-    configLib.expand(buildConfig, {strict: true})
-    var runnerPath = path.join(buildConfig.location, '/' + buildConfig.compiler['runner-name'])
-    var runnerArguments = buildConfig.implementation['runner-arguments'].join(' ')
-    shelljs.exec(runnerPath + ' ' + runnerArguments, {silent: !parsed.verbose})
-  // console.log(JSON.stringify(buildConfig, null, '  '))
+    configLib.expand(runConfig, {strict: true})
+
+    runConfig.results = {
+      'times': []
+    }
+
+    if (parsed.verbose) {
+      console.log('-------------- ' + runConfig.benchmark['short-name'] +
+        ',' + runConfig.implementation['short-name'] +
+        ',' + runConfig.compiler['short-name'] +
+        ' --------------')
+    }
+    for (var i = 0; i < runConfig.experiment['iteration-number']; ++i) {
+      if (parsed.verbose) {
+        console.log('************** Iteration ' + i + ' ************')
+      }
+      var output = run(runConfig, parsed)
+      runConfig.results.times.push(output.time)
+    }
+
+    results.builds[runConfig['short-name']] = runConfig
   })
+
+  var silentState = shelljs.config.silent
+  shelljs.config.silent = true
+  results.time = moment().format()
+  var dir = path.join(suiteRoot, '/runs/', results.time)
+  shelljs.mkdir('-p', dir)
+  shelljs.ln('-s', dir, path.join(suiteRoot, '/runs/latest'))
+  JSON.stringify(results, null, '  ').to(path.join(dir, '/results.json'))
+  shelljs.config.silent = silentState
 })

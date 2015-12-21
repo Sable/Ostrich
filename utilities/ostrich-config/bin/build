@@ -259,7 +259,11 @@ configLib.config(suiteRoot, function (err, config) {
     shelljs.config.silent = silentState
 
     if (status.code !== 0) {
-      console.log('build error')
+      console.log('Build error for ' + config.benchmark['short-name'] + "'s " +
+        config.implementation['short-name'] + ' implementation ' +
+        ' using ' + config.compiler['short-name'] + ' compiler:')
+      console.log(status.output)
+      process.exit(1)
     }
   }
 

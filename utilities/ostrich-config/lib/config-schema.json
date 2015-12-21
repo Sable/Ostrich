@@ -272,12 +272,10 @@
       "type": "object",
       "properties": {
         "type": { "type": "string", "pattern": "^result$" },
-        "configuration": { "$ref": "#/definitions/configuration" },
-        "experiment": { "$ref": "#/definitions/experiment" },
-        "location": { "$ref": "#/definitions/absolute-path" },
-        "results": { "$ref": "#/definitions/result-benchmark-list" }
+        "builds": { "$ref": "#/definitions/configuration" },
+        "experiment": { "$ref": "#/definitions/experiment" }
       },
-      "required": ["type", "experiment", "results"]
+      "required": ["type", "builds", "experiment"]
     },
     "build": {
       "type": "object",
@@ -290,6 +288,13 @@
         "time": { "type": "string", "format": "date-time" }
       },
       "required": ["type"]
+    },
+    "run-output": {
+      "type": "object",
+      "properties": {
+        "time": { "type": "number" }
+      },
+      "required": ["time"]
     }
   },
   "config-type-name-list": [
