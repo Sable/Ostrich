@@ -202,85 +202,11 @@
       "type": "array",
       "items": { "$ref": "#/definitions/environment" }
     },
-    "experiment": {
-      "type": "object",
-      "properties": {
-        "type": { "type": "string", "pattern": "^experiment$" },
-        "repetition": { "type": "number" },
-        "input-size": { 
-          "type": "string",
-          "enum": ["small", "medium", "large"], 
-          "expand": true
-        },
-        "configuration": { "$ref": "#/definitions/configuration" }
-      },
-      "required": ["type"]
-    },
-    "result-benchmark": {
-      "type": "object",
-      "properties": {
-        "short-name": { "$ref": "#/definitions/short-name" },
-        "implementations": { "$ref": "#/definitions/result-implementation-list" }
-      }
-    },
-    "result-benchmark-list": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/result-benchmark" },
-      "uniqueItems": true
-    },
-    "result-implementation": {
-      "type": "object",
-      "properties": {
-        "short-name": { "$ref": "#/definitions/short-name" },
-        "compilers" : { "$ref": "#/definitions/result-compiler-list" }
-      }
-    },
-    "result-implementation-list": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/result-implementation" },
-      "uniqueItems": true
-    },
-    "result-compiler": {
-      "type": "object",
-      "properties": {
-        "short-name": { "$ref": "#/definitions/short-name" },
-        "environments": { "$ref": "#/definitions/environment-list" }
-      }
-    },
-    "result-compiler-list": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/result-compiler" },
-      "uniqueItems": true
-    },
-    "result-environment": {
-      "type": "object",
-      "properties": {
-        "short-name": { "$ref": "#/definitions/short-name" },
-        "times": { "$ref": "#/definitions/result-time-list" },
-        "discarded-times": { "$ref": "#/definitions/result-time-list" }
-      }
-    },
-    "result-environment-list": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/result-environment" }
-    },
-    "result-time-list": {
-      "type": "array",
-      "items": { "type": "number" }
-    },
-    "result": {
-      "type": "object",
-      "properties": {
-        "type": { "type": "string", "pattern": "^result$" },
-        "builds": { "$ref": "#/definitions/configuration" },
-        "experiment": { "$ref": "#/definitions/experiment" }
-      },
-      "required": ["type", "builds", "experiment"]
-    },
     "build": {
       "type": "object",
       "properties": {
         "type": { "type": "string", "pattern": "^build$" },
+        "short-name": { "$ref": "#/definitions/short-name" },
         "benchmark": { "$ref": "#/definitions/benchmark" },
         "implementation": { "$ref": "#/definitions/implementation" },
         "compiler": { "$ref": "#/definitions/compiler" },
@@ -288,6 +214,43 @@
         "time": { "type": "string", "format": "date-time" }
       },
       "required": ["type"]
+    },
+    "experiment": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^experiment$" },
+        "short-name": { "$ref": "#/definitions/short-name" },
+        "iteration-number": { "type": "number" },
+        "input-size": { 
+          "type": "string",
+          "enum": ["small", "medium", "large"], 
+          "expand": true
+        }
+      },
+      "required": ["type"]
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^result$" },
+        "build": { "$ref": "#/definitions/build" },
+        "experiment": { "$ref": "#definitions/experiment" },
+        "platform": { "$ref": "#/definitions/platform" },
+        "times": { 
+          "type": "array",
+          "items": { "type": "number" }
+        }
+      }
+    },
+    "run": {
+      "type": "object",
+      "properties": {
+        "results": { 
+          "type": "object"
+        },
+        "time": { "type": "number" }
+      },
+      "required": ["time"]
     },
     "run-output": {
       "type": "object",
@@ -303,7 +266,9 @@
     "compiler", 
     "environment", 
     "implementation",
-    "platform"
+    "platform",
+    "result",
+    "run"
   ],
   "oneOf": [
     { "$ref": "#/definitions/benchmark" },
@@ -312,6 +277,7 @@
     { "$ref": "#/definitions/implementation" },
     { "$ref": "#/definitions/platform" },
     { "$ref": "#/definitions/experiment" },
-    { "$ref": "#/definitions/result"}
+    { "$ref": "#/definitions/result"},
+    { "$ref": "#/definitions/run"}
   ]
 }

@@ -7,6 +7,8 @@ var pointer = require('json-pointer')
 var extend = require('extend')
 var shelljs = require('shelljs')
 var moment = require('moment')
+var fs = require('fs')
+var crypto = require('crypto')
 
 var knownOpts = {
   // 'benchmark': [String, Array],
@@ -17,6 +19,7 @@ var knownOpts = {
   // 'implementation': [String, Array],
   'input-size': String,
   'iteration-number': Number,
+  'platform': String,
   'verbose': Boolean
 }
 var shortHands = {
@@ -28,6 +31,7 @@ var shortHands = {
   'i': ['--implementation'],
   'is': ['--input-size'],
   'n': ['--iteration-number'],
+  'p': ['--platform'],
   'v': ['--verbose']
 }
 
@@ -41,9 +45,9 @@ function deepcopy (o) {
   }
 }
 
-var runOutputSchemaPath = '/definitions/run-output'
+var runOutputSchemaPath = '/definitions/run'
 var validRunOutput = configLib.createMatcher(runOutputSchemaPath)
-function run (config, options) {
+function executeRun (config, options) {
   var runnerPath = path.join(config.location, '/' + config.compiler['runner-name'])
   var runnerArguments = config.implementation['runner-arguments'].join(' ')
   var status = shelljs.exec(runnerPath + ' ' + runnerArguments, {silent: !options.verbose})
@@ -95,7 +99,8 @@ configLib.config(suiteRoot, function (err, config) {
     'help': 'Display this help',
     'implementation': 'One of [' + config['implementation-list'] + '], repeat to specify multiple implementations',
     'input-size': 'One of [' + pointer.get(config.schema, '/definitions/experiment/properties/input-size/enum') + '], defaults to medium',
-    'iteration-number': 'Number of times to execute the benchmark'
+    'iteration-number': 'Number of times to execute the benchmark',
+    'platform': 'Path to a configuration file describing the current hardware configuration'
   }
   var parsed = nopt(knownOpts, shortHands)
 
@@ -105,19 +110,16 @@ configLib.config(suiteRoot, function (err, config) {
     process.exit(1)
   }
 
-  /*
-    var options = {
-      'benchmarks': parsed.hasOwnProperty('benchmark') ? parsed['benchmark'] : config['benchmark-list'],
-      'implementations': parsed.hasOwnProperty('implementation') ? parsed['implementation'] : config['implementation-list'],
-      'compilers': parsed.hasOwnProperty('compiler') ? parsed['compiler'] : config['compiler-list']
-    }
-    */
+  var options = {
+    'platform': JSON.parse(fs.readFileSync(parsed.hasOwnProperty('platform') ? parsed['platform'] : path.join(suiteRoot, '/platforms/mba-2011/platform.json')))
+  }
 
   // Build benchmarks if built versions are not available
 
   // Load builds
-  var results = {
-    builds: {},
+  var run = {
+    results: {},
+    platform: options.platform,
     experiment: {
       'type': 'experiment',
       'short-name': 'default',
@@ -128,11 +130,17 @@ configLib.config(suiteRoot, function (err, config) {
   var builds = parsed.build
   builds.forEach(function (configPath) {
     var runConfig = deepcopy(pointer.get(config, '/' + configPath))
-    runConfig.experiment = results.experiment
+    runConfig.experiment = {
+      'type': 'experiment',
+      'input-size': run.experiment['input-size']
+    }
     // Expand run-time arguments
     configLib.expand(runConfig, {strict: true})
 
-    runConfig.results = {
+    var result = {
+      build: runConfig,
+      experiment: run.experiment,
+      platform: run.platform,
       'times': []
     }
 
@@ -140,25 +148,32 @@ configLib.config(suiteRoot, function (err, config) {
       console.log('-------------- ' + runConfig.benchmark['short-name'] +
         ',' + runConfig.implementation['short-name'] +
         ',' + runConfig.compiler['short-name'] +
+        ',' + run.platform['short-name'] +
         ' --------------')
     }
-    for (var i = 0; i < runConfig.experiment['iteration-number']; ++i) {
+    for (var i = 0; i < run.experiment['iteration-number']; ++i) {
       if (parsed.verbose) {
         console.log('************** Iteration ' + i + ' ************')
       }
-      var output = run(runConfig, parsed)
-      runConfig.results.times.push(output.time)
+      var output = executeRun(runConfig, parsed)
+      result.times.push(output.time)
     }
 
-    results.builds[runConfig['short-name']] = runConfig
+    var hash = crypto.createHash('sha1')
+    hash.update(JSON.stringify({
+      build: result.build,
+      experiment: runConfig.experiment,
+      platform: result.platform
+    }))
+    run.results[hash.digest('hex')] = result
   })
 
   var silentState = shelljs.config.silent
   shelljs.config.silent = true
-  results.time = moment().format()
-  var dir = path.join(suiteRoot, '/runs/', results.time)
+  run.time = moment().format()
+  var dir = path.join(suiteRoot, '/runs/', run.time)
   shelljs.mkdir('-p', dir)
   shelljs.ln('-s', dir, path.join(suiteRoot, '/runs/latest'))
-  JSON.stringify(results, null, '  ').to(path.join(dir, '/results.json'))
+  JSON.stringify(run, null, '  ').to(path.join(dir, '/run.json'))
   shelljs.config.silent = silentState
 })
