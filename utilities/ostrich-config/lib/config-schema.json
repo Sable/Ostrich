@@ -73,7 +73,7 @@
         { "$ref": "#/definitions/option-list"}
       ]}
     },
-    "short-name": { "type": "string", "pattern": "^[a-z0-9-_\\.]+$" },
+    "short-name": { "type": "string", "pattern": "^[a-z0-9-_\\.A-Z:]+$" },
     "short-name-list": {
       "type": "array",
       "items": { "$ref": "#/definitions/short-name" },
