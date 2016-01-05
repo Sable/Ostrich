@@ -10,5 +10,6 @@
       "large":2048
    },
    "input-format": "csv",
-   "random-seed":1337
+   "random-seed":1337,
+   "dwarf": "dense linear algebra"
 }
