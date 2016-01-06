@@ -28,7 +28,7 @@ np.fill_diagonal(l, np.ones(args.size))
 u = np.triu(v)
 r = np.dot(l,u)
 
-floatformat = '%.5f'
+floatformat = '%.21f'
 if args.printinput:
 	sys.stdout.write('\n'.join([ 
 		','.join([floatformat % num for num in l]) 
