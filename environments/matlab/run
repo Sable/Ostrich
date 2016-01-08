@@ -2,17 +2,37 @@
 import argparse
 import sys
 import subprocess
+import os.path
 
 
 parser = argparse.ArgumentParser(description='Unified interface for running Matlab programs on the command line.')
-parser.add_argument('function', type=str, 
-                   help='the name of the matlab function to call first')
+parser.add_argument('file', type=str, 
+                   help='the path to the matlab script or function file to execute')
 parser.add_argument('arguments', metavar='A', nargs='*', type=str,
-				   help='positional arguments to pass to the virtual machine')
+				   help='positional arguments to pass to the function (ignored if the file is a script)')
 
 args = parser.parse_args()
 
-matlab_runner_script = """try %s(%s); exit(0); catch, ME = lasterror; fprintf(2, '%%s\\n', ME.message); exit(1); end"""
+dir_name = os.path.abspath(os.path.dirname(args.file))
+file_name = os.path.basename(args.file)
+function_name = os.path.splitext(file_name)[0]
+
+def bash_to_matlab(a):
+	try:
+		return str(int(a))
+	except ValueError:
+		pass
+
+	try:
+		return str(float(a))
+	except ValueError:
+		pass
+
+	return "'" + a + "'"
+
+arguments = map(bash_to_matlab, args.arguments)
+
+matlab_runner_script = """addpath('%s'); try %s(%s); exit(0); catch, ME = lasterror; fprintf(2, '%%s\\n', ME.message); exit(1); end"""
 
 try:
 	subprocess.check_call(
@@ -20,7 +40,7 @@ try:
 			'-nodesktop', 
 			'-nodisplay', 
 			'-r', 
-			matlab_runner_script%(args.function,','.join(args.arguments))
+			matlab_runner_script%(dir_name, function_name,','.join(arguments))
 		], stdout=sys.stdout, stderr=sys.stderr)
 	sys.exit(0)
 except subprocess.CalledProcessError as e:
