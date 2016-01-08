@@ -244,6 +244,7 @@ function getConfigFromFileSystem (dirRoot, cb) {
 
     computeList(globalConfig, 'benchmarks', 'benchmark-list')
     computeList(globalConfig, 'compilers', 'compiler-list')
+    computeList(globalConfig, 'environments', 'environment-list')
     computeImplementationList(globalConfig)
 
     resolvePaths(globalConfig)

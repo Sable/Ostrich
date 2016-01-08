@@ -42,6 +42,7 @@ config.config(dirRoot, function (err, config) {
     console.log('Available benchmarks: ' + config['benchmark-list'])
     console.log('Available implementations: ' + config['implementation-list'])
     console.log('Available compilers: ' + config['compiler-list'])
+    console.log('Available environments: ' + config['environment-list'])
     console.log("Add '-h' for possible options")
   }
   process.exit(0)

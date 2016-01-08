@@ -193,7 +193,6 @@
         "supported-formats": { "$ref": "#/definitions/format-list" },
         "implemementation-language": { "$ref": "#/definitions/language" },
         "implementation-format": { "$ref": "#/definitions/format" },
-        "environments": { "$ref": "#/definitions/environment-list"},
         "location": { "$ref": "#/definitions/absolute-path" }
       },
       "required": ["short-name", "version", "supported-languages", "supported-formats"]
@@ -277,6 +276,7 @@
     { "$ref": "#/definitions/implementation" },
     { "$ref": "#/definitions/platform" },
     { "$ref": "#/definitions/experiment" },
+    { "$ref": "#/definitions/environment" },
     { "$ref": "#/definitions/result"},
     { "$ref": "#/definitions/run"}
   ]
