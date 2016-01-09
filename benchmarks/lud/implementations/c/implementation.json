@@ -3,10 +3,6 @@
     "short-name":"c",
     "description":"Reference C implementation ported from Rodinia suite",
     "language":"c",
-    "supported-compilers":[
-        "gcc", 
-        "emcc"
-    ],
     "core-source-files":[
        { "file": "./lud_base.c"}
     ],
