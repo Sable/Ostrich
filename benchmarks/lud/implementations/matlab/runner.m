@@ -1,4 +1,4 @@
-function runLud(matrix_dim,input_file_path,output_file_path,debug,version)
+function runner(matrix_dim,input_file_path,output_file_path,debug,version)
 % runs the LUD benchmark
 %     'matrix_dim' is the size of the square matrix being generated
 %     'input_file_path' is the path to the input data

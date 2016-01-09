@@ -204,7 +204,12 @@ configLib.config(suiteRoot, function (err, config) {
   }
 
   function valid (c) {
-    return true
+    var benchmark = config.benchmarks[c[0]]
+    var implementationName = c[1]
+    var implementation = benchmark.implementations[implementationName]
+    var compiler = config.compilers[c[2]]
+    return (benchmark.implementations.hasOwnProperty(implementationName) &&
+    compiler['supported-languages'].indexOf(implementation.language) >= 0)
   }
 
   var options = {

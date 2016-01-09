@@ -1,0 +1,19 @@
+{
+    "type": "compiler",
+    "short-name":"cat",
+    "executable-name":"cat",
+    "supported-languages":[
+        "matlab"
+    ],
+    "target-languages":[
+        "matlab"
+    ],
+    "runner-name":"runner.m",
+    "options":[
+        { "config": "/implementation/runner-source-file"},
+        { "config": "/implementation/core-source-files"},
+        { "config": "/implementation/libraries"},
+        ">",
+        { "config": "/compiler/runner-name" }
+    ]
+}

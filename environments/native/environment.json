@@ -1,0 +1,8 @@
+{
+	"type": "environment",
+	"short-name": "native",
+	"name": "native",
+	"version": "",
+	"supported-languages": ["x86"],
+	"supported-formats": ["binary"]
+}

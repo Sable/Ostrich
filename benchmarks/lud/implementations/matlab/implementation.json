@@ -7,7 +7,7 @@
        { "file": "./lud_base.m"},
        { "file": "./lud_base_idiomatic.m"}
     ],
-    "runner-source-file": { "file": "./runLud.m" },
+    "runner-source-file": { "file": "./runner.m" },
     "runner-arguments": [
         { "expand": "/experiment/input-size" }
     ],
