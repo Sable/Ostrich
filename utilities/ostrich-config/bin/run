@@ -13,6 +13,7 @@ var crypto = require('crypto')
 var knownOpts = {
   // 'benchmark': [String, Array],
   'build': [String, Array],
+  'clean': Boolean,
   // 'compiler': [String, Array],
   // 'experiment': String,
   'help': Boolean,
@@ -20,12 +21,14 @@ var knownOpts = {
   'input-size': String,
   'iteration-number': Number,
   'platform': String,
+  'environment': String,
   'verbose': Boolean
 }
 var shortHands = {
   'b': ['--benchmark'],
   'bu': ['--build'],
   'c': ['--compiler'],
+  'en': ['--environment'],
   'e': ['--experiment'],
   'h': ['--help'],
   'i': ['--implementation'],
@@ -48,11 +51,13 @@ function deepcopy (o) {
 var runOutputSchemaPath = '/definitions/run'
 var validRunOutput = configLib.createMatcher(runOutputSchemaPath)
 function executeRun (config, options) {
+  var environmentRunPath = path.join(config.environment.location, '/run')
   var runnerPath = path.join(config.location, '/' + config.compiler['runner-name'])
   var runnerArguments = config.implementation['runner-arguments'].join(' ')
-  var status = shelljs.exec(runnerPath + ' ' + runnerArguments, {silent: !options.verbose})
+  var cmd = environmentRunPath + ' ' + runnerPath + ' ' + runnerArguments
+  var status = shelljs.exec(cmd, {silent: !options.verbose})
   if (status.code !== 0) {
-    console.log('Execution error for ' + runnerPath + ' with ' + runnerArguments + ':')
+    console.log("Execution error for '" + cmd + "':")
     console.log(status.output)
     process.exit(1)
   }
@@ -94,7 +99,9 @@ configLib.config(suiteRoot, function (err, config) {
   var description = {
     'benchmark': 'One of [' + config['benchmark-list'] + '], repeat to specify multiple benchmarks',
     'build': 'Build hash value, repeat to specify multiple builds',
+    'clean': 'Clean the runs folder',
     'compiler': 'One of [' + config['compiler-list'] + '], repeat to specify multiple compilers',
+    'environment': 'One of [' + config['environment-list'] + '], repeat to specify multiple environments',
     'experiment': 'Path to experiment configuration file',
     'help': 'Display this help',
     'implementation': 'One of [' + config['implementation-list'] + '], repeat to specify multiple implementations',
@@ -108,6 +115,11 @@ configLib.config(suiteRoot, function (err, config) {
     var usage = noptUsage(knownOpts, shortHands, description)
     console.log(usage)
     process.exit(1)
+  }
+
+  if (parsed.clean) {
+    shelljs.rm('-rf', path.join(suiteRoot, '/runs'))
+    process.exit(0)
   }
 
   var options = {
@@ -127,45 +139,82 @@ configLib.config(suiteRoot, function (err, config) {
       'iteration-number': parsed['iteration-number'] || 1
     }
   }
-  var builds = parsed.build
+
+  var builds = parsed.build || []
+  if (builds.length === 0) {
+    for (var b in config.builds) {
+      builds.push('builds/' + b)
+    }
+  }
+
+  var environments = (parsed.environments || config['environment-list']).map(function (e) {
+    return config.environments[e]
+  })
+
+  function valid (compiler, environment) {
+    var targetLanguages = compiler['target-languages']
+    var supportedLanguages = environment['supported-languages']
+
+    var validLanguage = false
+    for (var i = 0; i < targetLanguages.length; ++i) {
+      for (var j = 0; j < supportedLanguages.length; ++j) {
+        validLanguage = validLanguage || (targetLanguages[i] === supportedLanguages[j])
+      }
+    }
+    return validLanguage
+  }
+
   builds.forEach(function (configPath) {
-    var runConfig = deepcopy(pointer.get(config, '/' + configPath))
-    runConfig.experiment = {
-      'type': 'experiment',
-      'input-size': run.experiment['input-size']
-    }
-    // Expand run-time arguments
-    configLib.expand(runConfig, {strict: true})
+    var buildConfig = deepcopy(pointer.get(config, '/' + configPath))
 
-    var result = {
-      build: runConfig,
-      experiment: run.experiment,
-      platform: run.platform,
-      'times': []
-    }
+    environments.forEach(function (env) {
+      if (!valid(buildConfig.compiler, env)) {
+        return
+      }
 
-    if (parsed.verbose) {
+      var runConfig = deepcopy(buildConfig)
+      runConfig.experiment = {
+        'type': 'experiment',
+        'input-size': run.experiment['input-size'],
+        'input-file': [{'expand': '/experiment/input-size'}, {'config': '/benchmark/random-seed'}]
+      }
+      runConfig.environment = env
+      // Expand run-time arguments
+      configLib.expand(runConfig, {strict: true})
+
+      // console.log(runConfig)
+
+      var result = {
+        build: runConfig,
+        experiment: run.experiment,
+        platform: run.platform,
+        environment: env,
+        'times': []
+      }
+
       console.log('-------------- ' + runConfig.benchmark['short-name'] +
         ',' + runConfig.implementation['short-name'] +
         ',' + runConfig.compiler['short-name'] +
         ',' + run.platform['short-name'] +
+        ',' + env['short-name'] +
         ' --------------')
-    }
-    for (var i = 0; i < run.experiment['iteration-number']; ++i) {
-      if (parsed.verbose) {
-        console.log('************** Iteration ' + i + ' ************')
-      }
-      var output = executeRun(runConfig, parsed)
-      result.times.push(output.time)
-    }
 
-    var hash = crypto.createHash('sha1')
-    hash.update(JSON.stringify({
-      build: result.build,
-      experiment: runConfig.experiment,
-      platform: result.platform
-    }))
-    run.results[hash.digest('hex')] = result
+      for (var i = 0; i < run.experiment['iteration-number']; ++i) {
+        if (parsed.verbose) {
+          console.log('************** Iteration ' + i + ' ************')
+        }
+        var output = executeRun(runConfig, parsed)
+        result.times.push(output.time)
+      }
+
+      var hash = crypto.createHash('sha1')
+      hash.update(JSON.stringify({
+        build: result.build,
+        experiment: runConfig.experiment,
+        platform: result.platform
+      }))
+      run.results[hash.digest('hex')] = result
+    })
   })
 
   var silentState = shelljs.config.silent

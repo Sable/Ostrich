@@ -86,7 +86,6 @@ configLib.config(suiteRoot, function (err, config) {
     a.push(results[h])
   }
 
-  // if (parsed.csv) {
   console.log('benchmark,implementation,compiler,platform,environments,mean,std,times')
   for (var i = 0; i < a.length; ++i) {
     var line = [
@@ -103,8 +102,6 @@ configLib.config(suiteRoot, function (err, config) {
     line = line.concat(a[i].times)
     console.log(line.join(','))
   }
-// } else {
-// }
 /*
 var silentState = shelljs.config.silent
 shelljs.config.silent = true

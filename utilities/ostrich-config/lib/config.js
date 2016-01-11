@@ -272,11 +272,45 @@ exports.createMatcher = function (p) {
 }
 
 var isResolvedValue = exports.createMatcher('/definitions/resolved-value')
+var isFilePath = exports.createMatcher('/definitions/file-path')
 var macros = {
   '/experiment/input-size': function (config, v, options) {
     return {
       'config': '/benchmark/input-size/' + v
     }
+  },
+  '/experiment/input-file': function (config, v, options) {
+    var silentState = shelljs.config.silent
+    shelljs.config.silent = true
+    var cmd = path.join(config.benchmark.location, '/input/get') + ' ' + v[0] + ' ' + v[1]
+    var status = shelljs.exec(cmd)
+    shelljs.config.silent = silentState
+
+    if (status.code !== 0) {
+      throw new Error('Expand input-file: Execution error for ' + cmd + ':')
+    }
+
+    var filePath = {
+      'file': status.output
+    }
+
+    if (!isFilePath(filePath)) {
+      // Be lenient with file path output including a trailing newline
+      var m = filePath.file.match('(.*)\n+$')
+      if (m) {
+        var cleanFilePath = {
+          'file': m[1]
+        }
+        if (isFilePath(cleanFilePath)) {
+          return cleanFilePath
+        }
+        filePath = cleanFilePath
+      }
+
+      throw new Error("Invalid output from '" + cmd + "', expected a file path, instead got:\n'" + status.output + "'")
+    }
+
+    return filePath
   },
   '/definitions/expandable-reference': function (config, v, options) {
     if (!pointer.has(config, v.expand)) {
@@ -287,7 +321,7 @@ var macros = {
     }
 
     if (options.macros.hasOwnProperty(v.expand)) {
-      return options.macros[v.expand](config, pointer.get(config, v.expand), options)
+      return options.macros[v.expand](config, options.traverse(pointer.get(config, v.expand)), options)
     } else {
       return v
     }
@@ -350,7 +384,7 @@ exports.expand = function (config, options) {
 
   // Just-In-Time dispatcher for macro expansion,
   // performance may be improved by code generation
-  // using a swich case rather than linear search
+  // using a switch case rather than linear search
   // through an array
   var dispatch = (function (config, options) {
     var match = []
@@ -389,8 +423,11 @@ exports.expand = function (config, options) {
       }
       o[i] = after
     }
+
+    return o
   }
 
+  options.traverse = traverse
   traverse(config)
 }
 

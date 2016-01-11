@@ -9,7 +9,8 @@
     ],
     "runner-source-file": { "file": "./runner.m" },
     "runner-arguments": [
-        { "expand": "/experiment/input-size" }
+        { "expand": "/experiment/input-size" },
+        { "expand": "/experiment/input-file" }
     ],
     "libraries":[],
     "dependencies": [
