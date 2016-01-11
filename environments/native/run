@@ -4,15 +4,17 @@ import sys
 import subprocess
 
 
-parser = argparse.ArgumentParser(description='Unified interface for running Matlab programs on the command line.')
+parser = argparse.ArgumentParser(description='Unified interface for running native programs on the command line.')
 parser.add_argument('file', type=str, 
                    help='the path to the matlab script or function file to execute')
 parser.add_argument('arguments', metavar='A', nargs='*', type=str,
 				   help='positional arguments to pass to the function (ignored if the file is a script)')
 
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 cmd = [args.file]
 cmd.extend(args.arguments)
+cmd.extend(unknown)
+
 try:
 	subprocess.check_call(
 		cmd
