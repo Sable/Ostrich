@@ -93,9 +93,7 @@ configLib.config(suiteRoot, function (err, config) {
       a[i].build.implementation['short-name'],
       a[i].build.compiler['short-name'],
       a[i].platform['short-name'],
-      a[i].platform.environments.map(function (x) {
-        return x['short-name']
-      }).join('-'),
+      a[i].environment['short-name'],
       a[i]['mean-time'],
       a[i]['std-time']
     ]

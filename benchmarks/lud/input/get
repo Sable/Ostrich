@@ -13,7 +13,7 @@ parser.add_argument('seed', type=int, default=1337,
 args = parser.parse_args()
 
 __dir__ = os.path.dirname(os.path.realpath(__file__))
-file_path = os.path.join(__dir__,  str(args.size) + ".csv")
+file_path = os.path.join(__dir__,  str(args.seed) + "-" + str(args.size) + ".csv")
 
 if os.path.exists(file_path):
 	sys.stdout.write(file_path + '\n')
