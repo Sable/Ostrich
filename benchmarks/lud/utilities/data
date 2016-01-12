@@ -16,8 +16,8 @@ parser.add_argument('--saveinputfile', type=argparse.FileType('w'),
 parser.add_argument('--printinput', action='store_true', help='print generated input')
 parser.add_argument('--checkoutputfile', type=argparse.FileType('r'), default=None,
 				   help='compare file result against expected result')
-parser.add_argument('--checkoutputstring', type=str, default=None,
-				   help='compare string result against expected result')
+#parser.add_argument('--checkoutputstring', type=str, default=None,
+#				   help='compare string result against expected result')
 
 args = parser.parse_args()
 np.random.seed(args.seed)
@@ -40,13 +40,21 @@ else:
 		for l in r]) + '\n')
 		args.saveinputfile.close()
 
-	
-if args.checkoutputstring or args.checkoutputfile:
+epsilon = 0.000001
+if args.checkoutputfile:
 	P,L,U = scipy.linalg.lu(r)
-	raise Exception('Unimplemented')
+	o =  np.genfromtxt(args.checkoutputfile, delimiter=',')
+	ol = np.tril(o,-1)
+	np.fill_diagonal(ol, np.ones(args.size))
+	ou = np.triu(o)
 
-	if args.checkoutputstring:
-		sys.exit(0)
+	ores = np.dot(ol,ou)
+
+	e = np.max(np.abs(np.subtract(r,ores)))
+
+	if (e > epsilon):
+		sys.stderr.write("Inconsistent output, reconstructed input matrix from lower and upper matrices differs from original input by %f (> %f) on some values\n"%(e, epsilon))
+		sys.exit(1)
 	else:
 		sys.exit(0)
 

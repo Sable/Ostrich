@@ -12,6 +12,11 @@
         { "expand": "/experiment/input-size" },
         { "expand": "/experiment/input-file" }
     ],
+    "runner-arguments-with-output-check": [
+        { "expand": "/experiment/input-size" },
+        { "expand": "/experiment/input-file" },
+        { "config": "/experiment/output-file" }
+    ],
     "libraries":[],
     "dependencies": [
         { "config": "/implementation/core-source-files" },

@@ -11,5 +11,11 @@
    },
    "input-format": "csv",
    "random-seed":1337,
-   "dwarf": "dense linear algebra"
+   "dwarf": "dense linear algebra",
+   "output-file": { "file": "./output/output.csv" },
+   "output-check-arguments": [
+      { "expand": "/experiment/input-size" },
+      { "config": "/benchmark/random-seed" },
+      { "config": "/experiment/output-file" }
+   ]
 }

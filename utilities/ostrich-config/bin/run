@@ -22,6 +22,7 @@ var knownOpts = {
   'iteration-number': Number,
   'platform': String,
   'environment': String,
+  'skip-output-verification': Boolean,
   'verbose': Boolean
 }
 var shortHands = {
@@ -51,9 +52,12 @@ function deepcopy (o) {
 var runOutputSchemaPath = '/definitions/run'
 var validRunOutput = configLib.createMatcher(runOutputSchemaPath)
 function executeRun (config, options) {
+  var checkOutput = !options['skip-output-verification'] && pointer.has(config, '/benchmark/output-check-arguments')
   var environmentRunPath = path.join(config.environment.location, '/run')
   var runnerPath = path.join(config.location, '/' + config.compiler['runner-name'])
-  var runnerArguments = config.implementation['runner-arguments'].join(' ')
+  var runnerArguments = checkOutput
+    ? config.implementation['runner-arguments-with-output-check'].join(' ')
+    : config.implementation['runner-arguments'].join(' ')
   var cmd = environmentRunPath + ' ' + runnerPath + ' ' + runnerArguments
   var status = shelljs.exec(cmd, {silent: !options.verbose})
   if (status.code !== 0) {
@@ -87,6 +91,23 @@ function executeRun (config, options) {
     process.exit(1)
   }
 
+  if (checkOutput) {
+    if (options.verbose) {
+      process.stdout.write('Verifying output: ')
+    }
+    cmd = pointer.get(config, '/benchmark/location') + '/output/check ' +
+      pointer.get(config, '/benchmark/output-check-arguments').join(' ')
+    status = shelljs.exec(cmd, {silent: !options.verbose})
+    if (status.code !== 0) {
+      console.log("error for '" + cmd + "':")
+      console.log(status.output)
+      process.exit(1)
+    }
+    if (options.verbose) {
+      process.stdout.write('valid\n')
+    }
+  }
+
   return jsonOutput
 }
 
@@ -107,7 +128,8 @@ configLib.config(suiteRoot, function (err, config) {
     'implementation': 'One of [' + config['implementation-list'] + '], repeat to specify multiple implementations',
     'input-size': 'One of [' + pointer.get(config.schema, '/definitions/experiment/properties/input-size/enum') + '], defaults to medium',
     'iteration-number': 'Number of times to execute the benchmark',
-    'platform': 'Path to a configuration file describing the current hardware configuration'
+    'platform': 'Path to a configuration file describing the current hardware configuration',
+    'skip-output-verification': 'Do not perform verification of output results'
   }
   var parsed = nopt(knownOpts, shortHands)
 
@@ -145,6 +167,14 @@ configLib.config(suiteRoot, function (err, config) {
     for (var b in config.builds) {
       builds.push('builds/' + b)
     }
+  } else {
+    builds = builds.map(function (b) {
+      var m = b.match(/.*builds\/([a-zA-Z0-9]+).*/)
+      if (m === null) {
+        throw new Error('Invalid build path ' + b)
+      }
+      return 'builds/' + m[1]
+    })
   }
 
   var environments = (parsed.environments || config['environment-list']).map(function (e) {
@@ -176,7 +206,9 @@ configLib.config(suiteRoot, function (err, config) {
       runConfig.experiment = {
         'type': 'experiment',
         'input-size': run.experiment['input-size'],
-        'input-file': [{'expand': '/experiment/input-size'}, {'config': '/benchmark/random-seed'}]
+        'input-file': [{'expand': '/experiment/input-size'}, {'config': '/benchmark/random-seed'}],
+        'output-file': pointer.has(runConfig, '/benchmark/output-file')
+          ? { 'config': '/benchmark/output-file' } : { 'file': './output.csv' }
       }
       runConfig.environment = env
       // Expand run-time arguments
