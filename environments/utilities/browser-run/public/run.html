@@ -20,7 +20,7 @@
                         browser.log("sent to server: " + s)
                     }
                 }
-                ws.send(JSON.stringify({'status': 'connected'}))
+                ws.send(JSON.stringify({'type': 'status', 'status': 'connected'}))
                 console.log = server.log
             };
 
@@ -29,7 +29,11 @@
                     var msg = JSON.parse(evt.data);
                     if (msg.type === 'eval') {
                         browser.log('Browser received cmd: ' + JSON.stringify(msg))
-                        eval(msg.code)
+                        try {
+                            eval(msg.code)  
+                        } catch (e) {
+                            ws.send(JSON.stringify({'type': 'error', 'message': e.toString() }))
+                        }
                     } else if (msg.type === 'done') {
                         ws.send(JSON.stringify({'type':'done'}))
                     } else {

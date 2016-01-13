@@ -9,20 +9,25 @@ var app = express()
 require('express-ws')(app)
 
 var knownOpts = {
+  'expression': String,
   'help': Boolean,
   'verbose': Boolean
 }
 var shortHands = {
+  'e': ['--expression'],
   'h': ['--help'],
   'v': ['--verbose']
 }
 var description = {
-  'help': 'Display this help',
-  'verbose': 'Show results from intermediary stages'
+  'expression': 'expression to evaluate instead of a file',
+  'help': 'display this help',
+  'verbose': 'show results from intermediary stages'
 }
 var parsed = nopt(knownOpts, shortHands)
+var missingArgument = (parsed.argv.remain.length < 1 && !parsed.expression)
+var firstArgumentIndex = parsed.expression ? 0 : 1
 
-if (parsed.help || parsed.argv.remain.length < 1) {
+if (parsed.help || missingArgument) {
   var usage = 'usage: run [options] file [A [A ...]]\n\n' +
     'Unified interface for running javascript functions in a browser.\n\n' +
     'positional arguments:\n' +
@@ -36,8 +41,23 @@ if (parsed.help || parsed.argv.remain.length < 1) {
 
 app.use(express.static(path.join(__dirname, './public')))
 
+function bashToJavaScript (a) {
+  if (Number.parseInt(a, 10) || Number.parseFloat(a)) {
+    return a.toString()
+  } else {
+    return "'" + a.toString() + "'"
+  }
+}
 app.ws('/socket', function (ws, req) {
-  var cmd = JSON.stringify({ 'type': 'eval', 'code': fs.readFileSync(parsed.argv.remain[0]).toString() })
+  var code = (parsed.expression
+      ? parsed.expression
+      : fs.readFileSync(parsed.argv.remain[0]).toString()) +
+    '\n' +
+    "if (typeof run === 'function') {\n" +
+    '  run(' + parsed.argv.remain.slice(firstArgumentIndex).map(bashToJavaScript).join(',') + ')\n' +
+    '}\n'
+
+  var cmd = JSON.stringify({ 'type': 'eval', 'code': code })
   if (parsed.verbose) {
     console.log('Sending: ' + cmd)
   }
@@ -57,8 +77,15 @@ app.ws('/socket', function (ws, req) {
       var o = JSON.parse(msg)
       if (o.type === 'done') {
         process.exit(0)
+      } else if (o.type === 'status') {
+        if (parsed.verbose && o.status === 'connected') {
+          console.log('Connection confirmed')
+        }
       } else if (o.type === 'output') {
         console.log(o.output)
+      } else if (o.type === 'error') {
+        process.stderr.write(o.message + '\n')
+        process.exit(1)
       } else {
         if (parsed.verbose) {
           console.log('Unknown message: ' + msg)
