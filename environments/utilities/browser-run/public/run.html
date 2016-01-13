@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <script type="text/javascript">
+        function connect() {
+            var browser = {
+                log: console.log.bind(console)
+            }
+            var server
+
+
+            browser.log("Connecting to websocket")
+            var ws = new WebSocket("ws://localhost:8080/socket")
+            ws.onopen = function () {
+                browser.log("Connection opened");
+                server = {
+                    log: function (s) {
+                        ws.send(JSON.stringify({'type': 'output', 'output': s}))
+                        browser.log("sent to server: " + s)
+                    }
+                }
+                ws.send(JSON.stringify({'status': 'connected'}))
+                console.log = server.log
+            };
+
+            ws.onmessage = function (evt) {
+                try {
+                    var msg = JSON.parse(evt.data);
+                    if (msg.type === 'eval') {
+                        browser.log('Browser received cmd: ' + JSON.stringify(msg))
+                        eval(msg.code)
+                    } else if (msg.type === 'done') {
+                        ws.send(JSON.stringify({'type':'done'}))
+                    } else {
+                        browser.log('Message not understood: ' + evt.data)
+                    }  
+                } catch (e) {
+                    browser.log('Invalid JSON format for message: ' + evt.data)
+                }
+            };
+            ws.onclose = function () {
+                browser.log("Connection closed");
+            };
+        };
+
+
+    </script>
+</head>
+<body style="font-size:xx-large" onload="connect()">
+</body>
+</html>
