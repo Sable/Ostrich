@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description='Unified interface for running nati
 parser.add_argument('file', type=str, 
                    help='the path to the matlab script or function file to execute')
 parser.add_argument('arguments', metavar='A', nargs='*', type=str,
-				   help='positional arguments to pass to the function (ignored if the file is a script)')
+				   help='positional arguments to pass to the executable')
 
 args, unknown = parser.parse_known_args()
 cmd = [args.file]

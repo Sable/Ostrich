@@ -23,9 +23,11 @@ var description = {
 var parsed = nopt(knownOpts, shortHands)
 
 if (parsed.help || parsed.argv.remain.length < 1) {
-  var usage = 'usage: run file [options]\n\n' +
+  var usage = 'usage: run [options] file [A [A ...]]\n\n' +
+    'Unified interface for running javascript functions in a browser.\n\n' +
     'positional arguments:\n' +
-    '  file\tJavaScript file to execute in the browser\n\n' +
+    '  file\t\tJavaScript file to execute in the browser\n' +
+    '  A\t\tpositional argument(s) to pass to the function\n\n' +
     'optional arguments: \n' +
     noptUsage(knownOpts, shortHands, description)
   console.log(usage)
