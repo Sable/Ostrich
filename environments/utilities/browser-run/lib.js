@@ -71,7 +71,14 @@ app.ws('/socket', function (ws, req) {
     try {
       var o = JSON.parse(msg)
       if (o.type === 'done') {
-        process.exit(0)
+        ws.send(JSON.stringify({ 'type': 'close' }), function (error) {
+          if (error) {
+            process.stderr.write(error + '\n')
+            process.exit(1)
+          } else {
+            process.exit(0)
+          }
+        })
       } else if (o.type === 'status') {
         if (parsed.verbose && o.status === 'connected') {
           console.log('Connection confirmed')

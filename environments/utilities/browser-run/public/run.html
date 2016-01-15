@@ -90,6 +90,8 @@
                     } else if (msg.type === 'loadresult') {
                         browser.log('Received loadresult')
                         ___loadcb(msg.data)
+                    } else if (msg.type === 'close') {
+                        window.close()
                     } else if (msg.type === 'done') {
                         ws.send(JSON.stringify({'type':'done'}))
                     } else {
