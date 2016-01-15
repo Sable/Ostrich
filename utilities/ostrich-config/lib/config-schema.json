@@ -123,23 +123,34 @@
       "items": { "$ref": "#/definitions/benchmark" },
       "uniqueItems": true
     },
-    "compiler": {
+    "compiler-command": {
       "type": "object",
       "properties": {
-        "type": { "type": "string", "pattern": "^compiler$" },
-        "short-name": { "$ref": "#/definitions/short-name" },
         "executable-name": { "$ref": "#/definitions/short-name" },
         "executable-path": { "anyOf": [ 
           { "$ref": "#/definitions/absolute-path" },
           { "$ref": "#/definitions/suite-root-path" }
         ]},
+        "options": { "$ref": "#/definitions/option-list" }
+      },
+      "required": [ "executable-name", "options" ]
+    },
+    "compiler-command-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/compiler-command" }
+    },
+    "compiler": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^compiler$" },
+        "short-name": { "$ref": "#/definitions/short-name" },
         "supported-languages": { "$ref": "#/definitions/language-list" },
         "target-languages": { "$ref": "#/definitions/language-list" },
         "runner-name": { "type": "string" },
-        "options": { "$ref": "#/definitions/option-list" },
+        "commands": { "$ref": "#/definitions/compiler-command-list" },
         "location": { "$ref": "#/definitions/absolute-path" }
       },
-      "required": ["type", "short-name", "executable-name", "supported-languages", "target-languages", "runner-name", "options"]
+      "required": ["type", "short-name", "supported-languages", "target-languages", "runner-name", "commands"]
     },
     "implementation": {
       "type": "object",

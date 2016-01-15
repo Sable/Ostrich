@@ -3,23 +3,70 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <script type="text/javascript">
+        var server = {}
         function connect() {
             var browser = {
                 log: console.log.bind(console)
             }
-            var server
-
 
             browser.log("Connecting to websocket")
             var ws = new WebSocket("ws://localhost:8080/socket")
+            ___loadcb = function () {}
+            server.loadcsv = function (path, cb) {
+                ws.send(JSON.stringify({
+                    "type": "load",
+                    "path": path
+                }))
+                ___loadcb = function (data) {
+                    if (!data) {
+                        server.error("loadcsv: invalid path " + path)
+                        return
+                    }
+
+                    browser.log('Converting data: ' + data)
+                    var matrix = null
+                    var lines = data.split('\n')
+                    for (var l = 0; l < lines.length; ++l) {
+                        var numbers = lines[l].split(',')
+                        for (var n = 0; n < numbers.length; ++n) {
+                            if (matrix === null) {
+                                matrix = new Float64Array(lines.length * numbers.length)
+                            }    
+                            matrix[numbers.length * l + n] = Number.parseFloat(numbers[n])
+                        }        
+                    }
+                    cb(matrix)
+                }
+            }
+
+            server.save = function (path, data) {
+                ws.send(JSON.stringify({
+                    "type": "save",
+                    "path": path,
+                    "data": data.toString()
+                }))
+            }
+
+            server.done = function () {
+                ws.send(JSON.stringify({
+                    "type": "done"
+                }))
+            }
+
+
+
             ws.onopen = function () {
                 browser.log("Connection opened");
-                server = {
-                    log: function (s) {
-                        ws.send(JSON.stringify({'type': 'output', 'output': s}))
-                        browser.log("sent to server: " + s)
-                    }
+                server.log = function (s) {
+                    ws.send(JSON.stringify({'type': 'output', 'output': s}))
+                    browser.log("sent to server: " + s)
                 }
+
+                server.error = function (s) {
+                    ws.send({"type": "error", "message": s})
+                    browser.log("sent to server error: " + s)
+                }
+                
                 ws.send(JSON.stringify({'type': 'status', 'status': 'connected'}))
                 console.log = server.log
             };
@@ -27,6 +74,12 @@
             ws.onmessage = function (evt) {
                 try {
                     var msg = JSON.parse(evt.data);
+                } catch (e) {
+                    server.error('Invalid JSON format for message: ' + evt.data)
+                }
+
+                try {
+                    browser.log("Received msg '" + msg.type + "'")
                     if (msg.type === 'eval') {
                         browser.log('Browser received cmd: ' + JSON.stringify(msg))
                         try {
@@ -34,21 +87,22 @@
                         } catch (e) {
                             ws.send(JSON.stringify({'type': 'error', 'message': e.toString() }))
                         }
+                    } else if (msg.type === 'loadresult') {
+                        browser.log('Received loadresult')
+                        ___loadcb(msg.data)
                     } else if (msg.type === 'done') {
                         ws.send(JSON.stringify({'type':'done'}))
                     } else {
                         browser.log('Message not understood: ' + evt.data)
-                    }  
+                    } 
                 } catch (e) {
-                    browser.log('Invalid JSON format for message: ' + evt.data)
+                    browser.log(e)
                 }
-            };
+            }
             ws.onclose = function () {
                 browser.log("Connection closed");
             };
         };
-
-
     </script>
 </head>
 <body style="font-size:xx-large" onload="connect()">

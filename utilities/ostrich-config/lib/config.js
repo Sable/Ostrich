@@ -194,11 +194,10 @@ function getConfigFromFileSystem (dirRoot, cb) {
   }
 
   function resolveExecutablePaths (config) {
-    function traverse (o) {
-      if (o.hasOwnProperty('type') &&
-        o.type === 'compiler') {
+    function traverse (o, location) {
+      if (o.hasOwnProperty('executable-name')) {
         if (!o.hasOwnProperty('executable-path')) {
-          var suitePath = path.join(o.location, o['executable-name'])
+          var suitePath = path.join(location, o['executable-name'])
           var systemPath = shelljs.which(o['executable-name'])
           if (shelljs.test('-e', suitePath)) {
             o['executable-path'] = suitePath
@@ -206,7 +205,7 @@ function getConfigFromFileSystem (dirRoot, cb) {
             o['executable-path'] = systemPath
           } else {
             cb("Could not resolve executable path for compiler '" +
-              o['executable-name'] + '' + "' specified in " + o.location, null)
+              o['executable-name'] + '' + "' specified in " + location, null)
             process.exit(1)
           }
         }
@@ -215,12 +214,12 @@ function getConfigFromFileSystem (dirRoot, cb) {
       for (var i in o) {
         if (o[i] !== null && typeof (o[i]) === 'object') {
           // going on step down in the object tree!!
-          traverse(o[i])
+          traverse(o[i], o[i].hasOwnProperty('location') ? o[i].location : location)
         }
       }
     }
 
-    traverse(config)
+    traverse(config, suiteRootDir)
   }
 
   dir.files(dirRoot, function (err, files) {

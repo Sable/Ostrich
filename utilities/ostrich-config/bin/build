@@ -133,7 +133,10 @@ function resolveBuildConfig (config, b, i, c, cb) {
   delete buildConfig.implementation.compilers
 
   configLib.expand(buildConfig)
-  buildConfig.compiler.options = configLib.flattenArray(buildConfig.compiler.options)
+
+  buildConfig.compiler.commands.forEach(function (c) {
+    c.options = configLib.flattenArray(c.options)
+  })
   buildConfig.implementation.dependencies = configLib.flattenArray(buildConfig.implementation.dependencies)
 
   if (invalid(buildConfig)) {
@@ -253,23 +256,27 @@ configLib.config(suiteRoot, function (err, config) {
     var silentState = shelljs.config.silent
     shelljs.config.silent = true
     shelljs.pushd(config.location)
-    var status = shelljs.exec(
-      config.compiler['executable-path'] + ' ' +
-      config.compiler.options.join(' '),
-      {silent: !parsed.verbose})
-    status.output.to('log.txt')
+
+    config.compiler.commands.forEach(function (c, i) {
+      var cmd = c['executable-path'] + ' ' +
+        c.options.join(' ')
+      var status = shelljs.exec(cmd,
+        {silent: !parsed.verbose})
+      status.output.to('log-' + i + '.txt')
+
+      if (status.code !== 0) {
+        console.log('Build error for ' + config.benchmark['short-name'] + "'s " +
+          config.implementation['short-name'] + ' implementation ' +
+          ' using ' + config.compiler['short-name'] + ' compiler,' +
+          " when executing '" + cmd + "'")
+        console.log(status.output)
+        process.exit(1)
+      }
+    })
     config.time = new Date()
     JSON.stringify(config, null, '  ').to('build.json')
     shelljs.popd()
     shelljs.config.silent = silentState
-
-    if (status.code !== 0) {
-      console.log('Build error for ' + config.benchmark['short-name'] + "'s " +
-        config.implementation['short-name'] + ' implementation ' +
-        ' using ' + config.compiler['short-name'] + ' compiler:')
-      console.log(status.output)
-      process.exit(1)
-    }
   }
 
   buildConfigs.forEach(function (config) {

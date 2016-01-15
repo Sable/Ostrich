@@ -62,11 +62,6 @@ app.ws('/socket', function (ws, req) {
     console.log('Sending: ' + cmd)
   }
   ws.send(cmd)
-  cmd = JSON.stringify({ 'type': 'done' })
-  if (parsed.verbose) {
-    console.log('Sending: ' + cmd)
-  }
-  ws.send(cmd)
 
   ws.on('message', function (msg) {
     if (parsed.verbose) {
@@ -83,6 +78,14 @@ app.ws('/socket', function (ws, req) {
         }
       } else if (o.type === 'output') {
         console.log(o.output)
+      } else if (o.type === 'load') {
+        var data = JSON.stringify({
+          'type': 'loadresult',
+          'data': fs.readFileSync(o.path).toString()
+        })
+        ws.send(data)
+      } else if (o.type === 'save') {
+        fs.writeFileSync(o.path, o.data)
       } else if (o.type === 'error') {
         process.stderr.write(o.message + '\n')
         process.exit(1)
