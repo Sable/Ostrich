@@ -52,7 +52,7 @@ function deepcopy (o) {
 var runOutputSchemaPath = '/definitions/run'
 var validRunOutput = configLib.createMatcher(runOutputSchemaPath)
 function executeRun (config, options) {
-  var checkOutput = !options['skip-output-verification'] && pointer.has(config, '/benchmark/output-check-arguments')
+  var checkOutput = !options['skip-output-verification'] && pointer.has(config, '/benchmark/output/output-check-arguments')
   var environmentRunPath = path.join(config.environment.location, '/run')
   var runnerPath = path.join(config.location, '/' + config.compiler['runner-name'])
   var runnerArguments = checkOutput
@@ -95,8 +95,14 @@ function executeRun (config, options) {
     if (options.verbose) {
       process.stdout.write('Verifying output: ')
     }
+
+    if (config.benchmark.output.type === 'value') {
+      config.experiment['output-value'] = jsonOutput.output
+      configLib.expand(config, {strict: true})
+    }
+
     cmd = pointer.get(config, '/benchmark/location') + '/output/check ' +
-      pointer.get(config, '/benchmark/output-check-arguments').join(' ')
+      pointer.get(config, '/benchmark/output/output-check-arguments').join(' ')
     status = shelljs.exec(cmd, {silent: !options.verbose})
     if (status.code !== 0) {
       console.log("error for '" + cmd + "':")
@@ -207,8 +213,8 @@ configLib.config(suiteRoot, function (err, config) {
         'type': 'experiment',
         'input-size': run.experiment['input-size'],
         'input-file': [{'expand': '/experiment/input-size'}, {'config': '/benchmark/random-seed'}],
-        'output-file': pointer.has(runConfig, '/benchmark/output-file')
-          ? { 'config': '/benchmark/output-file' } : { 'file': './output.csv' }
+        'output-file': pointer.has(runConfig, '/benchmark/output/output-file')
+          ? { 'config': '/benchmark/output/output-file' } : { 'file': './output.csv' }
       }
       runConfig.environment = env
       // Expand run-time arguments

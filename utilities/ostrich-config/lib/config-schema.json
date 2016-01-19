@@ -101,6 +101,23 @@
       },
       "required": ["small", "medium"]
     },
+    "benchmark-output-value": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^output-value$"},
+        "output-check-arguments": { "$ref": "#/definitions/option-list" }
+      },
+      "required": [ "type", "output-check-arguments" ]
+    },
+    "benchmark-output-file": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^output-file$" },
+        "output-file": { "$ref": "#/definitions/option" },
+        "output-check-arguments": { "$ref": "#/definitions/option-list" }
+      }, 
+      "required": [ "type", "output-file", "output-check-arguments" ]
+    },
     "benchmark": { 
       "type": "object",
       "properties":{
@@ -113,6 +130,10 @@
         "input-size": { "$ref": "#/definitions/input-size" },
         "input-format": { "type": "string", "enum": ["csv", "text"] },
         "random-seed": { "type": "number" },
+        "output": { "anyOf": [ 
+          { "$ref": "#/definitions/benchmark-output-file" },
+          { "$ref": "#/definitions/benchmark-output-value" } 
+        ]},
         "implementations": { "$ref": "#/definitions/implementation" },
         "location": { "$ref": "#/definitions/absolute-path" }
       },
