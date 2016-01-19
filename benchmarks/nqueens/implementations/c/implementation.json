@@ -1,0 +1,29 @@
+{
+    "type": "implementation",
+    "short-name":"c",
+    "description":"Reference C implementation ported from Rodinia suite",
+    "language":"c",
+    "core-source-files":[
+       { "file": "./nqueen_cpu.c"}
+    ],
+    "runner-source-file": { "file": "./runner.c" },
+    "runner-arguments": [
+        {
+            "prefix":"-s ",
+            "value": { "expand": "/experiment/input-size" }
+        }
+    ],
+    "libraries": [
+        { "file": "./misc/common.c" }
+    ],
+    "include-directories":[
+        { "file": "./" },
+        { "file": "./misc/" }
+    ],
+    "dependencies": [
+        { "config": "/implementation/core-source-files" },
+        { "config": "/implementation/runner-source-file" },
+        { "config": "/implementation/libraries" },
+        { "config": "/implementation/include-directories"}
+    ]
+}
