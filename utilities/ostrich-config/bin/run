@@ -55,7 +55,7 @@ function executeRun (config, options) {
   var checkOutput = !options['skip-output-verification'] && pointer.has(config, '/benchmark/output/output-check-arguments')
   var environmentRunPath = path.join(config.environment.location, '/run')
   var runnerPath = path.join(config.location, '/' + config.compiler['runner-name'])
-  var runnerArguments = checkOutput
+  var runnerArguments = checkOutput && config.implementation.hasOwnProperty('runner-arguments-with-output-check')
     ? config.implementation['runner-arguments-with-output-check'].join(' ')
     : config.implementation['runner-arguments'].join(' ')
   var cmd = environmentRunPath + ' ' + runnerPath + ' ' + runnerArguments
@@ -96,8 +96,8 @@ function executeRun (config, options) {
       process.stdout.write('Verifying output: ')
     }
 
-    if (config.benchmark.output.type === 'value') {
-      config.experiment['output-value'] = jsonOutput.output
+    if (config.benchmark.output.type === 'output-value') {
+      config.experiment['output-value'] = JSON.stringify(jsonOutput.output)
       configLib.expand(config, {strict: true})
     }
 
@@ -218,7 +218,7 @@ configLib.config(suiteRoot, function (err, config) {
       }
       runConfig.environment = env
       // Expand run-time arguments
-      configLib.expand(runConfig, {strict: true})
+      configLib.expand(runConfig)
 
       // console.log(runConfig)
 
