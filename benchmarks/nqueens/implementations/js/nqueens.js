@@ -29,10 +29,6 @@ var bit_mask3 = parseInt('0xf0f0f0f0', 16)
 var bit_mask4 = parseInt('0xff00ff00', 16)
 var bit_mask5 = parseInt('0xffff0000', 16)
 
-if (typeof performance === 'undefined') {
-  var performance = Date
-}
-
 function bit_scan (x) {
   var res = 0
   res |= (x & bit_mask1) ? 1 : 0
@@ -245,21 +241,4 @@ function nqueenJS (size, unique_solutions) {
   }
 
   return solutions
-}
-
-function runNQueens (size) {
-  var us = {}
-  var t1, t2
-
-  var solutions
-
-  t1 = performance.now()
-  solutions = nqueenJS(size, us)
-  t2 = performance.now()
-
-  console.log('Size: ' + size + ' Time: ' + (t2 - t1) / 1000 + ' s Solutions: ' +
-    solutions + ' Unique Solutions: ' + us['solutions'])
-  return { status: 1,
-    options: 'runNQueens(' + size + ')',
-  time: (t2 - t1) / 1000 }
 }
