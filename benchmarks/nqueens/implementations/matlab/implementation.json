@@ -1,0 +1,23 @@
+{
+    "type": "implementation",
+    "short-name":"matlab",
+    "description":"Matlab port of C implementation",
+    "language":"matlab",
+    "core-source-files":[
+       { "file": "./bit_scan.m"},
+       { "file": "./nqueen_cpu.m"},
+       { "file": "./nqueen_solver.m"},
+       { "file": "./nqueen_solver1.m"},
+       { "file": "./SafeShift.m"}
+    ],
+    "runner-source-file": { "file": "./runner.m" },
+    "runner-arguments": [
+        { "expand": "/experiment/input-size" }
+    ],
+    "libraries":[],
+    "dependencies": [
+        { "config": "/implementation/core-source-files" },
+        { "config": "/implementation/runner-source-file" },
+        { "config": "/implementation/libraries" }
+    ]
+}
