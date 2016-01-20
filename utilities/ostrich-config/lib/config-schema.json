@@ -189,7 +189,7 @@
         "dependencies": { "$ref": "#/definitions/option-list" },
         "location": { "$ref": "#/definitions/absolute-path" }
       },
-      "required": [ "type", "short-name", "language", "core-source-files", "runner-source-file", "runner-arguments" ] 
+      "required": [ "type", "short-name", "language", "core-source-files", "runner-source-file", "runner-arguments", "libraries" ] 
     },
     "implementation-list": {
       "type": "array",
