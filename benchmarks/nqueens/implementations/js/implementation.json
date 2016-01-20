@@ -1,0 +1,19 @@
+{
+    "type": "implementation",
+    "short-name":"js",
+    "description":"JavaScript port of C implementation",
+    "language":"js",
+    "core-source-files":[
+       { "file": "./nqueens.js"}
+    ],
+    "runner-source-file": { "file": "./runner.js" },
+    "runner-arguments": [
+        { "expand": "/experiment/input-size" }
+    ],
+    "libraries":[],
+    "dependencies": [
+        { "config": "/implementation/core-source-files" },
+        { "config": "/implementation/runner-source-file" },
+        { "config": "/implementation/libraries" }
+    ]
+}
