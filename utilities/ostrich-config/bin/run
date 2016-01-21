@@ -11,17 +11,17 @@ var fs = require('fs')
 var crypto = require('crypto')
 
 var knownOpts = {
-  // 'benchmark': [String, Array],
+  'benchmark': [String, Array],
   'build': [String, Array],
   'clean': Boolean,
-  // 'compiler': [String, Array],
+  'compiler': [String, Array],
   // 'experiment': String,
   'help': Boolean,
-  // 'implementation': [String, Array],
+  'implementation': [String, Array],
   'input-size': String,
   'iteration-number': Number,
   'platform': String,
-  'environment': String,
+  'environment': [String, Array],
   'skip-output-verification': Boolean,
   'verbose': Boolean
 }
@@ -124,14 +124,14 @@ configLib.config(suiteRoot, function (err, config) {
   }
 
   var description = {
-    'benchmark': 'One of [' + config['benchmark-list'] + '], repeat to specify multiple benchmarks',
+    'benchmark': "Benchmark's short-name, repeat to specify multiple benchmarks",
     'build': 'Build hash value, repeat to specify multiple builds',
     'clean': 'Clean the runs folder',
-    'compiler': 'One of [' + config['compiler-list'] + '], repeat to specify multiple compilers',
-    'environment': 'One of [' + config['environment-list'] + '], repeat to specify multiple environments',
+    'compiler': "Compiler's short-name, repeat to specify multiple compilers",
+    'environment': "Environment's short-name, repeat to specify multiple environments",
     'experiment': 'Path to experiment configuration file',
     'help': 'Display this help',
-    'implementation': 'One of [' + config['implementation-list'] + '], repeat to specify multiple implementations',
+    'implementation': "Implementation's short-name, repeat to specify multiple implementations",
     'input-size': 'One of [' + pointer.get(config.schema, '/definitions/experiment/properties/input-size/enum') + '], defaults to medium',
     'iteration-number': 'Number of times to execute the benchmark',
     'platform': 'Path to a configuration file describing the current hardware configuration',
@@ -141,6 +141,15 @@ configLib.config(suiteRoot, function (err, config) {
 
   if (parsed.help) {
     var usage = noptUsage(knownOpts, shortHands, description)
+    console.log('usage: run [options] [short-name [short-name ...]]\n')
+    console.log(
+      'Runs builds on different environments. Defaults to all compatible builds\n' +
+      'and all environments. Specify short-name(s) for benchmarks, implementations,\n' +
+      'or compilers to run builds that match at least one name in each category specified.\n')
+    console.log('positional arguments: ')
+    console.log("  short-name\t\t\tbenchmark, implementation, or compiler's short-name. ")
+    console.log('')
+    console.log('optional arguments:')
     console.log(usage)
     process.exit(1)
   }
@@ -154,8 +163,6 @@ configLib.config(suiteRoot, function (err, config) {
     'platform': JSON.parse(fs.readFileSync(parsed.hasOwnProperty('platform') ? parsed['platform'] : path.join(suiteRoot, '/platforms/mba-2011/platform.json')))
   }
 
-  // Build benchmarks if built versions are not available
-
   // Load builds
   var run = {
     results: {},
@@ -168,24 +175,126 @@ configLib.config(suiteRoot, function (err, config) {
     }
   }
 
-  var builds = parsed.build || []
-  if (builds.length === 0) {
-    for (var b in config.builds) {
-      builds.push('builds/' + b)
+  // Extract short-name(s) from position arguments
+
+  parsed.benchmarks = parsed.benchmark || []
+  parsed.compilers = parsed.compiler || []
+  parsed.implementations = parsed.implementation || []
+  parsed.environments = parsed.environment || []
+
+  parsed.argv.remain.forEach(function (n) {
+    function isAmbiguous () {
+      if (matched) {
+        console.log("'" + n + "' matches multiple categories, specify its category with a flag.")
+        process.exit(1)
+      } else {
+        matched = true
+      }
     }
+    var matched = false
+    var categories = [
+      'benchmark',
+      'compiler',
+      'implementation',
+      'environment'
+    ]
+
+    categories.forEach(function (c) {
+      if (config[c + '-list'].indexOf(n) > -1) {
+        parsed[c + 's'].push(n)
+        isAmbiguous()
+      }
+    })
+
+    if (!matched) {
+      console.log("invalid short-name '" + n + "', available short-name(s):")
+      categories.forEach(function (c) {
+        console.log('  ' + c + 's: ' + config[c + '-list'])
+      })
+      process.exit(1)
+    }
+  })
+
+  function printBuildSummary (shortName) {
+    var b = config.builds[shortName]
+    console.log(
+      '    ' + b['short-name'] + ':\n' +
+      '        benchmark:      ' + b.benchmark['short-name'] + '\n' +
+      '        implementation: ' + b.implementation['short-name'] + '\n' +
+      '        compiler:       ' + b.compiler['short-name'] + '\n' +
+      '        build time:     ' + b.time)
+  }
+  function mostRecentBuilds (b0, b1) {
+    var m0 = moment(config.builds[b0].time)
+    var m1 = moment(config.builds[b1].time)
+    if (m0.isSame(m1)) {
+      return 0
+    } else {
+      return m0.isBefore(m1) ? 1 : -1
+    }
+  }
+  function filterCategory (category, names) {
+    return function (buildName) {
+      var build = config.builds[buildName]
+      return names.indexOf(build[category]['short-name']) > -1
+    }
+  }
+
+  var builds = parsed.build || []
+  var buildCategories = [
+    'benchmark',
+    'compiler',
+    'implementation'
+  ]
+  if (builds.length === 0) {
+    builds = Object.keys(config.builds)
+    buildCategories.forEach(function (c) {
+      var names = parsed[c + 's']
+      if (names.length > 0) {
+        builds = builds.filter(filterCategory(c, names))
+      }
+    })
   } else {
     builds = builds.map(function (b) {
-      var m = b.match(/.*builds\/([a-zA-Z0-9]+).*/)
+      var m = b.match(/(.*builds\/)?([a-zA-Z0-9]+).*/)
       if (m === null) {
         throw new Error('Invalid build path ' + b)
       }
-      return 'builds/' + m[1]
+      var p = m[2]
+      var matches = Object.keys(config.builds).filter(function (b) {
+        return b.match(RegExp('^' + p))
+      })
+
+      if (matches.length === 0) {
+        console.log("No build with prefix '" + p + "', latest builds:")
+        Object.keys(config.builds).sort(mostRecentBuilds).slice(0, 3).forEach(printBuildSummary)
+        process.exit(1)
+      }
+
+      if (matches.length > 1) {
+        console.log("Multiple builds with prefix '" + p + "':")
+        matches.sort(mostRecentBuilds).forEach(printBuildSummary)
+        process.exit(1)
+      }
+
+      return matches[0]
     })
   }
-
-  var environments = (parsed.environments || config['environment-list']).map(function (e) {
-    return config.environments[e]
+  builds = builds.map(function (name) {
+    return pointer.get(config, '/builds/' + name)
   })
+
+  if (builds.length === 0) {
+    console.log('no builds to run')
+    process.exit(1)
+  }
+
+  var environments = (parsed.environments.length === 0
+    ? config['environment-list']
+    : parsed.environments)
+    .map(function (name) {
+      return config.environments[name]
+    })
 
   function valid (compiler, environment) {
     var targetLanguages = compiler['target-languages']
@@ -200,15 +309,12 @@ configLib.config(suiteRoot, function (err, config) {
     return validLanguage
   }
 
-  builds.forEach(function (configPath) {
-    var buildConfig = deepcopy(pointer.get(config, '/' + configPath))
-
+  builds.map(deepcopy).forEach(function (runConfig) {
     environments.forEach(function (env) {
-      if (!valid(buildConfig.compiler, env)) {
+      if (!valid(runConfig.compiler, env)) {
         return
       }
 
-      var runConfig = deepcopy(buildConfig)
       runConfig.experiment = {
         'type': 'experiment',
         'input-size': run.experiment['input-size'],
