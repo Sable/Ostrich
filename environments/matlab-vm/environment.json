@@ -1,7 +1,7 @@
 {
 	"type": "environment",
-	"short-name": "matlab",
-	"name": "MATLAB",
+	"short-name": "matlab-vm",
+	"name": "MATLAB Virtual Machine",
 	"version": "R2015b (8.6.0.267246)",
 	"supported-languages": ["matlab"],
 	"supported-formats": ["text"],
