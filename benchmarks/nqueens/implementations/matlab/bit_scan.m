@@ -11,3 +11,4 @@ res = bitor(res, vec(1 + 5*(bitand(x,4294901760) ~= 0))); %0xffff0000
 res = res + 1; % for index offset in Matlab
 
 end
+

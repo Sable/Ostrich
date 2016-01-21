@@ -1,4 +1,5 @@
 function [solutions,unique_solutions] = nqueen_cpu(size)
+disp(size);
 solutions = 0;
 
 for i = 3:size
@@ -16,3 +17,4 @@ for i = 1:floor(size / 2) - 1
 end
 
 end
+
