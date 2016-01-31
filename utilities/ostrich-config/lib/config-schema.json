@@ -95,9 +95,9 @@
     "input-size": { 
       "type": "object",
       "properties": {
-        "small": { "type": ["string", "number"] },
-        "medium": { "type": ["string", "number"] },
-        "large": { "type": ["string", "number"] }
+        "small": { "type": ["string", "number", "object"] },
+        "medium": { "type": ["string", "number", "object"] },
+        "large": { "type": ["string", "number", "object"] }
       },
       "required": ["small", "medium"]
     },

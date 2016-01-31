@@ -144,10 +144,10 @@ configLib.config(suiteRoot, function (err, config) {
     console.log('usage: run [options] [short-name [short-name ...]]\n')
     console.log(
       'Runs builds on different environments. Defaults to all compatible builds\n' +
-      'and all environments. Specify short-name(s) for benchmarks, implementations,\n' +
+      'and environments. Specify short-name(s) for benchmarks, implementations,\n' +
       'or compilers to run builds that match at least one name in each category specified.\n')
     console.log('positional arguments: ')
-    console.log("  short-name\t\t\tbenchmark, implementation, or compiler's short-name. ")
+    console.log("    short-name\t\t\t\tbenchmark, implementation, or compiler's short-name. ")
     console.log('')
     console.log('optional arguments:')
     console.log(usage)
