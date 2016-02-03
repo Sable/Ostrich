@@ -38,11 +38,5 @@
     "include-directories":[
         {"suite-root": "/implementations/c/"},
         { "file": "./misc/"}
-    ],
-    "dependencies": [
-        { "config": "/implementation/core-source-files" },
-        { "config": "/implementation/runner-source-file" },
-        { "config": "/implementation/libraries" },
-        { "config": "/implementation/include-directories"}
     ]
 }

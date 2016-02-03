@@ -17,10 +17,5 @@
         { "expand": "/experiment/input-file" },
         { "config": "/experiment/output-file" }
     ],
-    "libraries":[],
-    "dependencies": [
-        { "config": "/implementation/core-source-files" },
-        { "config": "/implementation/runner-source-file" },
-        { "config": "/implementation/libraries" }
-    ]
+    "libraries":[]
 }
