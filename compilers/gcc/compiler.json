@@ -11,15 +11,16 @@
     "commands": [
         {   "executable-name": "gcc",
             "options":[
+                "-Werror",
                 "-O3",
-                { "config": "/implementation/runner-source-file" },
                 { "config": "/implementation/core-source-files" },
-                { "config": "/implementation/libraries" },
+                { "config": "/implementation/libraries", "optional": true },
                 {
                     "prefix":"-I",
-                    "value": { "config": "/implementation/include-directories" }
+                    "value": { "config": "/implementation/include-directories", "optional": true }
                 },
                 "-lm",
+                { "config": "/implementation/runner-source-file" },
                 {   
                     "prefix":"-o ",
                     "value": {"config": "/compiler/runner-name" }
