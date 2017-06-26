@@ -17,6 +17,18 @@ Getting Started
 ------------------------
 Please [read our wiki](../../wiki) for more details on obtaining the suite, description of the benchmarks and instruction on running the benchmarks.
 
+Citation
+------------------------
+````
+   @software{ostrich,
+     author = {{Khan, Faiz and Foley-Bourgon, Vincent and Kathrotia, Sujay and Lavoie, Erick}},
+     title = {Ostrich Benchmark Suite},
+     url = {https://github.com/Sable/Ostrich},
+     version = {1.0.0},
+     date = {2014-06-09},
+   }
+````
+
 Copyright and License
 -------------------------
 Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent Foley-Bourgon, Laurie Hendren and McGill University.
