@@ -1,0 +1,31 @@
+{
+    "type": "compiler",
+    "short-name":"gcc",
+    "supported-languages":[
+        "c"
+    ],
+    "target-languages":[
+        "x86"
+    ],
+    "runner-name":"runner",
+    "commands": [
+        {   "executable-name": "gcc",
+            "options":[
+                "-Werror",
+                "-O3",
+                { "config": "/implementation/core-source-files" },
+                { "config": "/implementation/libraries", "optional": true },
+                {
+                    "prefix":"-I",
+                    "value": { "config": "/implementation/include-directories", "optional": true }
+                },
+                "-lm",
+                { "config": "/implementation/runner-source-file" },
+                {   
+                    "prefix":"-o ",
+                    "value": {"config": "/compiler/runner-name" }
+                }
+            ]
+        }
+    ]
+}

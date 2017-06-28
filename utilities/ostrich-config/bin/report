@@ -1,0 +1,113 @@
+#!/usr/bin/env node
+var nopt = require('nopt')
+var path = require('path')
+var configLib = require(path.join(__dirname, '../lib/config'))
+var pointer = require('json-pointer')
+var extend = require('extend')
+var noptUsage = require('nopt-usage')
+var shelljs = require('shelljs')
+var moment = require('moment')
+var math = require('mathjs')
+var dir = require('node-dir')
+
+var knownOpts = {
+  'run': [String, Array],
+  'help': Boolean,
+  'verbose': Boolean,
+  'csv': Boolean
+}
+var shortHands = {
+  'r': ['--run'],
+  'h': ['--help'],
+  'v': ['--verbose']
+}
+
+var suiteRoot = path.join(__dirname, '../../../')
+
+function deepcopy (o) {
+  if (Array.prototype.isPrototypeOf(o)) {
+    return extend(true, [], o)
+  } else {
+    return extend(true, {}, o)
+  }
+}
+
+configLib.config(suiteRoot, function (err, config) {
+  if (err) {
+    console.log(err)
+    process.exit(1)
+  }
+
+  var description = {
+    'csv': 'Output results in csv format (default)',
+    'run': 'Run results to use, repeat to combine results from multiple runs',
+    'help': 'Display this help',
+    'verbose': 'Show results from intermediary stages'
+  }
+  var parsed = nopt(knownOpts, shortHands)
+
+  if (parsed.help) {
+    var usage = noptUsage(knownOpts, shortHands, description)
+    console.log(usage)
+    process.exit(1)
+  }
+
+  var runs = []
+
+  if (parsed.run) {
+    runs = parsed.run
+  } else {
+    // Defaults to all runs
+    for (var t in config.runs) {
+      if (t !== 'latest') {
+        runs.push('runs/' + t)
+      }
+    }
+  }
+
+  var results = {}
+  runs.forEach(function (runPath) {
+    var runConfig = deepcopy(pointer.get(config, path.join('/', runPath)))
+
+    for (var h in runConfig.results) {
+      // Concatenate multiple time results for the same configuration in different runs
+      if (results.hasOwnProperty(h)) {
+        results[h].times = results[h].times.concat(runConfig.results[h].times)
+      } else {
+        results[h] = runConfig.results[h]
+      }
+    }
+  })
+
+  var a = []
+  for (var h in results) {
+    results[h]['mean-time'] = math.mean(results[h].times)
+    results[h]['std-time'] = math.std(results[h].times)
+    a.push(results[h])
+  }
+
+  console.log('benchmark,implementation,compiler,platform,environments,mean,std,times')
+  for (var i = 0; i < a.length; ++i) {
+    var line = [
+      a[i].build.benchmark['short-name'],
+      a[i].build.implementation['short-name'],
+      a[i].build.compiler['short-name'],
+      a[i].platform['short-name'],
+      a[i].environment['short-name'],
+      a[i]['mean-time'],
+      a[i]['std-time']
+    ]
+    line = line.concat(a[i].times)
+    console.log(line.join(','))
+  }
+/*
+var silentState = shelljs.config.silent
+shelljs.config.silent = true
+results.time = moment().format()
+var dir = path.join(suiteRoot, '/reports/', results.time)
+shelljs.mkdir('-p', dir)
+shelljs.ln('-s', dir, path.join(suiteRoot, '/reports/latest'))
+JSON.stringify(results, null, '  ').to(path.join(dir, '/report.json'))
+shelljs.config.silent = silentState
+*/
+})

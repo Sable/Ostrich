@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+import argparse
+import sys
+import os.path
+import subprocess
+
+parser = argparse.ArgumentParser(description='Check output file against expected result.')
+parser.add_argument('size', type=int, help='the size of the board')
+parser.add_argument('output_value', type=str)
+args = parser.parse_args()
+
+expected_values = {
+	1: "[0, 0]",
+	2: "[0, 0]",
+	3: "[0, 0]",
+	4: "[2, 1]",
+	5: "[10, 2]",
+	6: "[4, 1]",
+	7: "[40, 6]",
+	8: "[92, 12]",
+	9: "[352, 46]",
+	10: "[724, 92]",
+	11: "[2680, 341]",
+	12: "[14200, 1787]",
+	13: "[73712, 9233]",
+	14: "[365596, 45752]",
+	15: "[2279184, 285053]",
+	16: "[14772512, 1846955]",
+	17: "[95815104, 11977939]",
+	18: "[666090624, 83263591]"
+}
+
+if expected_values.has_key(args.size):
+	if expected_values[args.size] == args.output_value:
+		sys.exit(0)
+	else:
+		sys.stderr.write('output/check: invalid result %s for board size %i, expected %s\n'%(args.output_value, args.size, expected_values[args.size]))
+		sys.exit(1)
+else:
+	sys.stderr.write("output/check: unsupported board size %i\n"%args.size)
+	sys.exit(1)

@@ -1,0 +1,23 @@
+{
+    "type": "compiler",
+    "short-name":"none-js",
+    "name": "None",
+    "supported-languages":[
+        "js"
+    ],
+    "target-languages":[
+        "js"
+    ],
+    "runner-name":"runner.js",
+    "commands": [
+        {   "executable-name": "cat",
+            "options": [
+                { "config": "/implementation/core-source-files"},
+                { "config": "/implementation/libraries"},
+                { "config": "/implementation/runner-source-file"},
+                ">",
+                { "config": "/compiler/runner-name" }
+            ]
+        }
+    ]
+}

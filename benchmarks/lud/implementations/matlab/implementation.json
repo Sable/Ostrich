@@ -1,0 +1,21 @@
+{
+    "type": "implementation",
+    "short-name":"matlab",
+    "description":"Matlab port of C implementation",
+    "language":"matlab",
+    "core-source-files":[
+       { "file": "./lud_base.m"},
+       { "file": "./lud_base_idiomatic.m"}
+    ],
+    "runner-source-file": { "file": "./runner.m" },
+    "runner-arguments": [
+        { "expand": "/experiment/input-size" },
+        { "expand": "/experiment/input-file" }
+    ],
+    "runner-arguments-with-output-check": [
+        { "expand": "/experiment/input-size" },
+        { "expand": "/experiment/input-file" },
+        { "config": "/experiment/output-file" }
+    ],
+    "libraries":[]
+}

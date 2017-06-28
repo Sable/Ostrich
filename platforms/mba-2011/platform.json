@@ -1,0 +1,14 @@
+{
+	"type": "platform",
+	"short-name": "mba-2011",
+	"name": "MacBook Air 2011 11' Mid 2011",
+	"cpu": "1.8 GHz Intel Core i7",
+	"gpu": "Intel HD Graphics 3000 384 MB",
+	"memory": "4 GB",
+	"os": "OS X 10.9.5",
+	"supported-languages": ["x86"],
+	"supported-formats": ["binary"],
+	"environments": [
+		
+	]
+}

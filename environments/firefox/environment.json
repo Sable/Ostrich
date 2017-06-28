@@ -1,0 +1,10 @@
+{
+	"type": "environment",
+	"short-name": "firefox",
+	"name": "Mozilla Firefox",
+	"version": "43.0.4",
+	"supported-languages": ["js"],
+	"supported-formats": ["text"],
+	"implementation-language": "x86",
+	"implementation-format": "binary"
+}

@@ -1,0 +1,10 @@
+{
+	"type": "environment",
+	"short-name": "chrome",
+	"name": "Google Chrome",
+	"version": "47.0.2526.106 (64-bit)",
+	"supported-languages": ["js"],
+	"supported-formats": ["text"],
+	"implementation-language": "x86",
+	"implementation-format": "binary"
+}

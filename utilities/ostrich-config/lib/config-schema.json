@@ -1,0 +1,315 @@
+{
+  "definitions": {
+    "relative-path": { "type": "string", "pattern": "^\\.(\/|(\/[0-9a-zA-Z-_\\.]+)+\/?)$" },
+    "absolute-path": { "type": "string", "pattern": "^(\/[0-9a-zA-Z-_\\.]+)+\/?$" },
+    "suite-root-path": { 
+      "type": "object",
+      "properties": {
+        "suite-root": { "$ref": "/definitions/absolute-path" }
+      },
+      "required": ["suite-root"]
+    },
+    "configuration-reference": { 
+      "type": "object",
+      "properties": {
+        "config": { "$ref": "/definitions/absolute-path" }
+      },
+      "required": ["config"]
+    },
+    "file-path-object": { 
+      "type": "object",
+      "properties": {
+        "file": { "anyOf": [
+            { "$ref": "/definitions/absolute-path" },
+            { "$ref": "/definitions/relative-path" }
+          ]
+        }
+      },
+      "required": ["file"]
+    },
+    "file-path-list": { 
+      "type": "array",
+      "items": { "$ref": "#/definitions/file-path" }
+    },
+    "file-path": { "oneOf": [
+      { "$ref": "#/definitions/suite-root-path" },
+      { "$ref": "#/definitions/file-path-object" },
+      { "$ref": "#/definitions/absolute-path" }
+    ]},
+    "expandable-reference": { 
+      "type": "object", 
+      "properties": {
+        "expand": { "$ref": "#/definitions/absolute-path" }
+      },
+      "required": ["expand"]
+    },
+    "prefix-object": { 
+      "type": "object",
+      "properties": {
+        "prefix": { "type": "string" },
+        "value": { "oneOf": [
+          { "$ref": "#/definitions/option" },
+          { "$ref": "#/definitions/option-list" }
+        ]}
+      },
+      "required": ["prefix", "value"]
+    },
+    "resolved-value": { "oneOf": [
+       { "type": ["string", "number"] },
+       { "type": "array", "items": { "type": ["string", "number"] } }
+    ]},
+    "option": { "oneOf": [
+      { "$ref": "#/definitions/suite-root-path" },
+      { "$ref": "#/definitions/configuration-reference" },
+      { "$ref": "#/definitions/file-path-object" },
+      { "$ref": "#/definitions/expandable-reference" },
+      { "$ref": "#/definitions/prefix-object" },
+      { "type": ["string", "number"] }
+    ]},
+    "option-list": {
+      "type": "array",
+      "items": { "anyOf": [
+        { "$ref": "#/definitions/option" },
+        { "$ref": "#/definitions/option-list"}
+      ]}
+    },
+    "short-name": { "type": "string", "pattern": "^[a-z0-9-_\\.A-Z:]+$" },
+    "short-name-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/short-name" },
+      "uniqueItems": true
+    },
+    "version": { "type": "string", "pattern": "^[0-9]+.[0-9]+.[0-9]+$" },
+    "language": { "type": "string", "enum": ["c", "js", "matlab", "opencl", "webcl", "x86"] },
+    "language-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/language" },
+      "uniqueItems": true
+    },
+    "format": { "type": "string", "enum": ["text", "binary", "webpage"] },
+    "format-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/format" },
+      "uniqueItems": true
+    },
+    "input-size": { 
+      "type": "object",
+      "properties": {
+        "small": { "type": ["string", "number", "object"] },
+        "medium": { "type": ["string", "number", "object"] },
+        "large": { "type": ["string", "number", "object"] }
+      },
+      "required": ["small", "medium"]
+    },
+    "benchmark-output-value": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^output-value$"},
+        "output-check-arguments": { "$ref": "#/definitions/option-list" }
+      },
+      "required": [ "type", "output-check-arguments" ]
+    },
+    "benchmark-output-file": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^output-file$" },
+        "output-file": { "$ref": "#/definitions/option" },
+        "output-check-arguments": { "$ref": "#/definitions/option-list" }
+      }, 
+      "required": [ "type", "output-file", "output-check-arguments" ]
+    },
+    "benchmark": { 
+      "type": "object",
+      "properties":{
+        "type": { "type": "string", "pattern": "^benchmark$" },
+        "name": { "type": "string" },
+        "short-name": { "$ref": "#/definitions/short-name" },
+        "description": { "type": "string" },
+        "version": { "$ref": "#/definitions/version" },
+        "languages": { "$ref": "#/definitions/language-list" },
+        "input-size": { "$ref": "#/definitions/input-size" },
+        "input-format": { "type": "string", "enum": ["csv", "text"] },
+        "random-seed": { "type": "number" },
+        "output": { "anyOf": [ 
+          { "$ref": "#/definitions/benchmark-output-file" },
+          { "$ref": "#/definitions/benchmark-output-value" } 
+        ]},
+        "implementations": { "$ref": "#/definitions/implementation" },
+        "location": { "$ref": "#/definitions/absolute-path" }
+      },
+      "required": ["type", "short-name", "version", "input-size"]
+    },
+    "benchmark-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/benchmark" },
+      "uniqueItems": true
+    },
+    "compiler-command": {
+      "type": "object",
+      "properties": {
+        "executable-name": { "$ref": "#/definitions/short-name" },
+        "executable-path": { "anyOf": [ 
+          { "$ref": "#/definitions/absolute-path" },
+          { "$ref": "#/definitions/suite-root-path" }
+        ]},
+        "options": { "$ref": "#/definitions/option-list" }
+      },
+      "required": [ "executable-name", "options" ]
+    },
+    "compiler-command-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/compiler-command" }
+    },
+    "compiler": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^compiler$" },
+        "short-name": { "$ref": "#/definitions/short-name" },
+        "supported-languages": { "$ref": "#/definitions/language-list" },
+        "target-languages": { "$ref": "#/definitions/language-list" },
+        "runner-name": { "type": "string" },
+        "commands": { "$ref": "#/definitions/compiler-command-list" },
+        "location": { "$ref": "#/definitions/absolute-path" }
+      },
+      "required": ["type", "short-name", "supported-languages", "target-languages", "runner-name", "commands"]
+    },
+    "implementation": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^implementation$" },
+        "short-name": { "$ref": "#/definitions/short-name" },
+        "description": { "type": "string" },
+        "language": { "$ref": "#/definitions/language" },
+        "supported-compilers": { "$ref": "#/definitions/short-name-list" },
+        "core-source-files": { "$ref": "#/definitions/file-path-list" },
+        "runner-source-file": { "$ref": "#/definitions/file-path" },
+        "runner-arguments": { "$ref": "#/definitions/option-list" },
+        "libraries": { "$ref": "#/definitions/file-path-list" },
+        "include-directories": { "$ref": "#/definitions/file-path-list" },
+        "dependencies": { "$ref": "#/definitions/option-list" },
+        "location": { "$ref": "#/definitions/absolute-path" }
+      },
+      "required": [ "type", "short-name", "language", "core-source-files", "runner-source-file", "runner-arguments", "libraries" ] 
+    },
+    "implementation-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/implementation" },
+      "uniqueItems": true
+    },
+    "platform": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^platform$" },
+        "short-name": {"$ref": "#/definitions/short-name" },
+        "cpu": { "type": "string" },
+        "memory": { "type": "string" },
+        "os": { "type": "string" },
+        "supported-languages": { "$ref": "#/definitions/language-list" },
+        "supported-formats": { "$ref": "#/definitions/format-list" },
+        "environments": { "$ref": "#/definitions/environment-list" }
+      },
+      "required": ["type", "short-name", "cpu", "memory", "os", "environments"]
+    },
+    "platform-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/platform" }
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^environment$" },
+        "short-name": { "$ref": "#/definitions/short-name" },
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "supported-languages": { "$ref": "#/definitions/language-list" },
+        "supported-formats": { "$ref": "#/definitions/format-list" },
+        "implemementation-language": { "$ref": "#/definitions/language" },
+        "implementation-format": { "$ref": "#/definitions/format" },
+        "location": { "$ref": "#/definitions/absolute-path" }
+      },
+      "required": ["short-name", "version", "supported-languages", "supported-formats"]
+    },
+    "environment-list": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/environment" }
+    },
+    "build": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^build$" },
+        "short-name": { "$ref": "#/definitions/short-name" },
+        "benchmark": { "$ref": "#/definitions/benchmark" },
+        "implementation": { "$ref": "#/definitions/implementation" },
+        "compiler": { "$ref": "#/definitions/compiler" },
+        "location": { "$ref": "#/definitions/absolute-path" },
+        "time": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type"]
+    },
+    "experiment": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^experiment$" },
+        "short-name": { "$ref": "#/definitions/short-name" },
+        "iteration-number": { "type": "number" },
+        "input-size": { 
+          "type": "string",
+          "enum": ["small", "medium", "large"], 
+          "expand": true
+        }
+      },
+      "required": ["type"]
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "pattern": "^result$" },
+        "build": { "$ref": "#/definitions/build" },
+        "experiment": { "$ref": "#definitions/experiment" },
+        "platform": { "$ref": "#/definitions/platform" },
+        "times": { 
+          "type": "array",
+          "items": { "type": "number" }
+        }
+      }
+    },
+    "run": {
+      "type": "object",
+      "properties": {
+        "results": { 
+          "type": "object"
+        },
+        "time": { "type": "number" }
+      },
+      "required": ["time"]
+    },
+    "run-output": {
+      "type": "object",
+      "properties": {
+        "time": { "type": "number" }
+      },
+      "required": ["time"]
+    }
+  },
+  "config-type-name-list": [
+    "benchmark",
+    "build", 
+    "compiler", 
+    "environment", 
+    "implementation",
+    "platform",
+    "result",
+    "run"
+  ],
+  "oneOf": [
+    { "$ref": "#/definitions/benchmark" },
+    { "$ref": "#/definitions/build" },
+    { "$ref": "#/definitions/compiler" },
+    { "$ref": "#/definitions/implementation" },
+    { "$ref": "#/definitions/platform" },
+    { "$ref": "#/definitions/experiment" },
+    { "$ref": "#/definitions/environment" },
+    { "$ref": "#/definitions/result"},
+    { "$ref": "#/definitions/run"}
+  ]
+}

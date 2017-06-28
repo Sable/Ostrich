@@ -7,3 +7,8 @@ rodinia_2.4/
 build/
 *.pyc
 dls14empiricalJS/
+builds/
+runs/
+node_modules/
+*.csv
+*.sublime*

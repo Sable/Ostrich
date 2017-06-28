@@ -1,0 +1,20 @@
+{
+    "type": "implementation",
+    "short-name":"js",
+    "description":"JavaScript port of C implementation",
+    "language":"js",
+    "core-source-files":[
+       { "file": "./lud.js"}
+    ],
+    "runner-source-file": { "file": "./runner.js" },
+    "runner-arguments": [
+        { "expand": "/experiment/input-size" },
+        { "expand": "/experiment/input-file" }
+    ],
+    "runner-arguments-with-output-check": [
+        { "expand": "/experiment/input-size" },
+        { "expand": "/experiment/input-file" },
+        { "config": "/experiment/output-file" }
+    ],
+    "libraries":[]
+}

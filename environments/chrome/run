@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+var path = require('path')
+var lib = require(path.join(__dirname, '../utilities/browser-run/lib.js'))
+lib.start('open -g -a Google\\ Chrome ')

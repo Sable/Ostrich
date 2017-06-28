@@ -1,0 +1,291 @@
+#!/usr/bin/env node
+
+var path = require('path')
+var configLib = require(path.join(__dirname, '../lib/config.js'))
+var nopt = require('nopt')
+var noptUsage = require('nopt-usage')
+var extend = require('extend')
+var fs = require('fs')
+var hashFiles = require('hash-files')
+var crypto = require('crypto')
+var shelljs = require('shelljs')
+
+var knownOpts = {
+  'benchmark': [String, Array],
+  'clean': Boolean,
+  'compiler': [String, Array],
+  'experiment': String,
+  'help': Boolean,
+  'implementation': [String, Array],
+  'verbose': Boolean
+}
+var shortHands = {
+  'b': ['--benchmark'],
+  'c': ['--compiler'],
+  'e': ['--experiment'],
+  'h': ['--help'],
+  'i': ['--implementation'],
+  'v': ['--verbose']
+}
+
+var suiteRoot = path.join(__dirname, '../../../')
+
+function invalid (buildConfig) {
+  return null
+}
+
+function computeBuildDirectoryName (config, cb) {
+  var paths = expandPaths(config.implementation.dependencies)
+  var hash = crypto.createHash('sha1')
+  hash.update(JSON.stringify(config))
+  hashFiles({
+    files: paths
+  }, function (err, hashValue) {
+    if (err) cb(err)
+    hash.update(hashValue, 'string')
+    cb(null, hash.digest('hex'))
+  })
+}
+
+function expandPaths (paths) {
+  var expanded = []
+  for (var i = 0; i < paths.length; ++i) {
+    var p = paths[i]
+
+    if (!fs.lstatSync(p).isDirectory()) {
+      expanded.push(p)
+    } else {
+      expanded.push(path.join(p, '**'))
+    }
+  }
+  return expanded
+}
+
+function resolveBuildConfig (config, b, i, c, cb) {
+  function error (msg) {
+    return {
+      'error': 'Build Configuration Resolution Error',
+      'msg': msg
+    }
+  }
+
+  var buildConfig = {
+    'type': 'build',
+    'benchmark': {},
+    'implementation': {},
+    'compiler': {}
+  }
+
+  if (!config.benchmarks.hasOwnProperty(b)) {
+    cb(error("No benchmark '" + b + "' in configuration"), null)
+  }
+  extend(true, buildConfig.benchmark, config.benchmarks[b])
+
+  if (config.hasOwnProperty('implementations') &&
+    config.implementations.hasOwnProperty(i)) {
+    extend(true, buildConfig.implementation, config.implementations[i])
+  }
+
+  if (config.hasOwnProperty('compilers') &&
+    config.compilers.hasOwnProperty(c)) {
+    extend(true, buildConfig.compiler, config.compilers[c])
+  }
+
+  if (config.benchmarks[b].hasOwnProperty('implementations') &&
+    config.benchmarks[b].implementations.hasOwnProperty(i)) {
+    extend(
+      true,
+      buildConfig.implementation,
+      config.benchmarks[b].implementations[i]
+    )
+
+    if (config.benchmarks[b].implementations[i].hasOwnProperty('compilers') &&
+      config.benchmarks[b].implementations[i].compilers.hasOwnProperty(c)) {
+      extend(
+        true,
+        buildConfig.compiler,
+        config.benchmarks[b].implementations[i].compilers[c]
+      )
+    }
+  }
+
+  if (config.compilers.hasOwnProperty(c) &&
+    config.compilers[c].hasOwnProperty('benchmarks') &&
+    config.compilers[c].benchmarks.hasOwnProperty(b)) {
+    extend(
+      true,
+      buildConfig.benchmark,
+      config.compilers[c].benchmarks[b]
+    )
+
+    if (config.compilers[c].benchmarks[b].hasOwnProperty('implementations') &&
+      config.compilers[c].benchmarks[b].implementations.hasOwnProperty(i)) {
+      extend(
+        true,
+        buildConfig.implementation,
+        config.compilers[c].benchmarks[b].implementations[i]
+      )
+    }
+  }
+
+  delete buildConfig.benchmark.implementations
+  delete buildConfig.compiler.benchmarks
+  delete buildConfig.implementation.compilers
+
+  configLib.expand(buildConfig)
+
+  buildConfig.compiler.commands.forEach(function (c) {
+    c.options = configLib.flattenArray(c.options)
+  })
+  buildConfig.implementation.dependencies = configLib.flattenArray(buildConfig.implementation.dependencies)
+
+  if (invalid(buildConfig)) {
+    cb(error(invalid(buildConfig)))
+  }
+
+  cb(null, buildConfig)
+}
+
+function combinations () {
+  function copy (a) {
+    var c = []
+    for (var i = 0; i < a.length; ++i) {
+      c.push(a[i])
+    }
+    return c
+  }
+  var comb = [[]]
+  var newRow
+
+  for (var i = 0; i < arguments.length; ++i) {
+    var newComb = []
+    for (var j = 0; j < comb.length; ++j) {
+      if (Array.prototype.isPrototypeOf(arguments[i])) {
+        for (var k = 0; k < arguments[i].length; ++k) {
+          newRow = copy(comb[j])
+          newRow.push(arguments[i][k])
+          newComb.push(newRow)
+        }
+      } else {
+        newRow = copy(comb[j])
+        newRow.push(arguments[i])
+        newComb.push(newRow)
+      }
+    }
+    comb = newComb
+  }
+  return comb
+}
+
+// Parse for options that do not need the configuration info
+var parsed = nopt(knownOpts, shortHands)
+if (parsed.clean) {
+  shelljs.rm('-rf', path.join(suiteRoot, '/builds'))
+  process.exit(0)
+}
+
+// Other stuff that need the configuration info
+configLib.config(suiteRoot, function (err, config) {
+  if (err) {
+    console.log(err)
+    process.exit(1)
+  }
+
+  var description = {
+    'benchmark': 'One of [' + config['benchmark-list'] + '], repeat to specify multiple benchmarks',
+    'compiler': 'One of [' + config['compiler-list'] + '], repeat to specify multiple compilers',
+    'experiment': 'Path to experiment configuration file',
+    'help': 'Display this help',
+    'implementation': 'One of [' + config['implementation-list'] + '], repeat to specify multiple implementations'
+  }
+  var parsed = nopt(knownOpts, shortHands)
+
+  if (parsed.help) {
+    var usage = noptUsage(knownOpts, shortHands, description)
+    console.log(usage)
+    process.exit(1)
+  }
+
+  function valid (c) {
+    var benchmark = config.benchmarks[c[0]]
+    var implementationName = c[1]
+    var implementation = benchmark.implementations[implementationName]
+    var compiler = config.compilers[c[2]]
+    return (benchmark.implementations.hasOwnProperty(implementationName) &&
+    compiler['supported-languages'].indexOf(implementation.language) >= 0)
+  }
+
+  var options = {
+    'benchmarks': parsed.hasOwnProperty('benchmark') ? parsed['benchmark'] : config['benchmark-list'],
+    'implementations': parsed.hasOwnProperty('implementation') ? parsed['implementation'] : config['implementation-list'],
+    'compilers': parsed.hasOwnProperty('compiler') ? parsed['compiler'] : config['compiler-list']
+  }
+
+  var buildConfigs = combinations(
+    options.benchmarks,
+    options.implementations,
+    options.compilers
+  ).filter(valid).map(function (row) {
+    var result
+    resolveBuildConfig(
+      config,
+      row[0],
+      row[1],
+      row[2],
+      function (err, config) {
+        if (err) {
+          console.log(err)
+          process.exit(1)
+        }
+
+        result = config
+      }
+    )
+    return result
+  })
+
+  function createRunner (config) {
+    if (parsed.verbose) {
+      console.log(
+        'creating ' + config.compiler['runner-name'] +
+        ' for ' + config.benchmark['short-name'] +
+        ' from ' + config.implementation['short-name'] + ' implementation' +
+        ' using ' + config.compiler['short-name'] + ' compiler')
+      console.log('result saved in ' + config.location)
+    }
+    var silentState = shelljs.config.silent
+    shelljs.config.silent = true
+    shelljs.pushd(config.location)
+
+    config.compiler.commands.forEach(function (c, i) {
+      var cmd = c['executable-path'] + ' ' +
+        c.options.join(' ')
+      var status = shelljs.exec(cmd,
+        {silent: !parsed.verbose})
+      status.output.to('log-' + i + '.txt')
+
+      if (status.code !== 0) {
+        console.log('Build error for ' + config.benchmark['short-name'] + "'s " +
+          config.implementation['short-name'] + ' implementation ' +
+          ' using ' + config.compiler['short-name'] + ' compiler,' +
+          " when executing '" + cmd + "'")
+        console.log(status.output)
+        process.exit(1)
+      }
+    })
+    config.time = new Date()
+    JSON.stringify(config, null, '  ').to('build.json')
+    shelljs.popd()
+    shelljs.config.silent = silentState
+  }
+
+  buildConfigs.forEach(function (config) {
+    computeBuildDirectoryName(config, function (err, name) {
+      if (err) throw err
+      config.location = path.join(suiteRoot, '/builds/', name)
+
+      shelljs.mkdir('-p', config.location)
+      createRunner(config)
+    })
+  })
+})

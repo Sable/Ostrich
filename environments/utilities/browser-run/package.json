@@ -1,0 +1,19 @@
+{
+	"name": "browser-run",
+	"version": "0.1.0",
+	"lib": "./lib.js",
+	"dependencies": {
+		"node-dir": ">=0.1.11",
+		"nopt": ">=3.0.6",
+		"nopt-usage": ">=0.1.0",
+		"json-pointer": ">=0.3.0",
+		"is-my-json-valid": ">=2.12.3",
+		"extend": ">= 3.0.0",
+		"hash-files": ">= 1.0.0",
+		"shelljs": ">= 0.5.3",
+		"moment": ">= 2.10.6",
+		"mathjs": ">= 2.5.0",
+		"express": ">= 4.13.3",
+		"express-ws": ">= 1.0.0-rc.2"
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"type": "environment",
+	"short-name": "safari",
+	"name": "Safari",
+	"version": "9.0.2 (9537.86.3.9.1)",
+	"supported-languages": ["js"],
+	"supported-formats": ["text"],
+	"implementation-language": "x86",
+	"implementation-format": "binary"
+}
