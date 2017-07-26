@@ -594,7 +594,7 @@ function bwa_hmm(v_, n_, s_, t_)
         /* Assign HMM parameters */
         hmm.nstates = N;
         hmm.nsymbols = s;
-        a = new Float32ARray(N*N);
+        a = new Float32Array(N*N);
         for (i = 0; i < (N * N); i++) {
             a[i] = 1.0/N;
         }
